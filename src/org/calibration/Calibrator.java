@@ -3,11 +3,11 @@ package org.calibration;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.data.Calibration;
 import org.data.TextWriter;
-import org.fitter.CentroidFitter;
 import org.fitter.LSQFitter;
 import org.graphics.ChartBuilder;
 import org.swing.ProgressDisplay;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -26,6 +26,7 @@ public class Calibrator {
 	public static int PARAM_2D_LENGTH = 6;				// Number of parameters to fit in 2D (elliptical gaussian)
 	int MAX_ITERATIONS_1D = 50000;
 	int MAX_ITERATIONS_2D = 3000;
+	int MAX_EVALUATIONS_2D = 1000;
 	
 	/////////////////////////////
 	// Results
@@ -41,7 +42,7 @@ public class Calibrator {
 	/////////////////////////////
 	// Input from user
     double zstep;
-    int rangeStart, rangeEnd, rangeSize;				// Both ends of the restricted z range and length of the restriction
+    int rangeStart, rangeEnd, rangeSize;	// Both ends of the restricted z range and length of the restriction
     Roi roi;
     
 	/////////////////////////////
@@ -51,6 +52,10 @@ public class Calibrator {
 	TextWriter rec;
 	ImageStack is;
 	Calibration cal;
+	
+	/////////////////////////////
+	// Tests
+	double[] WxC, WyC, Wx1DG, Wy1DG, Wx2DG, Wy2DG; 
     
 	public Calibrator(ImagePlus im, double zstep, Roi r){
 		this.is = im.getStack();
@@ -60,7 +65,7 @@ public class Calibrator {
     	this.height = im.getHeight();
     	this.roi = r;
     	
-		lsq = new LSQFitter(im);
+		lsq = new LSQFitter();
 		cb = new ChartBuilder();
 		rec = new TextWriter();
 		
@@ -73,6 +78,16 @@ public class Calibrator {
     	curveWy = new double[nSlice];					// value of the calibration on Y
     	paramWx = new double[PARAM_1D_LENGTH];			// parameters of the calibration on X
     	paramWy = new double[PARAM_1D_LENGTH];			// parameters of the calibration on Y
+    	
+    	
+    	//////////////////////////
+    	// test
+    	WxC = new double[nSlice];						
+    	WyC = new double[nSlice];	
+    	Wx1DG = new double[nSlice];						
+    	Wy1DG = new double[nSlice];	
+    	Wx2DG = new double[nSlice];						
+    	Wy2DG = new double[nSlice];						
     	
     	cal = new Calibration();
 	}
@@ -88,18 +103,33 @@ public class Calibrator {
             	for(int i=0;i<nSlice;i++){
             		ImageProcessor ip = is.getProcessor(i+1);
 
-            		lsq.fit2D(ip,roi,Wx,Wy,i,MAX_ITERATIONS_2D);
+            		lsq.fit2D(ip,roi,Wx2DG,Wy2DG,i,1000,1000);   
             		
-            		//CentroidFitter cf = new CentroidFitter();
-            		//double[] results = cf.fitCentroidandWidth(ip, new Roi(0, 0, ip.getWidth(), ip.getHeight()));
-            		//Wy[i] = results[2];
-            		//Wx[i] = results[3];
+            		//double[] results = lsq.fit1DGsingle(ip, roi, 1000, 1000); 
+            		//Wx1DG[i] = results[2];
+            		//Wy1DG[i] = results[3];
             		
+            		/*CentroidFitter cf = new CentroidFitter();
+            		results = cf.fitCentroidandWidth(ip, roi,(int) (ip.getStatistics().mean+3*ip.getStatistics().stdDev));
+            		WxC[i] = results[2];
+            		WyC[i] = results[3];
+            		*/
             		progress.updateProgress(i);
+            		
+            		if(Wx1DG[i]>20 || Wy1DG[i]>20){
+            			System.out.println(i);
+
+            			System.out.println(Wx1DG[i]);
+
+            			System.out.println(Wy1DG[i]);
+            			
+            			lsq.printProfiles();
+            			
+            		}
             	}
             	
             	// Find index of focus and map zgrid
-            	indexZ0 = findIntersection(Wx, Wy);
+            	indexZ0 = findIntersection(Wx2DG, Wy2DG);
             	createZgrid(zgrid, indexZ0);
             	
             	// Save results in calibration
@@ -108,7 +138,9 @@ public class Calibrator {
             	cal.setWy(Wy);
             	
                 // Display result
-            	cal.plotWxWy();
+            	//cal.plot(WxC,WyC,"Centroid");
+            	//cal.plot(Wx1DG,Wy1DG,"1D gaussian LSQ");
+            	cal.plot(Wx2DG,Wy2DG,"2D gaussian LSQ");
             }
         }).start();        
 	}	
@@ -164,6 +196,10 @@ public class Calibrator {
 	}
 	public void saveCalib(String path){
 		cal.saveCalib(path);
+	}
+	
+	public void saveCSV(String path){
+		cal.saveAsCSV(IJ.getDirectory("image")+"_" + path);
 	}
 
 	//////////////////////////////////////////////////////////////

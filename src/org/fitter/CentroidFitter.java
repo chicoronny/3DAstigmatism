@@ -70,7 +70,7 @@ public class CentroidFitter {
 		return centroid;
 	}
 	
-	public double[] fitCentroidandWidth(ImageProcessor ip_, Roi roi){
+	public double[] fitCentroidandWidth(ImageProcessor ip_, Roi roi, int threshold){
 		double[] centroid = new double[4];
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
@@ -79,7 +79,7 @@ public class CentroidFitter {
 		
 		// Copy the ImageProcessor and carry on threshold
 		ImageProcessor ip = ip_.duplicate();
-		int thrsh = ip.getAutoThreshold();
+		int thrsh = threshold;
 		
 		// Find centroid and widths
 		int s = 0;
@@ -98,7 +98,7 @@ public class CentroidFitter {
 		centroid[1] = centroid[1]/sum; 
 
 		// From quickpalm
-        double xstd = 0; // stddev x
+  /*      double xstd = 0; // stddev x
         double ystd = 0; // stddev y
         double xlstd = 0; // stddev left x
         double xrstd = 0; // stddev right x
@@ -150,8 +150,49 @@ public class CentroidFitter {
         yrstd/=yrsum;
 
 		centroid[2] = xlstd+xrstd;
-		centroid[3] = ylstd+yrstd;
+		centroid[3] = ylstd+yrstd;*/
 		
+		double[] Ivaly,Ivalx;
+		Ivaly = new double[rheight];
+		Ivalx = new double[rwidth];
+		
+		for(int i=0;i<rheight;i++){
+			Ivaly[i] = 0;
+			for(int j=0;j<rwidth;j++){
+				Ivaly[i] += ip.get(xstart+j,ystart+i)/rheight;
+			}
+
+			//System.out.println(Ivaly[i]);
+		}
+		
+		System.out.println("---");
+		for(int i=0;i<rwidth;i++){
+			Ivalx[i] = 0;
+			for(int j=0;j<rheight;j++){
+				Ivalx[i] += ip.get(xstart+i,ystart+j)/rwidth;
+			}
+			
+			//System.out.println(Ivalx[i]);
+		}
+
+		double sumx=0, stdx=0;
+		for(int i=0;i<rwidth;i++){
+			sumx += Ivalx[i];
+			stdx += Ivalx[i]*(xstart+i-centroid[0])*(xstart+i-centroid[0]);
+		}
+		stdx /= sumx;
+		stdx = Math.sqrt(stdx);
+		centroid[2] = stdx;
+
+		double sumy=0, stdy=0;
+		for(int i=0;i<rheight;i++){
+			sumy += Ivaly[i];
+			stdy += Ivaly[i]*(ystart+i-centroid[1])*(ystart+i-centroid[1]);
+		}
+		stdy /= sumy;
+		stdy = Math.sqrt(stdy);
+		centroid[3] = stdy;
+
 		
 		return centroid;
 	}

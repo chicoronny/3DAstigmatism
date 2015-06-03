@@ -7,7 +7,7 @@ public class MedianFilter {
 	//////////////////////////////////////////////
 	//// Fast median
 	////  from Battiato and al, An efficient algorithm for the approximate median selection problem
-	private void Swap(int size, double[] A, int i, int j){
+	private static void Swap(int size, float[] A, int i, int j){
 		if(i >= size || j >= size){
 			return;
 		}    
@@ -15,13 +15,13 @@ public class MedianFilter {
 			return;
 		}
 	
-		double buff = A[i];
+		float buff = A[i];
 		A[i] = A[j];
 		A[j] = buff;
 	}
 	
 	
-	private void adjustTriplet(int size,double[] A, int i, int step){
+	private static void adjustTriplet(int size,float[] A, int i, int step){
 		int j = i+step;
 		int k = i+2;
 	
@@ -40,7 +40,7 @@ public class MedianFilter {
 		}
 	}
 	
-	private void selectionSort(int dim, double[] A, int left, int size, int step){
+	private static void selectionSort(int dim, float[] A, int left, int size, int step){
 		int min;
 		for(int i=left;i<left+(size-1)*step;i=i+step){
 			min = i;
@@ -53,7 +53,7 @@ public class MedianFilter {
 		}
 	}
 	
-	public double fastmedian(double A[], int dim){
+	public static int fastmedian(float A[], int dim){
 	
 		///////////////////////////////////////////
 		/// Size of the array
@@ -71,7 +71,7 @@ public class MedianFilter {
 		int rem = 0;            
 		int step = 1;
 		int i,j;
-		double median;
+		int median;
 		
 		/// Run
 		while(size > threshold){
@@ -104,7 +104,7 @@ public class MedianFilter {
 			size = size/3;
 		}
 		selectionSort(dim,A,left,size,step);
-		median = A[left + (step*(size-1)/2)];	
+		median = (int) A[left + (step*(size-1)/2)];	
 		
 		// return median value
 		return median;

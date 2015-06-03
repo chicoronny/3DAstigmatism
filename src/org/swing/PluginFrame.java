@@ -1,16 +1,11 @@
 package org.swing;
 
-import ij.gui.StackWindow;
-import ij.plugin.FolderOpener;
-
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 
-import org.calibration.Localizator;
-
-
+  
 @SuppressWarnings("serial")
 public class PluginFrame extends JFrame{
 
@@ -23,7 +18,7 @@ public class PluginFrame extends JFrame{
 
     private void initComponents() {
     	/// Calibration
-    	/*cp = new CalibrationPanel();
+    	cp = new CalibrationPanel();
     	
     	this.add(cp);
     	
@@ -32,14 +27,15 @@ public class PluginFrame extends JFrame{
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(dim.width/2-150, dim.height/2-200);
     	
-    	pack();*/
-    	
+    	pack();
+    
     	/// Analysis
-    	Localizator lc = new Localizator();
+    /*	Localizator lc = new Localizator();
     	lc.loadImages("C:/Users/Ries/Desktop/ImagineOptic/Data/Timelaps/data");
+    	lc.medianFilter(5,10);
     	lc.runNMS();
     	lc.fitImages();
-    	lc.showResults();
+    */	//lc.showResults();
     }       		
 	
                            

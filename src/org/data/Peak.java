@@ -30,6 +30,15 @@ public class Peak {
 		n_ = slice;
 		value_ = value;
 	}
+	
+	public Peak(Peak p){
+		x_ = p.getX();
+		y_ = p.getY();
+		sx_ = p.getSX();
+		sy_ = p.getSY();
+		n_ = p.getSlice();
+		value_ = p.getValue();
+	}
 
 	public void set(int x, int y, int value){
 		x_ = x;

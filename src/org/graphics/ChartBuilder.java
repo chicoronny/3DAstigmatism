@@ -1,4 +1,4 @@
-package org.ThreeDimAstig.graphics;
+package org.graphics;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -18,6 +18,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class ChartBuilder {
+
+	
 	public XYDataset createDataSet(double[] A, String nameA){
 	    XYSeriesCollection dataset = new XYSeriesCollection();
 	    XYSeries series = new XYSeries(nameA);
@@ -240,4 +242,5 @@ public class ChartBuilder {
 		jf.pack();
 		jf.setVisible(true);
 	}
+	
 }

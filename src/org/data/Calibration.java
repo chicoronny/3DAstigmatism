@@ -148,19 +148,21 @@ public class Calibration {
 	
 	public void saveAsCSV(String path){
 		csvWriter w = new csvWriter(new File(path));
- 	    for (int i=0; i< nSlice;i++){
+ 	    for (int i=0; i< zgrid.length;i++){
  	    	String s = "" + zgrid[i] + ", " + Wx[i] + ", " + Wy[i] + ", " + Calibcurve[i] + ", " +  curveWx[i] + ", " + curveWy[i] + "\n";
  	    	w.process(s);
  	    }
- 	   w.process("--");
+ 	   w.process("--\n");
  	   String ps = "";
  	   for (int j=0;j<PARAM_1D_LENGTH;j++)
- 		   ps += paramWx + ", ";
+ 		   ps += paramWx[j] + ", ";
+ 	   ps = ps.substring(0,ps.length()-3);
  	   ps += "\n";
  	   w.process(ps);
  	   ps="";
  	   for (int j=0;j<PARAM_1D_LENGTH;j++)
-		   ps += paramWy + ", ";
+		   ps += paramWy[j] + ", ";
+ 	   ps = ps.substring(0,ps.length()-3);
  	   ps += "\n";
 	   w.process(ps);
 	   
@@ -181,32 +183,35 @@ public class Calibration {
 			String[] s;
 			while (stream.hasNext()){
 				line = stream.next();
+				if (line.contains("--")) break;
 				list.add(line);
-				if (line=="--") break;
 			}
 			
 			nSlice = list.size();
 			initialize();
 			
-			line = stream.next();
-			s = line.split(",");
-			for (int i = 0; i < s.length; i++)
-				s[i] = s[i].trim();
-			paramWx = new double[]{Double.parseDouble(s[0]),
-					Double.parseDouble(s[1]),
-					Double.parseDouble(s[2]),
-					Double.parseDouble(s[3]),
-					Double.parseDouble(s[4])};
-			line = stream.next();
-			s = line.split(",");
-			for (int i = 0; i < s.length; i++)
-				s[i] = s[i].trim();
-			paramWy = new double[]{Double.parseDouble(s[0]),
-					Double.parseDouble(s[1]),
-					Double.parseDouble(s[2]),
-					Double.parseDouble(s[3]),
-					Double.parseDouble(s[4])};
-			
+			if (stream.hasNext()){
+				line = stream.next();
+				s = line.split(",");
+				for (int i = 0; i < s.length; i++)
+					s[i] = s[i].trim();
+				paramWx = new double[]{Double.parseDouble(s[0]),
+						Double.parseDouble(s[1]),
+						Double.parseDouble(s[2]),
+						Double.parseDouble(s[3]),
+						Double.parseDouble(s[4])};
+			}
+			if (stream.hasNext()){
+				line = stream.next();
+				s = line.split(",");
+				for (int i = 0; i < s.length; i++)
+					s[i] = s[i].trim();
+				paramWy = new double[]{Double.parseDouble(s[0]),
+						Double.parseDouble(s[1]),
+						Double.parseDouble(s[2]),
+						Double.parseDouble(s[3]),
+						Double.parseDouble(s[4])};
+			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -5,7 +5,6 @@ import java.io.File;
 import javax.swing.JFileChooser;
 
 import org.calibration.Calibrator;
-import org.data.TextWriter;
 
 public class SaveTextFrame extends javax.swing.JFrame {
 
@@ -165,7 +164,6 @@ public class SaveTextFrame extends javax.swing.JFrame {
     	int returnVal = fc.showSaveDialog(this);
     	if (returnVal == JFileChooser.APPROVE_OPTION) {
     		File file = fc.getSelectedFile();
-    		TextWriter rc = new TextWriter();
     		if(bexp){
     			cal.saveExp(file.getAbsolutePath());
     		}

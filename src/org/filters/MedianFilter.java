@@ -1,140 +1,138 @@
 package org.filters;
 
-public class MedianFilter {
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
-	
-		
-	//////////////////////////////////////////////
-	//// Fast median
-	////  from Battiato and al, An efficient algorithm for the approximate median selection problem
-	private static void Swap(int size, float[] A, int i, int j){
-		if(i >= size || j >= size){
-			return;
-		}    
-		if(i == j){
-			return;
-		}
-	
-		float buff = A[i];
-		A[i] = A[j];
-		A[j] = buff;
-	}
-	
-	
-	private static void adjustTriplet(int size,float[] A, int i, int step){
-		int j = i+step;
-		int k = i+2;
-	
-		if(A[i]<A[j]){
-			if(A[k]<A[i]){
-				Swap(size,A,i,j);
-			} else if (A[k]<A[j]){
-				Swap(size,A,j,k);
-			}
+public class MedianFilter<T extends Comparable<T>> {
+
+	// ////////////////////////////////////////////
+	// // Fast median
+	// // from Battiato and al, An efficient algorithm for the approximate
+	// median selection problem
+	private void adjustTriplet(List<T> a, final int i, final int step) {
+		int j = i + step;
+		int k = i + 2;
+
+		if (a.get(i).compareTo(a.get(j)) < 0) {
+			if (a.get(k).compareTo(a.get(i)) < 0)
+				Collections.swap(a, i, j);
+			else if (a.get(k).compareTo(a.get(j)) < 0)
+				Collections.swap(a, j, k);
 		} else {
-			if(A[i]<A[k]){
-				Swap(size,A,i,j);
-			} else if(A[k]>A[j]){
-				Swap(size,A,j,k);
-			}
+			if (a.get(i).compareTo(a.get(k)) < 0)
+				Collections.swap(a, i, j);
+			else if (a.get(k).compareTo(a.get(j)) > 0)
+				Collections.swap(a, j, k);
 		}
 	}
-	
-	private static void selectionSort(int dim, float[] A, int left, int size, int step){
+
+	private void selectionSort(List<T> a, final int left, final int size,
+			final int step) {
 		int min;
-		for(int i=left;i<left+(size-1)*step;i=i+step){
+		for (int i = left; i < left + (size - 1) * step; i += step) {
 			min = i;
-			for(int j=i+step;j<left+size*step;j=j+step){
-				if(A[j]<A[min]){
+			for (int j = i + step; j < left + size * step; j += step) {
+				if (a.get(j).compareTo(a.get(min)) < 0) {
 					min = j;
 				}
 			}
-			Swap(dim,A,i,min);
+			Collections.swap(a, i, min);
 		}
 	}
-	
-	public static int fastmedian(float A[], int dim){
-	
-		///////////////////////////////////////////
-		/// Size of the array
-		int size = dim;
-	
-		///////////////////////////////////////////
-		///  Median calculation
-		int LeftToRight = 0;
-		
+
+	public T fastmedian(List<T> A) {
+
+		// /////////////////////////////////////////
+		// / Size of the array
+		int size = A.size();
+
+		// /////////////////////////////////////////
+		// / Median calculation
+		boolean LeftToRight = false;
+
 		// Parameters
-		int threshold = 2;                                    					  // pass as argument !!!!!!!!!
-		
+		int threshold = 2; // pass as argument !!!!!!!!!
+
 		// Definitions
 		int left = 0;
-		int rem = 0;            
+		int rem;
 		int step = 1;
-		int i,j;
-		int median;
-		
-		/// Run
-		while(size > threshold){
-			LeftToRight = 1 - LeftToRight;
-			rem = size%3;
-			if(LeftToRight == 1){
-				i = left;
-			} else {
-				i = left+(3+rem)*step;
+		int i, j;
+
+		// / Run
+		while (size > threshold) {
+			LeftToRight = !LeftToRight;
+			rem = size % 3;
+
+			i = LeftToRight ? left : left + (3 + rem) * step;
+
+			for (j = 0; j < (size / 3 - 1); j++) {
+				adjustTriplet(A, i, step);
+				i += 3 * step;
 			}
-			for(j = 0; j<(size/3-1);j++){
-				adjustTriplet(dim,A,i,step);
-				i = i + 3*step;
-			}
-			if(LeftToRight == 1){
-				left = left + step;
+			if (LeftToRight) {
+				left += step;
 			} else {
 				i = left;
-				left = left + (1+rem)*step;
+				left += (1 + rem) * step;
 			}
-			selectionSort(dim,A,i,3+rem,step);
-			if(rem == 2){
-				if (LeftToRight == 1){
-					Swap(dim,A,i+step,i+2*step);
-				} else {
-					Swap(dim,A,i+2*step,i+3*step);
-				}
+			selectionSort(A, i, 3 + rem, step);
+			if (rem == 2) {
+				if (LeftToRight)
+					Collections.swap(A, i + step, i + 2 * step);
+				else
+					Collections.swap(A, i + 2 * step, i + 3 * step);
 			}
-			step = 3*step;
-			size = size/3;
+			step = 3 * step;
+			size = size / 3;
 		}
-		selectionSort(dim,A,left,size,step);
-		median = (int) A[left + (step*(size-1)/2)];	
-		
+		selectionSort(A, left, size, step);
+		T median = A.get(left + step * ((size - 1) / 2));
+
 		// return median value
 		return median;
 	}
-	
-	/////////////////////////////////////////////////
-	//// Exact median
-	public double Exactmedian(int n, double[] x) {
-		double temp;
-		int i, j;
-		// the following two loops sort the array x in ascending order
-		for(i=0; i<n-1; i++) {
-			for(j=i+1; j<n; j++) {
-				if(x[j] < x[i]) {
-					// swap elements
-					temp = x[i];
-					x[i] = x[j];
-					x[j] = temp;
-				}
+
+	public T select(final List<T> values, final int kin) {
+		int k = kin;
+		int left = 0;
+		int right = values.size() - 1;
+		Random rand = new Random();
+		while (right >= left) {
+			int partionIndex = rand.nextInt(right - left + 1) + left;
+			int newIndex = partition(values, left, right, partionIndex);
+			int q = newIndex - left + 1;
+			if (k == q) {
+				return values.get(newIndex);
+			} else if (k < q) {
+				right = newIndex - 1;
+			} else {
+				k -= q;
+				left = newIndex + 1;
 			}
 		}
-		
-		if(n%2==0) {
-			// if there is an even number of elements, return mean of the two elements in the middle
-			//return (x[(n-1)/2]+x[(n+1)/2])/2;
-			return x[n/2];
-		} else {
-			// else return the element in the middle
-			return x[n/2];
+		return null;
+	}
+
+	private int partition(final List<T> values, final int left,	final int right, final int partitionIndex) {
+		T partionValue = values.get(partitionIndex);
+		int newIndex = left;
+		T temp = values.get(partitionIndex);
+		values.set(partitionIndex, values.get(right));
+		values.set(right, temp);
+		for (int i = left; i < right; i++) {
+			if (values.get(i).compareTo(partionValue) < 0) {
+				temp = values.get(i);
+				values.set(i, values.get(newIndex));
+				values.set(newIndex, temp);
+				newIndex++;
+			}
 		}
+		temp = values.get(right);
+		values.set(right, values.get(newIndex));
+		values.set(newIndex, temp);
+		return newIndex;
 	}
 
 }

@@ -102,34 +102,16 @@ public class Calibrator {
             public void run() {
             	for(int i=0;i<nSlice;i++){
             		ImageProcessor ip = is.getProcessor(i+1);
-
-            		lsq.fit2D(ip,roi,Wx2DG,Wy2DG,i,1000,1000);   
-            		
-            		//double[] results = lsq.fit1DGsingle(ip, roi, 1000, 1000); 
-            		//Wx1DG[i] = results[2];
-            		//Wy1DG[i] = results[3];
-            		
-            		/*CentroidFitter cf = new CentroidFitter();
-            		results = cf.fitCentroidandWidth(ip, roi,(int) (ip.getStatistics().mean+3*ip.getStatistics().stdDev));
-            		WxC[i] = results[2];
-            		WyC[i] = results[3];
-            		*/
-            		progress.updateProgress(i);
-            		
-            		if(Wx1DG[i]>20 || Wy1DG[i]>20){
-            			System.out.println(i);
-
-            			System.out.println(Wx1DG[i]);
-
-            			System.out.println(Wy1DG[i]);
-            			
-            			lsq.printProfiles();
+            		lsq.fit2D(ip,roi,Wx,Wy,i,1000,1000);
+            		try{
+            			progress.updateProgress(i);
+            		} catch (NullPointerException ne){
             			
             		}
             	}
             	
             	// Find index of focus and map zgrid
-            	indexZ0 = findIntersection(Wx2DG, Wy2DG);
+            	indexZ0 = findIntersection(Wx, Wy);
             	createZgrid(zgrid, indexZ0);
             	
             	// Save results in calibration
@@ -138,9 +120,7 @@ public class Calibrator {
             	cal.setWy(Wy);
             	
                 // Display result
-            	//cal.plot(WxC,WyC,"Centroid");
-            	//cal.plot(Wx1DG,Wy1DG,"1D gaussian LSQ");
-            	cal.plot(Wx2DG,Wy2DG,"2D gaussian LSQ");
+            	cal.plot(Wx,Wy,"2D gaussian LSQ");
             }
         }).start();        
 	}	
@@ -160,11 +140,6 @@ public class Calibrator {
 			    	} catch (TooManyEvaluationsException e) {
 			    		// Write error message												////////////////////////////////////////////////////////////////////////////////////////////////////////
 			    	}
-					
-					
-					//for(int i=0;i<nSlice;i++){
-						//System.out.println(curveWx[i]);
-					//}
 			
 					// sx2-sy2
 					for(int i=0;i<nSlice;i++){
@@ -195,7 +170,8 @@ public class Calibrator {
 		cal.saveFit(path);
 	}
 	public void saveCalib(String path){
-		cal.saveCalib(path);
+		//cal.saveCalib(path);
+		cal.saveAsCSV(path);
 	}
 	
 	public void saveCSV(String path){

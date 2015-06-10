@@ -2,6 +2,7 @@ package org.fitter;
 
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
+
 // Plugin classes
 import org.data.DefocusCurve;
 import org.data.EllipticalGaussian;
@@ -36,42 +37,6 @@ public class LSQFitter {
     public LSQFitter(){
 
     }
-    
-  /*  public void runStackFit(double[] Wx, double Wy[]){
-
-    	
-    	// Save graph as .txt
-    	PrintWriter writerX, writerY;
-    	try {
-     	   writerX = new PrintWriter(new FileWriter("Set2_wx.txt", true));
-    	   writerY = new PrintWriter(new FileWriter("Set2_wy.txt", true));
-
-	       	for(int i=0; i<Wx.length;i++){
-	       		writerX.println(Wx[i]+"\n");
-	       		writerY.println(Wy[i]+"\n");	
-	       	}
-	       	writerX.close();
-	       	writerY.close();
-    	} catch (FileNotFoundException e) {
-    	      e.printStackTrace();
-    	} catch (UnsupportedEncodingException e) {
-    	  e.printStackTrace();
-    	} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	
-  
-    	//Recorder rec = new Recorder();
-    	try {
-			Wx = rec.loadFile("Set3_wx.txt");
-			Wy = rec.loadFile("Set3_wy.txt");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-   
-    }
-     */	
 	
 	/////////////////////////////////////////////////////////////////////////////
 	/// 1D fit: Defocus Curve
@@ -86,36 +51,26 @@ public class LSQFitter {
         final DefocusCurve problem = new DefocusCurve(rangedZ,rangedW);
         
         LevenbergMarquardtOptimizer optimizer = getOptimizer();
-    	//System.out.println("Begin optimization");
 
         final Optimum optimum = optimizer.optimize(
                 builder(problem)
                         .target(rangedW)
-                        //.checkerPair(new SimplePointChecker(10e-5, 10e-5))
+                        //.checkerPair(new SimplePointChecker<PointVectorValuePair>(10e-5, 10e-5))
                         .start(problem.getInitialGuess())
                         .maxIterations(maxIter)
                         .maxEvaluations(maxIter)
                         .build()
         );
-    	//System.out.println("Done");
-        //System.out.println(optimum.getEvaluations());
-        //System.out.println(optimum.getIterations());
-        //System.out.println("---");
         
     	// Copy the fitted parameters
         double[] result = optimum.getPoint().toArray();
-        for(int i=0; i<PARAM_1D_LENGTH;i++){
+        for(int i=0; i<PARAM_1D_LENGTH;i++)
         	param[i] = result[i];
-            //System.out.println(param[i]);
-        }
-        
-        //System.out.println("----------");
         
         // Copy the fitted curve values																				
         double[] values = problem.valuesWith(z, param);
-        for(int i=0; i<curve.length;i++){
+        for(int i=0; i<curve.length;i++)
         	curve[i] = values[i];
-        }
 
     }
     
@@ -146,7 +101,7 @@ public class LSQFitter {
 	        final Optimum optimum = optimizer.optimize(
 	                builder(eg)
 	                        .target(Ival)
-	                        .checkerPair(new ConvChecker2DGauss())
+	                        //.checkerPair(new ConvChecker2DGauss())
 	                        .start(eg.getInitialGuess(ip,roi))
 	                        .maxIterations(maxIter)
 	                        .maxEvaluations(maxEval)
@@ -154,7 +109,6 @@ public class LSQFitter {
 	        );
 	
 	        fittedEG =  optimum.getPoint().toArray();        
-	        //RealVector res = optimum.getResiduals();
 	        
 	        //////////////////////////////////////////////////////////
 	        // erf is symmetrical with respect to (sx,sy)->(-sx,-sy)																											/// how to get the convergence for strictly positive sigmas??
@@ -170,13 +124,9 @@ public class LSQFitter {
 	        	Wy[counter] = fittedEG[3];
 	        }	
 	        
-
-	        //System.out.println(Wx[counter]+" "+Wy[counter]);
-	        //System.out.println(res.toString());
-
 	        
         } catch(TooManyEvaluationsException e){
-        	System.out.println("Too many evaluations");
+        	System.err.println("Too many evaluations"+roi);
         	Wx[counter] = 0;																																				////////////// is that legal??
         	Wy[counter] = 0;
         }
@@ -193,38 +143,26 @@ public class LSQFitter {
 	        final Optimum optimum = optimizer.optimize(
 	                builder(eg)
 	                        .target(Ival)
+	                        .checkerPair(new ConvChecker2DGauss())
 	                        .start(eg.getInitialGuess(ip,roi))
 	                        .maxIterations(maxIter)
 	                        .maxEvaluations(maxIter)
 	                        .build()
 	        );
 	
-	        fittedEG =  optimum.getPoint().toArray();        
-	        //RealVector res = optimum.getResiduals();
-	        
+	        fittedEG =  optimum.getPoint().toArray();        	        
 	        double[] result = new double[4];
 
             result[0] = fittedEG[0];
             result[1] = fittedEG[1];
-            
-	        //////////////////////////////////////////////////////////
 	        // erf is symmetrical with respect to (sx,sy)->(-sx,-sy)																											/// how to get the convergence for strictly positive sigmas??
-	        //
-	        if(fittedEG[2]<0){
-	            result[2] = -fittedEG[2];
-	        } else {
-	        	result[2] = fittedEG[2];
-	        } 
-	        if(fittedEG[3]<0){
-	        	result[3] = -fittedEG[3];
-	        } else {
-	        	result[3] = fittedEG[3];
-	        }	
-	        
+            result[2] = Math.abs(fittedEG[2]);
+        	result[3] = Math.abs(fittedEG[3]);
+
 	        return result;
 	        
         } catch(TooManyEvaluationsException e){
-        	System.out.println("Too many evaluations");
+        	System.err.println("Too many evaluations");
         	return null;
         }
     }
@@ -249,16 +187,13 @@ public class LSQFitter {
 	        final Optimum optimumx = optimizer.optimize(
 	                builder(egx,xgrid)
 	                        .target(Ivalx)
-	                        .checkerPair(new ConvChecker1DGauss())
+	                        //.checkerPair(new ConvChecker1DGauss())
 	                        .start(egx.getInitialGuess(ip,roi,0))
 	                        .maxIterations(maxIter)
 	                        .maxEvaluations(maxEval)
 	                        .build()
 	        );
-	        System.out.println("Iteration : "+optimumx.getIterations());
-	        System.out.println("Evaluation : "+optimumx.getEvaluations());
-	        //System.out.println(Ivaly.length);
-	        //System.out.println(ygrid.length);
+
 	        final Optimum optimumy = optimizer.optimize(
 	                builder(egy,ygrid)
 	                        .target(Ivaly)
@@ -271,12 +206,6 @@ public class LSQFitter {
 
 	        fittedGx =  optimumx.getPoint().toArray();
 	        fittedGy =  optimumy.getPoint().toArray();        
-	        //RealVector res = optimumx.getResiduals();
-	        
-	        //for(int i=0;i<xgrid.length;i++){
-	        //	System.out.println(egx.getValue(fittedGx, xgrid[i]));
-	        //}
-	        
 	        
 	        double[] result = new double[4];
 
@@ -296,11 +225,10 @@ public class LSQFitter {
 	        } else {
 	        	result[3] = fittedGy[1];
 	        }	
-	        //System.out.println(result[0]+" "+result[1]+" "+result[2]+" "+result[3]);
 	        return result;
 	        
         } catch(TooManyEvaluationsException e){
-        	System.out.println("Too many evaluations");
+        	System.err.println("Too many evaluations");
         	return null;
         }
     }
@@ -309,10 +237,8 @@ public class LSQFitter {
     	int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
 		int xstart = (int) roi.getXBase();
-		int ystart = (int) roi.getYBase();
-		
-		//System.out.println(rwidth+" "+rheight);
-				
+		int ystart = (int) roi.getYBase();	
+	
 		ygrid = new int[rheight];
 		xgrid = new int[rwidth];
 		Ivaly = new double[rheight];
@@ -324,29 +250,15 @@ public class LSQFitter {
 			for(int j=0;j<rwidth;j++){
 				Ivaly[i] += ip.get(xstart+j,ystart+i)/rheight;
 			}
-
-			//System.out.println(Ivaly[i]);
 		}
 		
-		System.out.println("---");
 		for(int i=0;i<rwidth;i++){
 			xgrid[i] = xstart+i;
 			Ivalx[i] = 0;
 			for(int j=0;j<rheight;j++){
 				Ivalx[i] += ip.get(xstart+i,ystart+j)/rwidth;
 			}
-			
-			//System.out.println(Ivalx[i]);
 		}
-
-		
-		/*ImagePlus imp = new ImagePlus();
-		imp.setProcessor(ip);
-		Overlay overlay = new Overlay(); 
-		overlay.add(roi);
-		imp.setOverlay(overlay);
-		imp.show();*/
-
 	}
 
     public void printProfiles(){
@@ -384,9 +296,6 @@ public class LSQFitter {
 		int rheight = (int) roi.getFloatHeight();
 		int xstart = (int) roi.getXBase();
 		int ystart = (int) roi.getYBase();
-
-		//System.out.println("ROI size: "+rwidth+" "+rheight);
-		//System.out.println("ROI base: "+xstart+" "+ystart);
 		
 		xgrid = new int[rwidth*rheight];
 		ygrid = new int[rwidth*rheight];

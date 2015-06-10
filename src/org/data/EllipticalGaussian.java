@@ -60,28 +60,14 @@ public class EllipticalGaussian {
             public double[][] value(double[] point) throws IllegalArgumentException {
 
             	 double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
-            	 
-            	 
+
         	     for (int i = 0; i < xgrid.length; ++i) {
-        	    	 //System.out.println("-----------");
-        	    	 //System.out.println(i);
-        	    	 
         	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*Ey(ygrid[i], point)*dEx(xgrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_X0] );
-        	    	 
         	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*Ex(xgrid[i], point)*dEy(ygrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_Y0]);
-        	    	 
         	    	 jacobian[i][INDEX_SX] = point[INDEX_I0]*Ey(ygrid[i], point)*dEsx(xgrid[i],point);
-        	   
         	    	 jacobian[i][INDEX_SY] = point[INDEX_I0]*Ex(xgrid[i], point)*dEsy(ygrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_SY]);
-        	    	 
         	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_I0]);
-        	    	 
         	    	 jacobian[i][INDEX_Bg] = 1;
-        	    	 //System.out.println(jacobian[i][INDEX_Bg]);
         	     }
         	     
 				return jacobian;

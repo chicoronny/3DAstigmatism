@@ -10,8 +10,6 @@ import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -20,6 +18,10 @@ import org.jfree.data.xy.XYDataset;
 
 public class XYChart extends JFrame {
 	 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3444066837167428354L;
 	XYDataset xyc;
 	
     public XYChart(XYDataset xyc) {
@@ -27,7 +29,11 @@ public class XYChart extends JFrame {
         this.xyc = xyc;
         
         JPanel p = new JPanel() {
-            Point pointStart = null;
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 6952930945226508625L;
+			Point pointStart = null;
             Point pointEnd   = null;
             {
                 addMouseListener(new MouseAdapter() {
@@ -76,9 +82,7 @@ public class XYChart extends JFrame {
         String xAxisLabel = "X";
         String yAxisLabel = "Y";
      
-   
-     
-        JFreeChart chart = ChartFactory.createXYLineChart("", "", "", xyc, PlotOrientation.VERTICAL, false, false, false);
+        JFreeChart chart = ChartFactory.createXYLineChart(chartTitle, xAxisLabel, yAxisLabel, xyc, PlotOrientation.VERTICAL, false, false, false);
      
         return new ChartPanel(chart);
     }

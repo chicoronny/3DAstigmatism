@@ -1,6 +1,7 @@
 package org.calibration;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -69,8 +70,10 @@ public class Localizator {
 		
 		ImageStack is = im.getStack();
 		ImageProcessor ip;
-		int dim = sFilter*sFilter*nFrames;
-		float[] imSample = new float[dim];
+		//int dim = sFilter*sFilter*nFrames;
+		//int[] imSample = new int[dim];
+		List<Integer> imSample = new ArrayList<>();
+		MedianFilter<Integer> mf = new MedianFilter<>();
 		int w = (sFilter-1)/2;
 		
 		int ii,jj;
@@ -92,12 +95,13 @@ public class Localizator {
 						jj = 2*width-1-jj;
 					}
 					
-					imSample[(k*sFilter+i)*sFilter+j] = ip.get(jj,ii); 
+					//imSample[(k*sFilter+i)*sFilter+j] = ip.get(jj,ii); 
+					imSample.add(ip.get(jj,ii));
 				}
 			}
 		}
 		
-		return MedianFilter.fastmedian(imSample, dim);
+		return mf.fastmedian(imSample);
 	}
 	
 	public void runNMS(){

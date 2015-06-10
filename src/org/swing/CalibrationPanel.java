@@ -1,4 +1,7 @@
 package org.swing;
+import java.io.File;
+
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.gui.StackWindow;
@@ -489,20 +492,27 @@ public class CalibrationPanel extends javax.swing.JPanel {
     //// Action handlers
 	private void button_ImportActionPerformed(java.awt.event.ActionEvent evt) {
     	JFileChooser fc = new JFileChooser();
-    	fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     	
     	int returnVal = fc.showOpenDialog(this);
     	 
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            java.io.File file = fc.getSelectedFile();
-            textfield_Import.setText(file.getName());
-            file_path = file.getAbsolutePath();
-            im = FolderOpener.open(file_path);
-            nSlice = im.getNSlices();
-            @SuppressWarnings("unused")
-			StackWindow sw = new StackWindow(im);
-    		setIncrementalLayout(1);
-        }
+        if (returnVal != JFileChooser.APPROVE_OPTION)
+        	return;
+        
+        File file = fc.getSelectedFile();
+        textfield_Import.setText(file.getName());
+        file_path = file.getAbsolutePath();
+        
+        if (file.isDirectory())
+        	im = FolderOpener.open(file_path);
+        
+        if (file.isFile())
+        	im = new ImagePlus(file_path);
+        
+        nSlice = im.getNSlices();
+		new StackWindow(im);
+        im.setRoi((int) (im.getWidth()/2 - 10), (int) (im.getHeight()/2 - 10), 20, 20);
+		setIncrementalLayout(1);        
     }                                             
 
     private void textfield_ZstepActionPerformed(java.awt.event.ActionEvent evt) {  
@@ -516,9 +526,17 @@ public class CalibrationPanel extends javax.swing.JPanel {
 
 	private void button_ROIActionPerformed(java.awt.event.ActionEvent evt) {
     	Roi roitemp = im.getRoi();
+    	if (roitemp.getType() != Roi.RECTANGLE)  {
+			IJ.showMessage("Needs a rectangle ROI.");
+			return;
+		}
 		try{																				
 			double w = roitemp.getFloatWidth();
 			double h = roitemp.getFloatHeight();
+			if (w!=h) {
+				IJ.showMessage("Needs a quadratic ROI /n(hint: press Shift).");
+				return;
+			}
 			textfield_ROI.setText("Roi ("+w+","+h+")");
 			isRoi = true;
 			roi = roitemp;

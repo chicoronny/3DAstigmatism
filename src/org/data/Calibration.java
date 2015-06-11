@@ -13,20 +13,30 @@ import org.graphics.ChartBuilder;
 
 public class Calibration {
 
-	public static int PARAM_1D_LENGTH = 5;	
+	public static int INDEX_WX = 0;
+	public static int INDEX_WY = 1;
+	public static int INDEX_AX = 2;
+	public static int INDEX_AY = 3;
+	public static int INDEX_BX = 4;
+	public static int INDEX_BY = 5;
+	public static int INDEX_C = 6;
+	public static int INDEX_D = 7;
+	public static int PARAM_LENGTH = 8;
+
 	double[] zgrid;										// z positions of the slices in the stack
-	double[] Wx, Wy, Calibcurve, paramWx, paramWy;		// 1D and 2D fit results
+	double[] Wx, Wy, Calibcurve;		// 1D and 2D fit results
 	double[] curveWx, curveWy;							// quadratically fitted curves
 	int nSlice=1;
 	ChartBuilder cb;
 	TextWriter tw;
+	private double[] param;
 	
 	public Calibration(){
 		cb = new ChartBuilder();
 		initialize();	
 	}
 	
-	public Calibration(double[] zgrid, double[] Wx, double[] Wy, double[] curveWx, double[] curveWy, double[] Calibcurve, double[] paramWx, double[] paramWy){
+	public Calibration(double[] zgrid, double[] Wx, double[] Wy, double[] curveWx, double[] curveWy, double[] Calibcurve, double[] param){
 		cb = new ChartBuilder();
 		nSlice = zgrid.length;
 		this.zgrid = zgrid;						// z position of the frames
@@ -35,8 +45,7 @@ public class Calibration {
 		this.Calibcurve = Calibcurve;
 		this.curveWx = curveWx;					// value of the calibration on X
 		this.curveWy = curveWy;					// value of the calibration on Y
-		this.paramWx = paramWx;			// parameters of the calibration on X
-		this.paramWy = paramWy;			// parameters of the calibration on Y
+		this.param = param;					// parameters of the calibration on X and Y
 		tw = new TextWriter();
 	}
 	
@@ -47,8 +56,7 @@ public class Calibration {
 		Calibcurve = new double[nSlice];
 		curveWx = new double[nSlice];					// value of the calibration on X
 		curveWy = new double[nSlice];					// value of the calibration on Y
-		paramWx = new double[PARAM_1D_LENGTH];			// parameters of the calibration on X
-		paramWy = new double[PARAM_1D_LENGTH];			// parameters of the calibration on Y
+		param = new double[PARAM_LENGTH];				// parameters of the calibration on X and Y
 	}
 	
 	///////////////////////////////////////// Setters and getters
@@ -92,20 +100,6 @@ public class Calibration {
 	}
 	public double[] getCalibcurve(){
 		return Calibcurve;
-	}
-
-	public void setparamWx(double[] paramWx){
-		this.paramWx = paramWx;
-	}
-	public double[] getparamWx(){
-		return paramWx;
-	}
-
-	public void setparamWy(double[] paramWy){
-		this.paramWy = paramWy;
-	}
-	public double[] getparamWy(){
-		return paramWy;
 	}
 	
 	///////////////////////////////////////// Plot
@@ -154,18 +148,11 @@ public class Calibration {
  	    }
  	   w.process("--\n");
  	   String ps = "";
- 	   for (int j=0;j<PARAM_1D_LENGTH;j++)
- 		   ps += paramWx[j] + ", ";
+ 	   for (int j=0;j<PARAM_LENGTH;j++)
+ 		   ps += param[j] + ", ";
  	   ps = ps.substring(0,ps.length()-3);
  	   ps += "\n";
- 	   w.process(ps);
- 	   ps="";
- 	   for (int j=0;j<PARAM_1D_LENGTH;j++)
-		   ps += paramWy[j] + ", ";
- 	   ps = ps.substring(0,ps.length()-3);
- 	   ps += "\n";
-	   w.process(ps);
-	   
+ 	   w.process(ps);	   
  	   w.close();
 	}
 	
@@ -195,22 +182,14 @@ public class Calibration {
 				s = line.split(",");
 				for (int i = 0; i < s.length; i++)
 					s[i] = s[i].trim();
-				paramWx = new double[]{Double.parseDouble(s[0]),
+				param = new double[]{Double.parseDouble(s[0]),
 						Double.parseDouble(s[1]),
 						Double.parseDouble(s[2]),
 						Double.parseDouble(s[3]),
-						Double.parseDouble(s[4])};
-			}
-			if (stream.hasNext()){
-				line = stream.next();
-				s = line.split(",");
-				for (int i = 0; i < s.length; i++)
-					s[i] = s[i].trim();
-				paramWy = new double[]{Double.parseDouble(s[0]),
-						Double.parseDouble(s[1]),
-						Double.parseDouble(s[2]),
-						Double.parseDouble(s[3]),
-						Double.parseDouble(s[4])};
+						Double.parseDouble(s[4]),
+						Double.parseDouble(s[5]),
+						Double.parseDouble(s[6]),
+						Double.parseDouble(s[7])};
 			}
 			br.close();
 		} catch (IOException e) {
@@ -230,5 +209,23 @@ public class Calibration {
 		}
 		
 		Locale.setDefault(curLocale);
+	}
+
+	public double getValueWx(double z) {
+		double b = (z-param[INDEX_C])/param[INDEX_D];
+		return param[INDEX_WX]*Math.sqrt(1+b*b+param[INDEX_AX]*b*b*b+param[INDEX_BX]*b*b*b*b);
+	}
+
+	public double getValueWy(double z) {
+		double b = (z-param[INDEX_C])/param[INDEX_D];
+		return param[INDEX_WY]*Math.sqrt(1+b*b+param[INDEX_AY]*b*b*b+param[INDEX_BY]*b*b*b*b);
+	}
+
+	public double[] getparam() {
+		return param;
+	}
+	
+	public void setparam(double[] param){
+		this.param = param;
 	}
 }

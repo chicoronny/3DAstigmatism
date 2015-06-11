@@ -22,7 +22,7 @@ public class Calibrator {
 
 	/////////////////////////////
 	// Fitting parameters
-	public static int PARAM_1D_LENGTH = 5;				// Number of parameters to fit in 1D (calibration curve)
+	public static int PARAM_1D_LENGTH = 8;				// Number of parameters to fit in 1D (calibration curve)
 	public static int PARAM_2D_LENGTH = 6;				// Number of parameters to fit in 2D (elliptical gaussian)
 	int MAX_ITERATIONS_1D = 50000;
 	int MAX_ITERATIONS_2D = 3000;
@@ -127,16 +127,16 @@ public class Calibrator {
 	
 	public void fitCalibrationCurve(final ProgressDisplay progress, final double rStart, final double rEnd){	
 	       new Thread(new Runnable() {
-	            @Override
+	            
+
+				@Override
 	            public void run() {
+					double[] param = new double[PARAM_1D_LENGTH];;
 					calculateRange(rStart, rEnd);
 					progress.updateProgress(10);
 			    	
 					try{
-			    		lsq.fit1D(zgrid, Wx, paramWx, curveWx, rangeStart, rangeEnd, MAX_ITERATIONS_1D);
-						progress.updateProgress(60);
-			    		lsq.fit1D(zgrid, Wy, paramWy, curveWy, rangeStart, rangeEnd, MAX_ITERATIONS_1D);
-						progress.updateProgress(100);
+						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
 			    	} catch (TooManyEvaluationsException e) {
 			    		// Write error message												////////////////////////////////////////////////////////////////////////////////////////////////////////
 			    	}
@@ -150,8 +150,7 @@ public class Calibrator {
 					cal.setcurveWx(curveWx);
 					cal.setcurveWy(curveWy);
 					cal.setCalibcurve(Calibcurve);
-					cal.setparamWx(paramWx);
-					cal.setparamWy(paramWy);
+					cal.setparam(param);
 					
 					// Display result
 					cal.plotWxWyFitCurves();

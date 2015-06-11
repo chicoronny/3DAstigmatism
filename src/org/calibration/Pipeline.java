@@ -246,8 +246,8 @@ public class Pipeline implements Runnable {
 			double fStep = (zEnd - zStart) / refineGrid;
 			// make a finer grid and calculate z for it
 			for (double fgrid = zStart ; fgrid<=zEnd; fgrid += fStep){
-				double curveWx = valuesWith(fgrid,cal.getparamWx());
-				double curveWy = valuesWith(fgrid,cal.getparamWy());
+				double curveWx = valuesWith(fgrid,cal.getparam());
+				double curveWy = valuesWith(fgrid,cal.getparam());
 				double calib = curveWx*curveWx-curveWy*curveWy;
 				double cdistance = Math.abs(calib - SxSy);
 				if(cdistance < distance){
@@ -262,8 +262,8 @@ public class Pipeline implements Runnable {
 			double distance = Math.abs(SxSy);
 			// make a fine grid and calculate z for it
 			for (double fgrid = zStart ; fgrid<=zEnd; fgrid += fStep){
-				double curveWx = valuesWith(fgrid,cal.getparamWx());
-				double curveWy = valuesWith(fgrid,cal.getparamWy());
+				double curveWx = valuesWith(fgrid,cal.getparam());
+				double curveWy = valuesWith(fgrid,cal.getparam());
 				double calib = curveWx*curveWx-curveWy*curveWy;
 				double cdistance = Math.abs(calib - SxSy);
 				if(cdistance < distance){

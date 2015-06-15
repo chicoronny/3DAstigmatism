@@ -74,6 +74,7 @@ public class DefocusCurve {
     
     public MultivariateVectorFunction getModelFunction() {
         return new MultivariateVectorFunction() {
+    		@Override
             public double[] value(double[] params) {
                 return valuesWith(params);
             }
@@ -82,6 +83,7 @@ public class DefocusCurve {
 
     public MultivariateMatrixFunction getModelFunctionJacobian() {
         return new MultivariateMatrixFunction() {
+    		@Override
             public double[][] value(double[] params) {
                 double[][] jacobian = new double[zgrid.length][PARAM_LENGTH];
                 for (int i = 0; i < jacobian.length; ++i) {

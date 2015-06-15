@@ -24,12 +24,12 @@ public class CalibrationCurve {
 
 		length = z.length;
 		zgrid = new double[2 * length];
-		java.lang.System.arraycopy(z, 0, zgrid, 0, length);
-		java.lang.System.arraycopy(z, 0, zgrid, length, length);
+		System.arraycopy(z, 0, zgrid, 0, length);
+		System.arraycopy(z, 0, zgrid, length, length);
 
 		w = new double[2 * length];
-		java.lang.System.arraycopy(wx, 0, w, 0, length);
-		java.lang.System.arraycopy(wy, 0, w, length, length);
+		System.arraycopy(wx, 0, w, 0, length);
+		System.arraycopy(wy, 0, w, length, length);
 
 		minIndexx = findMinIndex(wx);
 		minx = wx[minIndexx];
@@ -85,7 +85,7 @@ public class CalibrationCurve {
 		return values;
 	}
 
-	public double[] valuesWith(double z[], double[] params) {
+	public static double[] valuesWith(double z[], double[] params) {
 		double[] values = new double[2 * z.length];
 		double b;
 
@@ -97,13 +97,11 @@ public class CalibrationCurve {
 			b = (z[i] - params[INDEX_C]) / params[INDEX_D];
 			values[i] = params[INDEX_WX]
 					* Math.sqrt(1 + b * b + params[INDEX_AX] * b * b * b + params[INDEX_BX] * b * b * b * b);
-			// System.out.println(values[i]);
 		}
 		for (int i = z.length; i < 2 * z.length; ++i) {
 			b = (z[i - z.length] + params[INDEX_C]) / params[INDEX_D];
 			values[i] = params[INDEX_WY]
 					* Math.sqrt(1 + b * b + params[INDEX_AY] * b * b * b + params[INDEX_BY] * b * b * b * b);
-			// System.out.println(values[i]);
 		}
 
 		return values;
@@ -111,6 +109,7 @@ public class CalibrationCurve {
 
 	public MultivariateVectorFunction getModelFunction() {
 		return new MultivariateVectorFunction() {
+			@Override
 			public double[] value(double[] params) {
 				return valuesWith(params);
 			}
@@ -119,6 +118,7 @@ public class CalibrationCurve {
 
 	public MultivariateMatrixFunction getModelFunctionJacobian() {
 		return new MultivariateMatrixFunction() {
+			@Override
 			public double[][] value(double[] params) {
 				double[][] jacobian = new double[2 * length][PARAM_LENGTH];
 				double b, denom;

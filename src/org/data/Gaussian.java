@@ -35,7 +35,7 @@ public class Gaussian {
         return params[INDEX_I0]*Ex(x,params)+params[INDEX_Bg];
     }
 	
-    public MultivariateVectorFunction getModelFunction(final int[] xgrid) {
+    public MultivariateVectorFunction getModelFunction() {
         return new MultivariateVectorFunction() {
             @Override
             public double[] value(double[] params) throws IllegalArgumentException {
@@ -48,7 +48,7 @@ public class Gaussian {
         };
     }
     
-    public MultivariateMatrixFunction getModelFunctionJacobian(final int[] xgrid) {
+    public MultivariateMatrixFunction getModelFunctionJacobian() {
         return new MultivariateMatrixFunction() {
             @Override
             public double[][] value(double[] point) throws IllegalArgumentException {

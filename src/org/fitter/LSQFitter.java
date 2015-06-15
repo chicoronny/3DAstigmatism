@@ -36,22 +36,23 @@ public class LSQFitter {
 
 	// ///////////////////////////
 	// Misc
-	public static int PARAM_1D_LENGTH = 5; // Number of parameters to fit in 1D (calibration curve)
+	public static int PARAM_1D_LENGTH = 8; // Number of parameters to fit in 1D (calibration curve)
 	public static int PARAM_2D_LENGTH = 6; // Number of parameters to fit in 2D (elliptical gaussian)
-
+	public static int PARAM_3D_LENGTH = 5; // Number of parameters to fit in 2D (elliptical gaussian with z)	
+	
 	public LSQFitter() {
 	}
 
 	// Builder
 	public LeastSquaresBuilder builder(EllipticalGaussian problem) {
 		LeastSquaresBuilder builder = new LeastSquaresBuilder();
-		builder.model(problem.getModelFunction(xgrid, ygrid), problem.getModelFunctionJacobian(xgrid, ygrid));
+		builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
 		return builder;
 	}
 
-	public LeastSquaresBuilder builder(Gaussian problem, int[] grid) {
+	public LeastSquaresBuilder builder(Gaussian problem) {
 		LeastSquaresBuilder builder = new LeastSquaresBuilder();
-		builder.model(problem.getModelFunction(grid), problem.getModelFunctionJacobian(grid));
+		builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
 		return builder;
 	}
 
@@ -63,7 +64,7 @@ public class LSQFitter {
 
 	public LeastSquaresBuilder builder(EllipticalGaussianZ problem) {
 		LeastSquaresBuilder builder = new LeastSquaresBuilder();
-		builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
+		builder.model(problem.getModelFunction(xgrid,ygrid), problem.getModelFunctionJacobian(xgrid,xgrid));
 		return builder;
 	}
 	
@@ -100,7 +101,7 @@ public class LSQFitter {
 			param[i] = result[i];
 
 		// Copy the fitted curve values
-		double[] values = problem.valuesWith(z, result);
+		double[] values = CalibrationCurve.valuesWith(z, result);
 
 		for (int i = 0; i < curvex.length; i++) {
 			curvex[i] = values[i];
@@ -111,7 +112,7 @@ public class LSQFitter {
 	// ///////////////////////////////////////////////////////////////////////////
 	// / 1D fit: Defocus Curve
 
-	public void fit1D(double[] z, double[] w, double[] param, double[] curve, int rStart, int rEnd, int maxIter) {
+	/*public void fit1D(double[] z, double[] w, double[] param, double[] curve, int rStart, int rEnd, int maxIter) {
 
 		double[] rangedZ = new double[rEnd - rStart + 1];
 		double[] rangedW = new double[rEnd - rStart + 1];
@@ -144,7 +145,7 @@ public class LSQFitter {
 			rangedZ[i] = z[rStart + i];
 			rangedW[i] = w[rStart + i];
 		}
-	}
+	}*/
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// / 2D fit: Elliptical Gaussian
@@ -184,7 +185,7 @@ public class LSQFitter {
 		}
 	}
 
-	public double[] fit2Dsingle(ImageProcessor ip, Roi roi, int maxIter) {
+	public double[] fit2Dsingle(ImageProcessor ip, Roi roi, int maxIter, int maxEval) {
 
 		createGrids(ip, roi);
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
@@ -193,7 +194,7 @@ public class LSQFitter {
 
 		try {
 			final Optimum optimum = optimizer.optimize(builder(eg).target(Ival).checkerPair(new ConvChecker2DGauss())
-					.start(eg.getInitialGuess(ip, roi)).maxIterations(maxIter).maxEvaluations(maxIter).build());
+					.start(eg.getInitialGuess(ip, roi)).maxIterations(maxIter).maxEvaluations(maxEval).build());
 
 			fittedEG = optimum.getPoint().toArray();
 			double[] result = new double[4];
@@ -224,11 +225,11 @@ public class LSQFitter {
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 
 		try {
-			final Optimum optimumx = optimizer.optimize(builder(egx, xgrid).target(Ivalx)
-			// .checkerPair(new ConvChecker1DGauss())
-					.start(egx.getInitialGuess(ip, roi, 0)).maxIterations(maxIter).maxEvaluations(maxEval).build());
+			final Optimum optimumx = optimizer.optimize(builder(egx).target(Ivalx)
+					.checkerPair(new ConvChecker1DGauss()).start(egx.getInitialGuess(ip, roi, 0))
+					.maxIterations(maxIter).maxEvaluations(maxEval).build());
 
-			final Optimum optimumy = optimizer.optimize(builder(egy, ygrid).target(Ivaly)
+			final Optimum optimumy = optimizer.optimize(builder(egy).target(Ivaly)
 					.checkerPair(new ConvChecker1DGauss()).start(egy.getInitialGuess(ip, roi, 1))
 					.maxIterations(maxIter).maxEvaluations(maxEval).build());
 
@@ -240,20 +241,11 @@ public class LSQFitter {
 			result[0] = fittedGx[0];
 			result[1] = fittedGy[0];
 
-			// ////////////////////////////////////////////////////////
 			// erf is symmetrical with respect to (sx,sy)->(-sx,-sy) /// how to get the convergence for strictly
 			// positive sigmas??
 			//
-			if (fittedGx[1] < 0) {
-				result[2] = -fittedGx[1];
-			} else {
-				result[2] = fittedGx[1];
-			}
-			if (fittedGy[1] < 0) {
-				result[3] = -fittedGy[1];
-			} else {
-				result[3] = fittedGy[1];
-			}
+			result[2] = Math.abs(fittedGx[1]);
+			result[3] = Math.abs(fittedGy[1]);
 			return result;
 
 		} catch (TooManyEvaluationsException e) {
@@ -263,10 +255,10 @@ public class LSQFitter {
 	}
 
 	// / 3D fit: Elliptical Gaussian with Z
-	public double[] fit3D(ImageProcessor ip, Roi roi, Calibration cal, int counter, int maxIter, int maxEval) {
+	public double[] fit3D(ImageProcessor ip, Roi roi, Calibration cal, int maxIter, int maxEval) {
 
 		createGrids(ip, roi);
-		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, cal);
+		EllipticalGaussianZ eg = new EllipticalGaussianZ(cal);
 
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 
@@ -386,9 +378,11 @@ public class LSQFitter {
 			double[] p = previous.getPoint();
 			double[] c = current.getPoint();
 
-			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5 && Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1
-					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 && Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.02
-					&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.08) {
+			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5 
+				&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1
+				&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 
+				&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.02
+				&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.08) {
 				lastResult_ = true;
 				return true;
 			}
@@ -419,9 +413,12 @@ public class LSQFitter {
 			double[] p = previous.getPoint();
 			double[] c = current.getPoint();
 
-			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 10 && Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 2
-					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.1 && Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.1
-					&& Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 3 && Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 3) {
+			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 10 
+				&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 2
+				&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.1 
+				&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.1
+				&& Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 3 
+				&& Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 3) {
 				lastResult_ = true;
 				return true;
 			}
@@ -450,8 +447,10 @@ public class LSQFitter {
 			double[] p = previous.getPoint();
 			double[] c = current.getPoint();
 
-			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5 && Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1
-					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 && Math.abs(p[INDEX_SX] - c[INDEX_SX]) < .1) {
+			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5 
+				&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1
+				&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 
+				&& Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 0.1) {
 				lastResult_ = true;
 				return true;
 			}

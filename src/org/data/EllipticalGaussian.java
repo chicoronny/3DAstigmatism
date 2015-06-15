@@ -41,7 +41,7 @@ public class EllipticalGaussian {
     }
 
 	
-    public MultivariateVectorFunction getModelFunction(final int[] xgrid, final int[] ygrid) {
+    public MultivariateVectorFunction getModelFunction() {
         return new MultivariateVectorFunction() {
             @Override
             public double[] value(double[] params) throws IllegalArgumentException {
@@ -54,7 +54,7 @@ public class EllipticalGaussian {
         };
     }
     
-    public MultivariateMatrixFunction getModelFunctionJacobian(final int[] xgrid, final int[] ygrid) {
+    public MultivariateMatrixFunction getModelFunctionJacobian() {
         return new MultivariateMatrixFunction() {
             @Override
             public double[][] value(double[] point) throws IllegalArgumentException {

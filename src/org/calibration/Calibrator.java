@@ -7,7 +7,6 @@ import org.fitter.LSQFitter;
 import org.graphics.ChartBuilder;
 import org.swing.ProgressDisplay;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -55,7 +54,6 @@ public class Calibrator {
 	
 	/////////////////////////////
 	// Tests
-	double[] WxC, WyC, Wx1DG, Wy1DG, Wx2DG, Wy2DG; 
     
 	public Calibrator(ImagePlus im, double zstep, Roi r){
 		this.is = im.getStack();
@@ -78,17 +76,7 @@ public class Calibrator {
     	curveWy = new double[nSlice];					// value of the calibration on Y
     	paramWx = new double[PARAM_1D_LENGTH];			// parameters of the calibration on X
     	paramWy = new double[PARAM_1D_LENGTH];			// parameters of the calibration on Y
-    	
-    	
-    	//////////////////////////
-    	// test
-    	WxC = new double[nSlice];						
-    	WyC = new double[nSlice];	
-    	Wx1DG = new double[nSlice];						
-    	Wy1DG = new double[nSlice];	
-    	Wx2DG = new double[nSlice];						
-    	Wy2DG = new double[nSlice];						
-    	
+ 
     	cal = new Calibration();
 	}
 	
@@ -102,7 +90,7 @@ public class Calibrator {
             public void run() {
             	for(int i=0;i<nSlice;i++){
             		ImageProcessor ip = is.getProcessor(i+1);
-            		lsq.fit2D(ip,roi,Wx,Wy,i,1000,1000);
+            		lsq.fit2D(ip,roi,Wx,Wy,i,3000,1000);
             		try{
             			progress.updateProgress(i);
             		} catch (NullPointerException ne){
@@ -127,7 +115,6 @@ public class Calibrator {
 	
 	public void fitCalibrationCurve(final ProgressDisplay progress, final double rStart, final double rEnd){	
 	       new Thread(new Runnable() {
-	            
 
 				@Override
 	            public void run() {
@@ -138,7 +125,7 @@ public class Calibrator {
 					try{
 						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
 			    	} catch (TooManyEvaluationsException e) {
-			    		// Write error message												////////////////////////////////////////////////////////////////////////////////////////////////////////
+			    		System.err.println("Too many evaluations!");				
 			    	}
 			
 					// sx2-sy2
@@ -173,10 +160,6 @@ public class Calibrator {
 		cal.saveAsCSV(path);
 	}
 	
-	public void saveCSV(String path){
-		cal.saveAsCSV(IJ.getDirectory("image")+"_" + path);
-	}
-
 	//////////////////////////////////////////////////////////////
 	// Misc functions
 	public Calibration getCalibration(){
@@ -232,9 +215,8 @@ public class Calibrator {
 	}
 	
 	private void createZgrid(double[] z, int offset){
-		for(int i=0;i<z.length;i++){
+		for(int i=0;i<z.length;i++)
 			z[i] = (i-offset)*zstep;
-		}
 	}
 	
 	private void calculateRange(double rStart, double rEnd){
@@ -255,10 +237,6 @@ public class Calibrator {
 		this.rangeStart = iStart;
 		this.rangeEnd = iEnd;
 		this.rangeSize = iEnd-iStart+1;
-
-		//System.out.println(rangeStart);
-		//System.out.println(rangeEnd);
-		//System.out.println(rangeSize);
 	}
 }
 

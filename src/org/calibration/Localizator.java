@@ -187,7 +187,7 @@ public class Localizator {
 			wy[i][1] = results[3]; 
 			
 			startTime = System.nanoTime();
-			results= lsq.fit2Dsingle(is.getProcessor(p.getSlice()), new Roi(xstart, ystart, xend-xstart, yend-ystart), 100000);
+			results= lsq.fit2Dsingle(is.getProcessor(p.getSlice()), new Roi(xstart, ystart, xend-xstart, yend-ystart), 100000, 100000);
 			endTime = System.nanoTime();
 			duration = (endTime - startTime)/1000000; 
 			//System.out.println(duration);

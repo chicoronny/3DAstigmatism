@@ -39,20 +39,22 @@ public class Pipeline implements Runnable {
 	private Map<Integer,Double> thresholds;
 	
 	private static int CENTROID = 0;
-	private static int LSQ = 1;
-	private static int LSQCONV = 2;
-	
-	public static int INDEX_W0 = 0;
-	public static int INDEX_A = 1;
-	public static int INDEX_B = 2;
-	public static int INDEX_C = 3;
-	public static int INDEX_D = 4;
+	private static int LSQ2D = 1;
+	private static int LSQ1DG = 2;
+	private static int LSQ3D = 3;
+	public static int INDEX_WX = 0;
+	public static int INDEX_WY = 1;
+	public static int INDEX_AX = 2;
+	public static int INDEX_AY = 3;
+	public static int INDEX_BX = 4;
+	public static int INDEX_BY = 5;
+	public static int INDEX_C = 6;
+	public static int INDEX_D = 7;
 	
 	private Properties props;
 	private int maxIter;
 	private int maxEval;
 	private Calibration cal;
-	private int refineGrid;
 	private int numThreads = Runtime.getRuntime().availableProcessors();
 	
 	public Pipeline(String path) {
@@ -192,20 +194,25 @@ public class Pipeline implements Runnable {
 									new Roi(xstart, ystart, xend-xstart, yend-ystart),
 									thresholds.get(p.getSlice()).intValue());
 						
-						if (fitterType==LSQ)
+						if (fitterType==LSQ2D)
 							results= lsq.fit2Dsingle(is.getProcessor(p.getSlice()), 
-									new Roi(xstart, ystart, xend-xstart, yend-ystart), maxIter);
+									new Roi(xstart, ystart, xend-xstart, yend-ystart), maxIter, 3*maxEval);
 						
-						if (fitterType==LSQCONV)
+						if (fitterType==LSQ1DG)
 							results= lsq.fit1DGsingle(is.getProcessor(p.getSlice()), 
 									new Roi(xstart, ystart, xend-xstart, yend-ystart), maxIter, maxEval);
 						
-						p.setSX(results[2]);
-						p.setSY(results[3]);
-						
-						double SxSy = results[2]*results[2] - results[3]*results[3];			
-						
-						fitted.add(new FittedPeak(p,results[0],results[1], calculateZ(SxSy)));
+						if (fitterType==LSQ3D){
+							results= lsq.fit3D(is.getProcessor(p.getSlice()), 
+									new Roi(xstart, ystart, xend-xstart, yend-ystart), cal,  maxIter, maxEval);
+							if (results!=null)
+								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),(int) results[3],0,0,results[0],results[1],results[2]));
+						} else {
+							if (results!=null){
+								double SxSy = results[2]*results[2] - results[3]*results[3];			
+								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy)));
+							}
+						}
 					}
 				}
 			};
@@ -219,67 +226,64 @@ public class Pipeline implements Runnable {
 	private double calculateZ(final double SxSy){
 		final double[] curve = cal.getCalibcurve();
 		final double[] zgrid = cal.getZgrid();
+		double result = 0;
 		final int end = curve.length-1;
-		if(end<1) return 0;
-		final double zStep = Math.abs(zgrid[0]-zgrid[1]);
-		double max = Double.MIN_VALUE;
-		for (double i : zgrid) 
-			max = Math.max(max, i);
-		double min = Double.MAX_VALUE;
-		for (double i : zgrid) 
-			min = Math.min(min, i);
-		double result = (max-min)/2 + min;
+		if(end < 1) return result;
+		if(curve.length != zgrid.length) return result;
 		
 		// reuse calibration curve -- we can use this as starting point
-		if (SxSy>Math.min(curve[0],curve[end]) && SxSy<Math.max(curve[0],curve[end])){
-			double distance = Math.abs(curve[0] - SxSy);
-			int idx = 0;
-			for(int c = 1; c < curve.length; c++){
-			    double cdistance = Math.abs(curve[c] - SxSy);
-			    if(cdistance < distance){
-			        idx = c;
-			        distance = cdistance;
-			    }
-			}
-			double zStart = zgrid[idx] - zStep;
-			double zEnd =   zgrid[idx] + zStep;
-			double fStep = (zEnd - zStart) / refineGrid;
-			// make a finer grid and calculate z for it
-			for (double fgrid = zStart ; fgrid<=zEnd; fgrid += fStep){
-				double curveWx = valuesWith(fgrid,cal.getparam());
-				double curveWy = valuesWith(fgrid,cal.getparam());
-				double calib = curveWx*curveWx-curveWy*curveWy;
-				double cdistance = Math.abs(calib - SxSy);
-				if(cdistance < distance){
-					distance = cdistance;
-					result = fgrid;
-				}
-			}
-		} else {
-			double zStart = 0 - zStep;
-			double zEnd =   0 + zStep;
-			double fStep = (zEnd - zStart) / (zgrid.length * refineGrid);
-			double distance = Math.abs(SxSy);
-			// make a fine grid and calculate z for it
-			for (double fgrid = zStart ; fgrid<=zEnd; fgrid += fStep){
-				double curveWx = valuesWith(fgrid,cal.getparam());
-				double curveWy = valuesWith(fgrid,cal.getparam());
-				double calib = curveWx*curveWx-curveWy*curveWy;
-				double cdistance = Math.abs(calib - SxSy);
-				if(cdistance < distance){
-					distance = cdistance;
-					result = fgrid;
-				}
-			}
-		}	
+		if (SxSy > Math.min(curve[0],curve[end]) && SxSy < Math.max(curve[0],curve[end]))
+			result = calcIterZ(SxSy, Math.min(zgrid[0],zgrid[end]), Math.max(zgrid[0],zgrid[end]), 1e-4);
+		else 
+			result = calcIterZ(SxSy, -1e6, 1e6, 1e-4);
 		return result;
 	}
 	
-	private double valuesWith(double input, double[] params) {
-        double b = (input-params[INDEX_C])/params[INDEX_D];
+	/*private double valuesWith(double z, double[] params) {
+        double b = (z-params[INDEX_C])/params[INDEX_D];
     	double value = params[INDEX_W0]*Math.sqrt(1+b*b+params[INDEX_A]*b*b*b+params[INDEX_B]*b*b*b*b);
         return value;
-    }
+    }*/
+	
+	private double calcIterZ(double SxSy, double start, double end, double precision) {
+		double zStep = Math.abs(end-start)/10;
+		double curveWx = valuesWith(start,cal.getparam())[0];
+		double curveWy = valuesWith(start,cal.getparam())[1];
+		double calib = curveWx*curveWx-curveWy*curveWy;
+		double distance = Math.abs(calib - SxSy);
+		double idx = start;
+		for ( double c = start+zStep ; c<=end; c += zStep){
+			curveWx = valuesWith(c,cal.getparam())[0];
+			curveWy = valuesWith(c,cal.getparam())[1];
+			calib = curveWx*curveWx-curveWy*curveWy;
+		    double cdistance = Math.abs(calib - SxSy);
+		    if(cdistance < distance){
+		        idx = c;
+		        distance = cdistance;
+		    }
+		}
+		if (zStep<=precision) 
+			return idx;
+		else
+			return calcIterZ(SxSy,idx - zStep, idx + zStep, precision);
+	}
+
+	// with 8 Parameters
+	private double[] valuesWith(double z, double[] params) {
+		double[] values = new double[2];
+		double b;
+		
+		b = (z - params[INDEX_C]) / params[INDEX_D];
+		values[0] = params[INDEX_WX]
+				* Math.sqrt(1 + b * b + params[INDEX_AX] * b * b * b + params[INDEX_BX] * b * b * b * b);
+	
+	
+		b = (z + params[INDEX_C]) / params[INDEX_D];
+		values[1] = params[INDEX_WY]
+				* Math.sqrt(1 + b * b + params[INDEX_AY] * b * b * b + params[INDEX_BY] * b * b * b * b);
+		
+		return values;
+	}
 	
 	
 	private void getThresholds(){
@@ -323,19 +327,23 @@ public class Pipeline implements Runnable {
 		cal.readCSV(props.getProperty("calibrationFile", "calib.csv"));
 		maxIter = Integer.parseInt(props.getProperty("maxIter", "1000"));
 		maxEval = Integer.parseInt(props.getProperty("maxEval", "1000"));
-		refineGrid = Integer.parseInt(props.getProperty("refineGrid", "11"));
+		long start = System.currentTimeMillis();
 		loadImages(props.getProperty("startPath", "."));
+		System.out.println("1-Load:" + (System.currentTimeMillis()-start));
 		ImagePlus imMedian = medianFilter(Integer.parseInt(props.getProperty("filterSize", "5")));
 		ImageCalculator calcul = new ImageCalculator(); 
  	    calcul.run("Substract", img, imMedian);
+ 	    System.out.println("2-Median:" + (System.currentTimeMillis()-start));
  	    List<Peak> peaks = NMSFinder(Integer.parseInt(props.getProperty("gridSize", "5")),
  	    		Integer.parseInt(props.getProperty("maxNumPeaks", "300")));
- 	    List<FittedPeak> fitted = fitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "10")), LSQCONV);
+ 	    System.out.println("3-Peaks:" + (System.currentTimeMillis()-start));
+ 	    List<FittedPeak> fitted = fitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "10")), LSQ1DG);
+ 	    System.out.println("4-Fitter:" + (System.currentTimeMillis()-start));
  	    csvWriter w = new csvWriter(new File(props.getProperty("ouputPath", ".")));
  	    for (FittedPeak p:fitted)
  	    	w.process(p.toString());
  	    w.close();
- 	   System.out.println("wrote result to file: " + props.getProperty("ouputPath"));
+ 	    System.out.println("5 - wrote result to file: " + props.getProperty("ouputPath"));
 	}
 
 }

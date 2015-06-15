@@ -11,15 +11,15 @@ public class FittedPeak extends Peak {
 		z_ = z;
 	}
 
-	public FittedPeak(int n, int x, int y, int value, double fitX, double fitY, double z) {
-		super(n, x, y, value);
+	public FittedPeak(int slice, int x, int y, int value, double fitX, double fitY, double z) {
+		super(slice, x, y, value);
 		this.fitX = fitX;
 		this.fitY = fitY;
 		z_ = z;
 	}
 
-	public FittedPeak(int x, int y, double sx, double sy, int slice, int value, double fitX, double fitY, double z) {
-		super(x, y, sx, sy, slice, value);
+	public FittedPeak(int slice, int x, int y, int value, double sx, double sy, double fitX, double fitY, double z) {
+		super(slice, x, y, value, sx, sy);
 		this.fitX = fitX;
 		this.fitY = fitY;
 		z_ = z;
@@ -33,7 +33,7 @@ public class FittedPeak extends Peak {
 	}
 	
 	public String toString(){
-		String s = "" + getX() + "," + getY()+ "," + getValue() + fitX + "," + fitY+ "," + z_ + "\n";
+		String s = "" +  getID() + "," + getX() + "," + getY()+ "," + getValue() + "," + fitX + "," + fitY+ "," + z_ + "\n";
 		return s;
 	}
 

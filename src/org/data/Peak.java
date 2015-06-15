@@ -3,6 +3,8 @@ package org.data;
 public class Peak {
 	private int x_,y_,value_, n_;
 	private double sx_,sy_;
+	private long ID;
+	static private long curID = 0;
 	
 	public Peak(int x, int y, int value){
 		x_ = x;
@@ -11,24 +13,27 @@ public class Peak {
 		sy_ = 0;
 		n_ = 1;
 		value_ = value;
+		ID=curID++;
 	}
 	
-	public Peak(int n, int x, int y, int value){
+	public Peak(int slice, int x, int y, int value){
 		x_ = x;
 		y_ = y;
 		sx_ = 0;
 		sy_ = 0;
-		n_ = n;
+		n_ = slice;
 		value_ = value;
+		ID=curID++;
 	}
 	
-	public Peak(int x, int y, double sx, double sy, int slice, int value){
+	public Peak(int slice, int x, int y, int value, double sx, double sy){
 		x_ = x;
 		y_ = y;
 		sx_ = sx;
 		sy_ = sy;
 		n_ = slice;
 		value_ = value;
+		ID=curID++;
 	}
 	
 	public Peak(Peak p){
@@ -38,6 +43,7 @@ public class Peak {
 		sy_ = p.getSY();
 		n_ = p.getSlice();
 		value_ = p.getValue();
+		ID=curID++;
 	}
 
 	public void set(int x, int y, int value){
@@ -110,6 +116,10 @@ public class Peak {
 	
 	public int getValue(){
 		return value_;
+	}
+	
+	public long getID(){
+		return ID;
 	}
 
 	public void print(){

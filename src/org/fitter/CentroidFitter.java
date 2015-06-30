@@ -20,6 +20,7 @@ public class CentroidFitter {
 		
 		// Copy the ImageProcessor and carry on threshold
 		ImageProcessor ip = ip_.duplicate();
+		ip.setRoi(roi);
 		ip.autoThreshold();
 		
 		// Find centroid
@@ -39,15 +40,12 @@ public class CentroidFitter {
 		return centroid;
 	}
 	
-	public double[] fitCentroid(ImageProcessor ip_, Roi roi){
+	public double[] fitCentroid(ImageProcessor ip, Roi roi){
 		double[] centroid = new double[2];
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
 		int xstart = (int) roi.getXBase();
 		int ystart = (int) roi.getYBase();
-		
-		// Copy the ImageProcessor and carry on threshold
-		ImageProcessor ip = ip_.duplicate();
 		
 		// Find centroid
 		double sum = 0;
@@ -66,15 +64,13 @@ public class CentroidFitter {
 		return centroid;
 	}
 	
-	public double[] fitCentroidandWidth(ImageProcessor ip_, Roi roi, int threshold){
+	public static double[] fitCentroidandWidth(ImageProcessor ip, Roi roi, int threshold){
 		double[] centroid = new double[4];
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
 		int xstart = (int) roi.getXBase();
 		int ystart = (int) roi.getYBase();
 		
-		// Copy the ImageProcessor and carry on threshold
-		ImageProcessor ip = ip_.duplicate();
 		int thrsh = threshold;
 		
 		// Find centroid and widths
@@ -117,7 +113,7 @@ public class CentroidFitter {
 			stdx += Ivalx[i]*(xstart+i-centroid[0])*(xstart+i-centroid[0]);
 		}
 		stdx /= sumx;
-		stdx = Math.sqrt(stdx);
+		stdx = Math.sqrt(stdx)*.5;
 		centroid[2] = stdx;
 
 		double sumy=0, stdy=0;
@@ -126,7 +122,7 @@ public class CentroidFitter {
 			stdy += Ivaly[i]*(ystart+i-centroid[1])*(ystart+i-centroid[1]);
 		}
 		stdy /= sumy;
-		stdy = Math.sqrt(stdy);
+		stdy = Math.sqrt(stdy)*.5;
 		centroid[3] = stdy;
 
 		

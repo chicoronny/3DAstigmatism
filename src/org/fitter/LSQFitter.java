@@ -4,6 +4,9 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 
+
+
+
 // Plugin classes
 import org.data.Calibration;
 import org.data.CalibrationCurve;
@@ -11,6 +14,7 @@ import org.data.DefocusCurve;
 import org.data.EllipticalGaussian;
 import org.data.EllipticalGaussianZ;
 import org.data.Gaussian;
+import org.apache.commons.math3.exception.ConvergenceException;
 // Apache commons
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.exception.TooManyIterationsException;
@@ -21,6 +25,7 @@ import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.util.Precision;
 
 /**
  * Least-Squares fitting class. Based on apache.commons LSQ fitter and Levenberg-Marquardt optimization.
@@ -189,29 +194,23 @@ public class LSQFitter {
 
 		createGrids(ip, roi);
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
-
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
-
+		double[] result = new double[4];
 		try {
 			final Optimum optimum = optimizer.optimize(builder(eg).target(Ival).checkerPair(new ConvChecker2DGauss())
 					.start(eg.getInitialGuess(ip, roi)).maxIterations(maxIter).maxEvaluations(maxEval).build());
 
 			fittedEG = optimum.getPoint().toArray();
-			double[] result = new double[4];
-
-			result[0] = fittedEG[0];
-			result[1] = fittedEG[1];
-			// erf is symmetrical with respect to (sx,sy)->(-sx,-sy) /// how to get the convergence for strictly
-			// positive sigmas??
-			result[2] = Math.abs(fittedEG[2]);
-			result[3] = Math.abs(fittedEG[3]);
-
-			return result;
-
-		} catch (TooManyEvaluationsException e) {
-			System.err.println("Too many evaluations");
+		} catch (TooManyEvaluationsException | ConvergenceException e) {
+			//System.err.println("Too many evaluations");
 			return null;
 		}
+		
+		result[0] = fittedEG[0];
+		result[1] = fittedEG[1];
+		result[2] = Math.abs(fittedEG[2]);
+		result[3] = Math.abs(fittedEG[3]);
+		return result;
 	}
 
 	// ///////////////////////////////////////////////////////////////////////////
@@ -259,10 +258,8 @@ public class LSQFitter {
 
 		createGrids(ip, roi);
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(cal);
-
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
-
-		double[] results;
+		double[] results = new double[4];
 
 		try {
 			final Optimum optimum = optimizer.optimize(builder(eg).target(Ival).checkerPair(new ConvChecker3DGauss())
@@ -281,7 +278,26 @@ public class LSQFitter {
 		}
 		return results;
 	}
+	
+	// Misc Functions	
+	public void createGrids(ImageProcessor ip, Roi roi) {
+		int rwidth = (int) roi.getFloatWidth();
+		int rheight = (int) roi.getFloatHeight();
+		int xstart = (int) roi.getXBase();
+		int ystart = (int) roi.getYBase();
 
+		xgrid = new int[rwidth * rheight];
+		ygrid = new int[rwidth * rheight];
+		Ival = new double[rwidth * rheight];
+		for (int i = 0; i < rheight; i++) {
+			for (int j = 0; j < rwidth; j++) {
+				ygrid[i * rwidth + j] = i + ystart;
+				xgrid[i * rwidth + j] = j + xstart;
+				Ival[i * rwidth + j] = ip.get(j + xstart, i + ystart);
+			}
+		}
+	}
+	
 	private void createProjGrids(ImageProcessor ip, Roi roi) {
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
@@ -332,32 +348,17 @@ public class LSQFitter {
 		System.out.println("--- " + fittedGy[3]);
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////
-	// / Misc Functions
-	public void createGrids(ImageProcessor ip, Roi roi) {
-		int rwidth = (int) roi.getFloatWidth();
-		int rheight = (int) roi.getFloatHeight();
-		int xstart = (int) roi.getXBase();
-		int ystart = (int) roi.getYBase();
-
-		xgrid = new int[rwidth * rheight];
-		ygrid = new int[rwidth * rheight];
-		Ival = new double[rwidth * rheight];
-		for (int i = 0; i < rheight; i++) {
-			for (int j = 0; j < rwidth; j++) {
-				ygrid[i * rwidth + j] = i + ystart;
-				xgrid[i * rwidth + j] = j + xstart;
-				Ival[i * rwidth + j] = ip.get(j + xstart, i + ystart);
-			}
-		}
-	}
-
 	public LevenbergMarquardtOptimizer getOptimizer() {
-		return new LevenbergMarquardtOptimizer();
+		final double initialStepBoundFactor = 100;
+		final double costRelativeTolerance = 1e-10;
+		final double parRelativeTolerance = 1e-10;
+		final double orthoTolerance = 1e-10;
+		final double threshold = Precision.SAFE_MIN;
+        return new LevenbergMarquardtOptimizer(initialStepBoundFactor,
+				costRelativeTolerance, parRelativeTolerance, orthoTolerance, threshold);
 	}
 
 	// Convergence Checker
-
 	private class ConvChecker3DGauss implements ConvergenceChecker<PointVectorValuePair> {
 
 		int iteration_ = 0;
@@ -406,24 +407,23 @@ public class LSQFitter {
 
 		@Override
 		public boolean converged(int i, PointVectorValuePair previous, PointVectorValuePair current) {
-			if (i == iteration_)
-				return lastResult_;
-
-			iteration_ = i;
-			double[] p = previous.getPoint();
-			double[] c = current.getPoint();
-
-			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 10 
-				&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 2
-				&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.1 
-				&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.1
-				&& Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 3 
-				&& Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 3) {
-				lastResult_ = true;
-				return true;
-			}
-
-			lastResult_ = false;
+	         if (i == iteration_)
+	             return lastResult_;
+	          
+	          iteration_ = i;
+	          double[] p = previous.getPoint();
+	          double[] c = current.getPoint();
+	          
+	          if ( Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5  &&
+	                  Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1 &&
+	                  Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 &&
+	                  Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.02 &&
+	                  Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 2 &&
+	                  Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 2 ) {
+	             lastResult_ = true;
+	             return true;
+	          }
+	        lastResult_ = false;
 			return false;
 		}
 	}

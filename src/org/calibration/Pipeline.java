@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -31,6 +32,7 @@ import org.data.csvWriter;
 import org.filters.MedianFilter;
 import org.filters.NMS;
 import org.fitter.CentroidFitter;
+import org.fitter.Gaussian2DFitter;
 import org.fitter.LSQFitter;
 
 public class Pipeline implements Runnable {
@@ -155,9 +157,54 @@ public class Pipeline implements Runnable {
 		return peaks;
 	}
 	
+	private List<FittedPeak> gaussian2DFitter(List<Peak> peaks, int size){
+		
+		List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
+		final ImageStack is = img.getStack();
+		int nSlices = is.getSize();
+		final Vector< Chunk > chunks = divideIntoChunks( nSlices, numThreads  );
+		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
+		for ( int i = 0; i < threads.length; i++ ){
+			final Chunk chunk = chunks.get( i );
+			threads[ i ] = new Thread( "FitterChunk " + i ){
+				@Override
+				public void run(){	
+					for (long j = 0;j<chunk.getLoopSize();j++){
+						long frame = chunk.getStartPosition() + j;
+	
+						List<Peak> slicePeaks = peaks.stream()
+							.filter(peak -> peak.getSlice() == frame).collect(Collectors.toList());
+						
+						if (slicePeaks.isEmpty()) continue;
+						
+						ImageProcessor ip = is.getProcessor((int) frame);
+						
+						for (Peak p : slicePeaks) {
+							final Roi origroi = new Roi(p.getX() - size, p.getY() - size, 2*size+1, 2*size+1);
+							final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+							Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
+							double[] results = null;
+							results = gf.fit();
+							if (results!=null){
+								double SxSy = results[2]*results[2] - results[3]*results[3];			
+								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy)));
+							}
+						}
+					}
+					
+				}
+			};
+		}
+		
+		ThreadUtil.startAndJoin(threads);
+		System.out.println("Peaks fitted: " + fitted.size());
+		return fitted;
+	}
+	
+	
+	@SuppressWarnings("unused")
 	private List<FittedPeak> fitter(List<Peak> peaks, int roi_size, int fitterType){
 		final LSQFitter lsq = new LSQFitter();
-		final CentroidFitter cf = new CentroidFitter();
 		
 		final ImageStack is = img.getStack();
 		final int width = img.getWidth();
@@ -190,7 +237,7 @@ public class Pipeline implements Runnable {
 							yend = height-1;
 						
 						if (fitterType==CENTROID)
-							results = cf.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
+							results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
 									new Roi(xstart, ystart, xend-xstart, yend-ystart),
 									thresholds.get(p.getSlice()).intValue());
 						
@@ -337,7 +384,8 @@ public class Pipeline implements Runnable {
  	    List<Peak> peaks = NMSFinder(Integer.parseInt(props.getProperty("gridSize", "5")),
  	    		Integer.parseInt(props.getProperty("maxNumPeaks", "300")));
  	    System.out.println("3-Peaks:" + (System.currentTimeMillis()-start));
- 	    List<FittedPeak> fitted = fitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "10")), LSQ1DG);
+ 	    //List<FittedPeak> fitted = fitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "5")), LSQ2D);
+ 	    List<FittedPeak> fitted = gaussian2DFitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "5")));
  	    System.out.println("4-Fitter:" + (System.currentTimeMillis()-start));
  	    csvWriter w = new csvWriter(new File(props.getProperty("ouputPath", ".")));
  	    for (FittedPeak p:fitted)

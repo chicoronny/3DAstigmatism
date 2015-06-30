@@ -1,8 +1,11 @@
 package org.calibration;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.data.Calibration;
 import org.data.TextWriter;
+import org.fitter.Gaussian2DFitter;
 import org.fitter.LSQFitter;
 import org.graphics.ChartBuilder;
 import org.swing.ProgressDisplay;
@@ -11,6 +14,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
+import ij.util.ThreadUtil;
 
 /**
 * This class handle the calibration by calling the various method of the fitter. Each fit runs on a dedicated thread to allow updating of the GUI.
@@ -29,8 +33,9 @@ public class Calibrator {
 	
 	/////////////////////////////
 	// Results
-	double[] zgrid;										// z positions of the slices in the stack
-	double[] Wx, Wy, Calibcurve, paramWx, paramWy;		// 1D and 2D fit results
+	double[] zgrid;									// z positions of the slices in the stack
+	volatile double[] Wx, Wy; 
+	double[] Calibcurve, paramWx, paramWy;		// 1D and 2D fit results
 	double[] curveWx, curveWy;							// quadratically fitted curves
 	int indexZ0;										// Slice number of the focus
     
@@ -42,7 +47,7 @@ public class Calibrator {
 	// Input from user
     double zstep;
     int rangeStart, rangeEnd, rangeSize;	// Both ends of the restricted z range and length of the restriction
-    Roi roi;
+    volatile Roi roi;
     
 	/////////////////////////////
 	// Misc
@@ -77,40 +82,53 @@ public class Calibrator {
     	paramWx = new double[PARAM_1D_LENGTH];			// parameters of the calibration on X
     	paramWy = new double[PARAM_1D_LENGTH];			// parameters of the calibration on Y
  
-    	cal = new Calibration();
+    	cal = new Calibration(zgrid, Wx, Wy, curveWx, curveWy, Calibcurve, paramWx);
 	}
 	
 	
-	//////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////
 	// 1D and 2D fits
-	public void fitStack(final ProgressDisplay progress){
+	public void fitStack(final ProgressDisplay progress) {
+
+		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors());
+		AtomicInteger ai = new AtomicInteger(0);
 		
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-            	for(int i=0;i<nSlice;i++){
-            		ImageProcessor ip = is.getProcessor(i+1);
-            		lsq.fit2D(ip,roi,Wx,Wy,i,3000,1000);
-            		try{
-            			progress.updateProgress(i);
-            		} catch (NullPointerException ne){
-            			
-            		}
-            	}
-            	
-            	// Find index of focus and map zgrid
-            	indexZ0 = findIntersection(Wx, Wy);
-            	createZgrid(zgrid, indexZ0);
-            	
-            	// Save results in calibration
-            	cal.setZgrid(zgrid);
-            	cal.setWx(Wx);
-            	cal.setWy(Wy);
-            	
-                // Display result
-            	cal.plot(Wx,Wy,"2D gaussian LSQ");
-            }
-        }).start();        
+		
+
+		for (int ithread = 0; ithread < threads.length; ithread++) {
+
+			threads[ithread] = new Thread("fit_" + ithread) {
+				@Override
+				public void run() {
+					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
+						ImageProcessor ip = is.getProcessor(i + 1);
+						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 3000, 1000);
+						double[] results = gf.fit();
+						if (results!=null){
+							Wx[i]=results[2];
+							Wy[i]=results[3];
+						}
+						//lsq.fit2D(ip, roi, Wx, Wy, i, 3000, 1000);
+						try {
+							progress.updateProgress(i);
+						} catch (NullPointerException ne) {	}
+					}
+				}
+			};
+		}
+		ThreadUtil.startAndJoin(threads);
+		// Find index of focus and map zgrid
+		indexZ0 = findIntersection(Wx, Wy);
+		createZgrid(zgrid, indexZ0);
+
+		// Save results in calibration
+		cal.setZgrid(zgrid);
+		cal.setWx(Wx);
+		cal.setWy(Wy);
+
+		// Display result
+		cal.plot(Wx, Wy, "2D gaussian LSQ");
+
 	}	
 	
 	public void fitCalibrationCurve(final ProgressDisplay progress, final double rStart, final double rEnd){	
@@ -118,7 +136,7 @@ public class Calibrator {
 
 				@Override
 	            public void run() {
-					double[] param = new double[PARAM_1D_LENGTH];;
+					double[] param = new double[PARAM_1D_LENGTH];
 					calculateRange(rStart, rEnd);
 					progress.updateProgress(10);
 			    	
@@ -127,7 +145,7 @@ public class Calibrator {
 			    	} catch (TooManyEvaluationsException e) {
 			    		System.err.println("Too many evaluations!");				
 			    	}
-			
+					progress.updateProgress(90);
 					// sx2-sy2
 					for(int i=0;i<nSlice;i++){
 						Calibcurve[i] = curveWx[i]*curveWx[i]-curveWy[i]*curveWy[i]; 
@@ -142,6 +160,7 @@ public class Calibrator {
 					// Display result
 					cal.plotWxWyFitCurves();
 					cal.plotCalibCurve();
+					progress.updateProgress(100);
 	            }
 	        }).start();
 	}

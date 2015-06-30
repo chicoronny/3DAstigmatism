@@ -492,6 +492,7 @@ public class CalibrationPanel extends javax.swing.JPanel {
     //// Action handlers
 	private void button_ImportActionPerformed(java.awt.event.ActionEvent evt) {
     	JFileChooser fc = new JFileChooser();
+    	fc.setCurrentDirectory(new File("/home/ronny/ownCloud/storm"));
     	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     	
     	int returnVal = fc.showOpenDialog(this);

@@ -83,7 +83,9 @@ public class Gaussian2DFitter {
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
-		} catch(TooManyEvaluationsException | ConvergenceException e){
+		} catch(TooManyEvaluationsException  e){
+        	return null;
+		} catch(ConvergenceException e){
         	return null;
 		}
         //check bounds

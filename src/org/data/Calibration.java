@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -161,15 +160,14 @@ public class Calibration {
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
 		
-		List<String> list = new ArrayList<>();
+		List<String> list = new ArrayList<String>();
 		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(path));
-			Iterator<String> stream = br.lines().iterator();
+
 			String line;
 			String[] s;
-			while (stream.hasNext()){
-				line = stream.next();
+			while ((line=br.readLine())!=null){
 				if (line.contains("--")) break;
 				list.add(line);
 			}
@@ -177,8 +175,7 @@ public class Calibration {
 			nSlice = list.size();
 			initialize();
 			
-			if (stream.hasNext()){
-				line = stream.next();
+			if ((line=br.readLine())!=null){
 				s = line.split(",");
 				for (int i = 0; i < s.length; i++)
 					s[i] = s[i].trim();

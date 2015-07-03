@@ -80,10 +80,10 @@ public class EllipticalGaussian implements OptimizationData {
 	        };
 	    }
 	 
-		public double[] getInitialGuess(ImageProcessor ip_, Roi roi) {
+		public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
 			initialGuess = new double[PARAM_LENGTH];
 		    Arrays.fill(initialGuess, 0);
-		    ImageProcessor ip = ip_.duplicate();
+		    //ImageProcessor ip = ip_.duplicate();
 		    ip.setRoi(roi);
 		    double[] centroid = CentroidFitter.fitCentroidandWidth(ip,roi, ip.getAutoThreshold());
 		    

@@ -11,6 +11,8 @@ import ij.process.ImageProcessor;
 
 public class CentroidFitter {
 
+	private static double defaultSigma = 1.5;
+
 	public double[] fitThreshold(ImageProcessor ip_, Roi roi){
 		double[] centroid = new double[2];
 		int rwidth = (int) roi.getFloatWidth();
@@ -89,41 +91,38 @@ public class CentroidFitter {
 		centroid[0] = centroid[0]/sum;
 		centroid[1] = centroid[1]/sum; 
 		
-		double[] Ivaly,Ivalx;
-		Ivaly = new double[rheight];
-		Ivalx = new double[rwidth];
+		if(Double.isNaN(centroid[0]))
+			centroid[0] = xstart+rwidth/2;
 		
+		if(Double.isNaN(centroid[1]))
+			centroid[1] = ystart+rheight/2;
+		
+		double sumstd=0, stdx=0, stdy=0;
 		for(int i=0;i<rheight;i++){
-			Ivaly[i] = 0;
 			for(int j=0;j<rwidth;j++){
-				Ivaly[i] += ip.get(xstart+j,ystart+i)/rheight;
+				if(ip.get(j, i)>thrsh){
+					sumstd += ip.get(j, i);
+					stdx += ip.get(j, i)*(xstart+j-centroid[0])*(xstart+j-centroid[0]);
+					stdy += ip.get(j, i)*(ystart+i-centroid[1])*(ystart+i-centroid[1]);
+				}
 			}
 		}
-		
-		for(int i=0;i<rwidth;i++){
-			Ivalx[i] = 0;
-			for(int j=0;j<rheight;j++){
-				Ivalx[i] += ip.get(xstart+i,ystart+j)/rwidth;
-			}
+		stdx /= sumstd;
+		stdy /= sumstd;
+		stdx = Math.sqrt(stdx);
+		stdy = Math.sqrt(stdy);
+				
+		if(Double.isNaN(stdx)){
+			centroid[2] = defaultSigma ;
+		} else {
+			centroid[2] = stdx;
 		}
 
-		double sumx=0, stdx=0;
-		for(int i=0;i<rwidth;i++){
-			sumx += Ivalx[i];
-			stdx += Ivalx[i]*(xstart+i-centroid[0])*(xstart+i-centroid[0]);
+		if(Double.isNaN(stdy)){
+			centroid[3] = defaultSigma;
+		} else {
+			centroid[3] = stdy;
 		}
-		stdx /= sumx;
-		stdx = Math.sqrt(stdx)*.5;
-		centroid[2] = stdx;
-
-		double sumy=0, stdy=0;
-		for(int i=0;i<rheight;i++){
-			sumy += Ivaly[i];
-			stdy += Ivaly[i]*(ystart+i-centroid[1])*(ystart+i-centroid[1]);
-		}
-		stdy /= sumy;
-		stdy = Math.sqrt(stdy)*.5;
-		centroid[3] = stdy;
 
 		
 		return centroid;

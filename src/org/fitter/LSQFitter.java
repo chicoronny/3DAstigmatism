@@ -7,6 +7,7 @@ import ij.process.ImageProcessor;
 
 
 
+
 // Plugin classes
 import org.data.Calibration;
 import org.data.CalibrationCurve;
@@ -29,7 +30,7 @@ import org.apache.commons.math3.util.Precision;
 
 /**
  * Least-Squares fitting class. Based on apache.commons LSQ fitter and Levenberg-Marquardt optimization.
- * Performs 1D fit of a defocus curve and 2D fit of an elliptical gaussian.
+ * Performs 1D fit of a defocus curve and 2D fit of an elliptical Gaussian.
  */
 public class LSQFitter {
 
@@ -42,8 +43,8 @@ public class LSQFitter {
 	// ///////////////////////////
 	// Misc
 	public static int PARAM_1D_LENGTH = 8; // Number of parameters to fit in 1D (calibration curve)
-	public static int PARAM_2D_LENGTH = 6; // Number of parameters to fit in 2D (elliptical gaussian)
-	public static int PARAM_3D_LENGTH = 5; // Number of parameters to fit in 2D (elliptical gaussian with z)	
+//	public static int PARAM_2D_LENGTH = 6; // Number of parameters to fit in 2D (elliptical Gaussian)
+	public static int PARAM_3D_LENGTH = 5; // Number of parameters to fit in 2D (elliptical Gaussian with z)	
 	
 	public LSQFitter() {
 	}
@@ -96,9 +97,9 @@ public class LSQFitter {
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 
 		final Optimum optimum = optimizer.optimize(builder(problem).target(problem.getTarget())
-		// .checkerPair(new SimplePointChecker(10e-5, 10e-5))
-		// .parameterValidator(new ParamValidatorCalibCurves())
-				.start(problem.getInitialGuess()).maxIterations(maxIter).maxEvaluations(maxIter).build());
+				//.checkerPair(new SimplePointChecker<PointVectorValuePair>(10e-9, 10e-9))
+				//.parameterValidator(new ParamValidatorCalibCurves())
+				.start(problem.getInitialGuess()).maxIterations(maxIter).maxEvaluations(maxEval).build());
 
 		// Copy the fitted parameters
 		double[] result = optimum.getPoint().toArray();
@@ -201,8 +202,11 @@ public class LSQFitter {
 					.start(eg.getInitialGuess(ip, roi)).maxIterations(maxIter).maxEvaluations(maxEval).build());
 
 			fittedEG = optimum.getPoint().toArray();
-		} catch (TooManyEvaluationsException | ConvergenceException e) {
+		} catch (TooManyEvaluationsException e) {
 			//System.err.println("Too many evaluations");
+			return null;
+		}
+		catch (ConvergenceException e) {
 			return null;
 		}
 		
@@ -262,8 +266,10 @@ public class LSQFitter {
 		double[] results = new double[4];
 
 		try {
-			final Optimum optimum = optimizer.optimize(builder(eg).target(Ival).checkerPair(new ConvChecker3DGauss())
-					.parameterValidator(new ParamValidator3DGauss()).start(eg.getInitialGuess(ip, roi))
+			final Optimum optimum = optimizer.optimize(builder(eg).target(Ival)
+					.checkerPair(new ConvChecker3DGauss())
+					.parameterValidator(new ParamValidator3DGauss())
+					.start(eg.getInitialGuess(ip, roi))
 					.maxIterations(maxIter).maxEvaluations(maxEval).build());
 
 			fittedEG = optimum.getPoint().toArray();
@@ -383,7 +389,7 @@ public class LSQFitter {
 				&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1
 				&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 
 				&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.02
-				&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.08) {
+				&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
 				lastResult_ = true;
 				return true;
 			}

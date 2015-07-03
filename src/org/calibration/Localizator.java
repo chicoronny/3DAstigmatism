@@ -72,8 +72,8 @@ public class Localizator {
 		ImageProcessor ip;
 		//int dim = sFilter*sFilter*nFrames;
 		//int[] imSample = new int[dim];
-		List<Integer> imSample = new ArrayList<>();
-		MedianFilter<Integer> mf = new MedianFilter<>();
+		List<Integer> imSample = new ArrayList<Integer>();
+		MedianFilter<Integer> mf = new MedianFilter<Integer>();
 		int w = (sFilter-1)/2;
 		
 		int ii,jj;
@@ -124,7 +124,6 @@ public class Localizator {
 	}
 	
 	public void fitImages(){
-		CentroidFitter cf = new CentroidFitter();
 		LSQFitter lsq = new LSQFitter();
 
 		double[] results = new double[4];
@@ -164,7 +163,7 @@ public class Localizator {
 			// comparison
 			long startTime, endTime, duration;
 			startTime = System.nanoTime();
-			results = cf.fitCentroidandWidth(is.getProcessor(p.getSlice()), new Roi(xstart, ystart, xend-xstart, yend-ystart),(int) (is.getProcessor(p.getSlice()).getStatistics().mean+3*is.getProcessor(p.getSlice()).getStatistics().stdDev));
+			results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), new Roi(xstart, ystart, xend-xstart, yend-ystart),(int) (is.getProcessor(p.getSlice()).getStatistics().mean+3*is.getProcessor(p.getSlice()).getStatistics().stdDev));
 			endTime = System.nanoTime();
 			duration = (endTime - startTime)/1000000; 
 			//System.out.println(duration);

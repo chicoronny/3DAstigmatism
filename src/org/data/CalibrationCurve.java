@@ -35,7 +35,6 @@ public class CalibrationCurve {
 		minx = wx[minIndexx];
 		minIndexy = findMinIndex(wy);
 		miny = wy[minIndexy];
-		findMinIndex(z);
 	}
 
 	public int findMinIndex(double[] A) {

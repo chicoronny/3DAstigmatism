@@ -270,22 +270,22 @@ public class CalibrationPanel extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        panel_RangeCalib.setMaximumSize(new java.awt.Dimension(265, 45));
-        panel_RangeCalib.setMinimumSize(new java.awt.Dimension(265, 45));
-        panel_RangeCalib.setPreferredSize(new java.awt.Dimension(265, 45));
+        panel_RangeCalib.setMaximumSize(new java.awt.Dimension(280, 45));
+        panel_RangeCalib.setMinimumSize(new java.awt.Dimension(280, 45));
+        panel_RangeCalib.setPreferredSize(new java.awt.Dimension(280, 45));
 
         label_RangeCalib.setText("Range calibration:");
 
         label_HyphRange.setText("-");
 
-        textfield_RangeMax.setText("100");
+        textfield_RangeMax.setText("1020");
         textfield_RangeMax.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 textfield_RangeMaxActionPerformed(evt);
             }
         });
 
-        textfield_RangeMin.setText("-100");
+        textfield_RangeMin.setText("180");
         textfield_RangeMin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 textfield_RangeMinActionPerformed(evt);

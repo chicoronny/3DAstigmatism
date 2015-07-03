@@ -33,7 +33,7 @@ public class FittedPeak extends Peak {
 	}
 	
 	public String toString(){
-		String s = "" +  getID() + "," + getX() + "," + getY()+ "," + getValue() + "," + fitX + "," + fitY+ "," + z_ + "\n";
+		String s = "" +  getID() + "," + getSlice() + "," + getX() + "," + getY()+ "," + getValue() + "," + fitX + "," + fitY+ "," + z_ + "\n";
 		return s;
 	}
 

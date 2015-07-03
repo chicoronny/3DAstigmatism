@@ -3,6 +3,7 @@ package org.calibration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.data.Calibration;
 import org.data.TextWriter;
 import org.fitter.Gaussian2DFitter;
@@ -25,7 +26,7 @@ public class Calibrator {
 
 	/////////////////////////////
 	// Fitting parameters
-	public static int PARAM_1D_LENGTH = 8;				// Number of parameters to fit in 1D (calibration curve)
+	public static int PARAM_1D_LENGTH = 9;				// Number of parameters to fit in 1D (calibration curve)
 	public static int PARAM_2D_LENGTH = 6;				// Number of parameters to fit in 2D (elliptical gaussian)
 	int MAX_ITERATIONS_1D = 50000;
 	int MAX_ITERATIONS_2D = 3000;
@@ -91,9 +92,7 @@ public class Calibrator {
 	public void fitStack(final ProgressDisplay progress) {
 
 		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors());
-		AtomicInteger ai = new AtomicInteger(0);
-		
-		
+		final AtomicInteger ai = new AtomicInteger(0);
 
 		for (int ithread = 0; ithread < threads.length; ithread++) {
 
@@ -108,7 +107,6 @@ public class Calibrator {
 							Wx[i]=results[2];
 							Wy[i]=results[3];
 						}
-						//lsq.fit2D(ip, roi, Wx, Wy, i, 3000, 1000);
 						try {
 							progress.updateProgress(i);
 						} catch (NullPointerException ne) {	}
@@ -120,7 +118,9 @@ public class Calibrator {
 		// Find index of focus and map zgrid
 		indexZ0 = findIntersection(Wx, Wy);
 		createZgrid(zgrid, indexZ0);
-
+		
+		fixCurve(Wx);
+		fixCurve(Wy);
 		// Save results in calibration
 		cal.setZgrid(zgrid);
 		cal.setWx(Wx);
@@ -131,6 +131,12 @@ public class Calibrator {
 
 	}	
 	
+	private void fixCurve(double[] d) {
+		for (int i=1 ; i<d.length-1;i++)
+			if (d[i]<0.1) d[i]=(d[i-1]+d[i+1])/2;
+	}
+
+
 	public void fitCalibrationCurve(final ProgressDisplay progress, final double rStart, final double rEnd){	
 	       new Thread(new Runnable() {
 
@@ -141,15 +147,17 @@ public class Calibrator {
 					progress.updateProgress(10);
 			    	
 					try{
-						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
+						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 30000, 10000);
 			    	} catch (TooManyEvaluationsException e) {
 			    		System.err.println("Too many evaluations!");				
+			    	}  catch (TooManyIterationsException e) {
+			    		System.err.println("Too many iterations");
 			    	}
+					
 					progress.updateProgress(90);
 					// sx2-sy2
-					for(int i=0;i<nSlice;i++){
+					for(int i=0;i<nSlice;i++)
 						Calibcurve[i] = curveWx[i]*curveWx[i]-curveWy[i]*curveWy[i]; 
-					}
 
 					// Save in calibration
 					cal.setcurveWx(curveWx);

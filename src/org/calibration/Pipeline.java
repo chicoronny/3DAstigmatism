@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -33,17 +32,12 @@ import org.filters.MedianFilter;
 import org.filters.NMS;
 import org.fitter.CentroidFitter;
 import org.fitter.Gaussian2DFitter;
-import org.fitter.LSQFitter;
 
 public class Pipeline implements Runnable {
 	private ImagePlus img;
 	private int stackSize;
 	private Map<Integer,Double> thresholds;
 	
-	private static int CENTROID = 0;
-	private static int LSQ2D = 1;
-	private static int LSQ1DG = 2;
-	private static int LSQ3D = 3;
 	public static int INDEX_WX = 0;
 	public static int INDEX_WY = 1;
 	public static int INDEX_AX = 2;
@@ -92,15 +86,15 @@ public class Pipeline implements Runnable {
 	
 	private ImagePlus medianFilter(int sFilter) {
 		
-		MedianFilter<Integer> mf = new MedianFilter<>();
+		final MedianFilter<Integer> mf = new MedianFilter<Integer>();
 
 		// Determine dimensions of the image
-		int w = img.getWidth();
-		int h = img.getHeight();
-		int d = img.getStackSize();
+		final int w = img.getWidth();
+		final int h = img.getHeight();
+		final int d = img.getStackSize();
 
-		ImageProcessor[] in = new ImageProcessor[d];
-		ShortProcessor result = new ShortProcessor(w,h);
+		final ImageProcessor[] in = new ImageProcessor[d];
+		final ShortProcessor result = new ShortProcessor(w,h);
 		for (int z = 0; z < d; z++) 
 			in[z] = img.getStack().getProcessor(z + 1);		
 		
@@ -108,15 +102,15 @@ public class Pipeline implements Runnable {
 		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
 		for ( int i = 0; i < threads.length; i++ ){
 			final Chunk chunk = chunks.get( i );
-			int r = sFilter / 2;
+			final int r = sFilter / 2;
 			threads[ i ] = new Thread( "FilterChunk " + i ){
 				@Override
 				public void run(){	
 					long pos = chunk.getStartPosition();
 					for ( long step = 0; step < chunk.getLoopSize(); step++ ){
-						int y = (int) Math.floorDiv(pos + step, w);
+						int y = (int) Math.floor((pos + step) / w);
 						int x = (int) (pos + step - (y * w));
-						List<Integer> values = new ArrayList<>();
+						List<Integer> values = new ArrayList<Integer>();
 						for (int z = 0; z < d; z++) {
 							final ImageProcessor k = in[z];
 							for (int j = y - r; j <= y + r; j++) {
@@ -143,7 +137,7 @@ public class Pipeline implements Runnable {
 	}
 	
 	private List<Peak> NMSFinder(int n, int max){
-		List<Peak> peaks = new ArrayList<>();
+		List<Peak> peaks = new ArrayList<Peak>();
 		NMS nms = new NMS();
 		ImageStack is = img.getStack();
 		for(int i=1;i<=stackSize;i++){																															////////// stack length
@@ -157,12 +151,12 @@ public class Pipeline implements Runnable {
 		return peaks;
 	}
 	
-	private List<FittedPeak> gaussian2DFitter(List<Peak> peaks, int size){
+	private List<FittedPeak> gaussian2DFitter(final List<Peak> peaks, final int size){
 		
-		List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
+		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
 		final ImageStack is = img.getStack();
-		int nSlices = is.getSize();
-		final Vector< Chunk > chunks = divideIntoChunks( nSlices, numThreads  );
+		final int halfSize =size / 2;
+		final Vector< Chunk > chunks = divideIntoChunks( stackSize, numThreads  );
 		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
 		for ( int i = 0; i < threads.length; i++ ){
 			final Chunk chunk = chunks.get( i );
@@ -172,15 +166,17 @@ public class Pipeline implements Runnable {
 					for (long j = 0;j<chunk.getLoopSize();j++){
 						long frame = chunk.getStartPosition() + j;
 	
-						List<Peak> slicePeaks = peaks.stream()
-							.filter(peak -> peak.getSlice() == frame).collect(Collectors.toList());
+						List<Peak> slicePeaks = new ArrayList<Peak>();
+						for (Peak peak: peaks)
+							if (peak.getSlice() == frame)
+								slicePeaks.add(peak);
 						
 						if (slicePeaks.isEmpty()) continue;
 						
 						ImageProcessor ip = is.getProcessor((int) frame);
 						
 						for (Peak p : slicePeaks) {
-							final Roi origroi = new Roi(p.getX() - size, p.getY() - size, 2*size+1, 2*size+1);
+							final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
 							final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
 							Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
 							double[] results = null;
@@ -203,13 +199,12 @@ public class Pipeline implements Runnable {
 	
 	
 	@SuppressWarnings("unused")
-	private List<FittedPeak> fitter(List<Peak> peaks, int roi_size, int fitterType){
-		final LSQFitter lsq = new LSQFitter();
+	private List<FittedPeak> centroidFitter(final List<Peak> peaks, final int roi_size){
 		
 		final ImageStack is = img.getStack();
 		final int width = img.getWidth();
 		final int height = img.getHeight();
-		List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
+		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
 		
 		final Vector< Chunk > chunks = divideIntoChunks( peaks.size(), numThreads  );
 		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
@@ -218,7 +213,7 @@ public class Pipeline implements Runnable {
 			threads[ i ] = new Thread( "FitterChunk " + i ){
 				@Override
 				public void run(){	
-					List<Peak> chunkPeaks = peaks.subList((int)chunk.getStartPosition(), (int)(chunk.getStartPosition()+chunk.getLoopSize()));
+					final List<Peak> chunkPeaks = peaks.subList((int)chunk.getStartPosition(), (int)(chunk.getStartPosition()+chunk.getLoopSize()));
 					for (Peak p : chunkPeaks){
 						int xstart = p.getX()-roi_size;
 						int ystart = p.getY()-roi_size;
@@ -236,29 +231,13 @@ public class Pipeline implements Runnable {
 						if(yend >= height)
 							yend = height-1;
 						
-						if (fitterType==CENTROID)
-							results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
-									new Roi(xstart, ystart, xend-xstart, yend-ystart),
-									thresholds.get(p.getSlice()).intValue());
-						
-						if (fitterType==LSQ2D)
-							results= lsq.fit2Dsingle(is.getProcessor(p.getSlice()), 
-									new Roi(xstart, ystart, xend-xstart, yend-ystart), maxIter, 3*maxEval);
-						
-						if (fitterType==LSQ1DG)
-							results= lsq.fit1DGsingle(is.getProcessor(p.getSlice()), 
-									new Roi(xstart, ystart, xend-xstart, yend-ystart), maxIter, maxEval);
-						
-						if (fitterType==LSQ3D){
-							results= lsq.fit3D(is.getProcessor(p.getSlice()), 
-									new Roi(xstart, ystart, xend-xstart, yend-ystart), cal,  maxIter, maxEval);
-							if (results!=null)
-								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),(int) results[3],0,0,results[0],results[1],results[2]));
-						} else {
-							if (results!=null){
-								double SxSy = results[2]*results[2] - results[3]*results[3];			
-								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy)));
-							}
+						results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
+								new Roi(xstart, ystart, xend-xstart, yend-ystart),
+								thresholds.get(p.getSlice()).intValue());
+					
+						if (results!=null){
+							double SxSy = results[2]*results[2] - results[3]*results[3];			
+							fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy)));
 						}
 					}
 				}
@@ -273,17 +252,18 @@ public class Pipeline implements Runnable {
 	private double calculateZ(final double SxSy){
 		final double[] curve = cal.getCalibcurve();
 		final double[] zgrid = cal.getZgrid();
-		double result = 0;
 		final int end = curve.length-1;
-		if(end < 1) return result;
-		if(curve.length != zgrid.length) return result;
+		if(end < 1) return 0;
+		if(curve.length != zgrid.length) return 0;
 		
 		// reuse calibration curve -- we can use this as starting point
-		if (SxSy > Math.min(curve[0],curve[end]) && SxSy < Math.max(curve[0],curve[end]))
-			result = calcIterZ(SxSy, Math.min(zgrid[0],zgrid[end]), Math.max(zgrid[0],zgrid[end]), 1e-4);
-		else 
-			result = calcIterZ(SxSy, -1e6, 1e6, 1e-4);
-		return result;
+		if (SxSy < Math.min(curve[0],curve[end]) )
+			return Math.min(curve[0],curve[end]);
+		if (SxSy > Math.max(curve[0],curve[end]) )
+			return Math.max(curve[0],curve[end]);
+		
+		return calcIterZ(SxSy, Math.min(zgrid[0],zgrid[end]), Math.max(zgrid[0],zgrid[end]), 1e-4);
+		
 	}
 	
 	/*private double valuesWith(double z, double[] params) {
@@ -334,7 +314,7 @@ public class Pipeline implements Runnable {
 	
 	
 	private void getThresholds(){
-		thresholds = new HashMap<>();
+		thresholds = new HashMap<Integer, Double>();
 		ImageStack is = img.getStack();
 		for (int i=1; i<=stackSize;i++ ){
 			ImageProcessor ip = is.getProcessor(i);
@@ -372,7 +352,7 @@ public class Pipeline implements Runnable {
 	public void run() {
 		cal = new Calibration();
 		cal.readCSV(props.getProperty("calibrationFile", "calib.csv"));
-		maxIter = Integer.parseInt(props.getProperty("maxIter", "1000"));
+		maxIter = Integer.parseInt(props.getProperty("maxIter", "3000"));
 		maxEval = Integer.parseInt(props.getProperty("maxEval", "1000"));
 		long start = System.currentTimeMillis();
 		loadImages(props.getProperty("startPath", "."));
@@ -381,11 +361,11 @@ public class Pipeline implements Runnable {
 		ImageCalculator calcul = new ImageCalculator(); 
  	    calcul.run("Substract", img, imMedian);
  	    System.out.println("2-Median:" + (System.currentTimeMillis()-start));
- 	    List<Peak> peaks = NMSFinder(Integer.parseInt(props.getProperty("gridSize", "5")),
+ 	    List<Peak> peaks = NMSFinder(Integer.parseInt(props.getProperty("gridSize", "10")),
  	    		Integer.parseInt(props.getProperty("maxNumPeaks", "300")));
  	    System.out.println("3-Peaks:" + (System.currentTimeMillis()-start));
- 	    //List<FittedPeak> fitted = fitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "5")), LSQ2D);
- 	    List<FittedPeak> fitted = gaussian2DFitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "5")));
+ 	    //List<FittedPeak> fitted = centroidFitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "5")));
+ 	    List<FittedPeak> fitted = gaussian2DFitter(peaks, Integer.parseInt(props.getProperty("fitWindowSize", "20")));
  	    System.out.println("4-Fitter:" + (System.currentTimeMillis()-start));
  	    csvWriter w = new csvWriter(new File(props.getProperty("ouputPath", ".")));
  	    for (FittedPeak p:fitted)

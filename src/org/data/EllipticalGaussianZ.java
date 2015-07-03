@@ -142,7 +142,7 @@ public class EllipticalGaussianZ {
 		double B = param[INDEX_BY];
 		double d = param[INDEX_D];
 		double b = (z - param[INDEX_C]) / d;
-		value = 0.5 * param[INDEX_WY] * param[INDEX_WY] * (2 * b / d + 3 * A * b * b / d + 4 * B * b * b * b / d) / Sx(z);
+		value = 0.5 * param[INDEX_WY] * param[INDEX_WY] * (2 * b / d + 3 * A * b * b / d + 4 * B * b * b * b / d) / Sy(z);
 		return value;
 	}
 

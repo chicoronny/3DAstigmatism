@@ -1,6 +1,6 @@
 package org.micromanager;
 
-import org.calibration.Pipeline;
+import org.main.Pipeline;
 
 public class StartLocalization {
 

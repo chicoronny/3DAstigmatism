@@ -11,7 +11,6 @@ import ij.process.ImageProcessor;
 // Plugin classes
 import org.data.Calibration;
 import org.data.CalibrationCurve;
-import org.data.DefocusCurve;
 import org.data.EllipticalGaussian;
 import org.data.EllipticalGaussianZ;
 import org.data.Gaussian;
@@ -57,12 +56,6 @@ public class LSQFitter {
 	}
 
 	public LeastSquaresBuilder builder(Gaussian problem) {
-		LeastSquaresBuilder builder = new LeastSquaresBuilder();
-		builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
-		return builder;
-	}
-
-	public LeastSquaresBuilder builder(DefocusCurve problem) {
 		LeastSquaresBuilder builder = new LeastSquaresBuilder();
 		builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
 		return builder;
@@ -115,43 +108,6 @@ public class LSQFitter {
 		}
 	}
 
-	// ///////////////////////////////////////////////////////////////////////////
-	// / 1D fit: Defocus Curve
-
-	/*public void fit1D(double[] z, double[] w, double[] param, double[] curve, int rStart, int rEnd, int maxIter) {
-
-		double[] rangedZ = new double[rEnd - rStart + 1];
-		double[] rangedW = new double[rEnd - rStart + 1];
-
-		fillRanged(rangedZ, z, rangedW, w, rStart, rEnd);
-
-		final DefocusCurve problem = new DefocusCurve(rangedZ, rangedW);
-
-		LevenbergMarquardtOptimizer optimizer = getOptimizer();
-
-		final Optimum optimum = optimizer.optimize(builder(problem).target(rangedW)
-		// .checkerPair(new SimplePointChecker<PointVectorValuePair>(10e-5, 10e-5))
-				.start(problem.getInitialGuess()).maxIterations(maxIter).maxEvaluations(maxIter).build());
-
-		// Copy the fitted parameters
-		double[] result = optimum.getPoint().toArray();
-		for (int i = 0; i < PARAM_1D_LENGTH; i++)
-			param[i] = result[i];
-
-		// Copy the fitted curve values
-		double[] values = problem.valuesWith(z, param);
-		for (int i = 0; i < curve.length; i++)
-			curve[i] = values[i];
-
-	}
-
-	private void fillRanged(double[] rangedZ, double[] z, double[] rangedW, double[] w, int rStart, int rEnd) {
-		int length = rEnd - rStart + 1;
-		for (int i = 0; i < length; i++) {
-			rangedZ[i] = z[rStart + i];
-			rangedW[i] = w[rStart + i];
-		}
-	}*/
 
 	// ///////////////////////////////////////////////////////////////////////////
 	// / 2D fit: Elliptical Gaussian

@@ -1,4 +1,4 @@
-package org.calibration;
+package org.main;
 
 import ij.ImagePlus;
 import ij.ImageStack;

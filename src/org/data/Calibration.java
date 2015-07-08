@@ -23,11 +23,11 @@ public class Calibration {
 	public static int PARAM_LENGTH = 8;
 
 	double[] zgrid;										// z positions of the slices in the stack
-	double[] Wx, Wy, Calibcurve;		// 1D and 2D fit results
+	double[] Wx, Wy, Calibcurve;						// 1D and 2D fit results
 	double[] curveWx, curveWy;							// quadratically fitted curves
 	int nSlice=1;
 	ChartBuilder cb;
-	TextWriter tw;
+
 	private double[] param;
 	
 	public Calibration(){
@@ -39,13 +39,12 @@ public class Calibration {
 		cb = new ChartBuilder();
 		nSlice = zgrid.length;
 		this.zgrid = zgrid;						// z position of the frames
-		this.Wx = Wx;						// width in x of the PSF
-		this.Wy = Wy;						// width in y of the PSF
+		this.Wx = Wx;							// width in x of the PSF
+		this.Wy = Wy;							// width in y of the PSF
 		this.Calibcurve = Calibcurve;
 		this.curveWx = curveWx;					// value of the calibration on X
 		this.curveWy = curveWy;					// value of the calibration on Y
-		this.param = param;					// parameters of the calibration on X and Y
-		tw = new TextWriter();
+		this.param = param;						// parameters of the calibration on X and Y
 	}
 	
 	private void initialize(){
@@ -127,18 +126,6 @@ public class Calibration {
 	}
 	
 	///////////////////////////////////////// Save
-	public void saveExp(String path){
-		String s = path+"_StackFit.txt";
-		tw.saveNew(s, Wx);
-		System.out.println(path);
-	}
-	public void saveFit(String path){
-		System.out.println("save Fit");
-	}
-	public void saveCalib(String path){
-		System.out.println("save Calib");
-	}
-	
 	public void saveAsCSV(String path){
 		csvWriter w = new csvWriter(new File(path));
  	    for (int i=0; i< zgrid.length;i++){

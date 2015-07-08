@@ -1,15 +1,15 @@
-package org.calibration;
+package org.main;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.swing.JTextField;
 
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.data.Calibration;
-import org.data.TextWriter;
 import org.fitter.Gaussian2DFitter;
 import org.fitter.LSQFitter;
 import org.graphics.ChartBuilder;
-import org.swing.ProgressDisplay;
 
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -26,11 +26,11 @@ public class Calibrator {
 
 	/////////////////////////////
 	// Fitting parameters
-	public static int PARAM_1D_LENGTH = 9;				// Number of parameters to fit in 1D (calibration curve)
+	public static int PARAM_1D_LENGTH = 8;				// Number of parameters to fit in 1D (calibration curve)
 	public static int PARAM_2D_LENGTH = 6;				// Number of parameters to fit in 2D (elliptical gaussian)
-	int MAX_ITERATIONS_1D = 50000;
-	int MAX_ITERATIONS_2D = 3000;
-	int MAX_EVALUATIONS_2D = 1000;
+	int MAX_ITERATIONS_1D = 100;
+	int MAX_ITERATIONS_2D = 100;
+	int MAX_EVALUATIONS_2D = 100;
 	
 	/////////////////////////////
 	// Results
@@ -54,7 +54,6 @@ public class Calibrator {
 	// Misc
 	LSQFitter lsq;
 	ChartBuilder cb;
-	TextWriter rec;
 	ImageStack is;
 	Calibration cal;
 	
@@ -71,7 +70,6 @@ public class Calibrator {
     	
 		lsq = new LSQFitter();
 		cb = new ChartBuilder();
-		rec = new TextWriter();
 		
     	// Initialize arrays
     	zgrid = new double[nSlice];						// z position of the frames
@@ -89,7 +87,7 @@ public class Calibrator {
 	
 	// ////////////////////////////////////////////////////////////
 	// 1D and 2D fits
-	public void fitStack(final ProgressDisplay progress) {
+	public void fitStack(JTextField tf) {
 
 		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors());
 		final AtomicInteger ai = new AtomicInteger(0);
@@ -107,9 +105,7 @@ public class Calibrator {
 							Wx[i]=results[2];
 							Wy[i]=results[3];
 						}
-						try {
-							progress.updateProgress(i);
-						} catch (NullPointerException ne) {	}
+
 					}
 				}
 			};
@@ -128,7 +124,8 @@ public class Calibrator {
 
 		// Display result
 		cal.plot(Wx, Wy, "2D gaussian LSQ");
-
+		
+		tf.setText("Done");
 	}	
 	
 	private void fixCurve(double[] d) {
@@ -137,14 +134,13 @@ public class Calibrator {
 	}
 
 
-	public void fitCalibrationCurve(final ProgressDisplay progress, final double rStart, final double rEnd){	
+	public void fitCalibrationCurve(JTextField tf, final double rStart, final double rEnd){	
 	       new Thread(new Runnable() {
 
 				@Override
 	            public void run() {
 					double[] param = new double[PARAM_1D_LENGTH];
 					calculateRange(rStart, rEnd);
-					progress.updateProgress(10);
 			    	
 					try{
 						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 30000, 10000);
@@ -154,7 +150,6 @@ public class Calibrator {
 			    		System.err.println("Too many iterations");
 			    	}
 					
-					progress.updateProgress(90);
 					// sx2-sy2
 					for(int i=0;i<nSlice;i++)
 						Calibcurve[i] = curveWx[i]*curveWx[i]-curveWy[i]*curveWy[i]; 
@@ -168,22 +163,15 @@ public class Calibrator {
 					// Display result
 					cal.plotWxWyFitCurves();
 					cal.plotCalibCurve();
-					progress.updateProgress(100);
 	            }
 	        }).start();
+	       tf.setText("Done");
 	}
 	
 	
 	//////////////////////////////////////////////////////////////
 	// Save
-	public void saveExp(String path){
-		cal.saveExp(path);
-	}
-	public void saveFit(String path){
-		cal.saveFit(path);
-	}
 	public void saveCalib(String path){
-		//cal.saveCalib(path);
 		cal.saveAsCSV(path);
 	}
 	

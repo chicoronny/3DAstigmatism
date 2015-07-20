@@ -162,7 +162,7 @@ public class Calibrator {
 					
 					// Display result
 					cal.plotWxWyFitCurves();
-					cal.plotCalibCurve();
+					//cal.plotCalibCurve();
 	            }
 	        }).start();
 	       tf.setText("Done");

@@ -11,6 +11,10 @@ import java.awt.CardLayout;
 import java.io.File;
 
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.Document;
 
 import org.data.Calibration;
 import org.main.Calibrator;
@@ -96,11 +100,37 @@ public class PluginFrame extends javax.swing.JFrame {
             }
         });
 
-        jTextField_calimname.setEditable(false);
+        jTextField_calimname.setEditable(false); 
         jTextField_calimname.setText("Image name");
 
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// Step size
         jLabel_stepsize.setText("Step size (nm) :");
 
+        jTextField_stepsize.setText(Integer.toString(default_step));
+        
+        DocumentListener documentListener_step = new DocumentListener() {
+            public void changedUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void insertUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void removeUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            private void printIt(DocumentEvent documentEvent) {
+            	if(jTextField_stepsize.getText().equals("")){
+            		zstep = default_step;
+            	} else {
+            		zstep = Integer.parseInt(jTextField_stepsize.getText());
+            	}
+            }
+        };
+        jTextField_stepsize.getDocument().addDocumentListener(documentListener_step);
+        
+        ////////////////////////////////////////////////////////////////////////////////////////////
         jButton_roi.setText("Select ROI");
         jButton_roi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -121,17 +151,61 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_calfit.setEditable(false);
         jTextField_calfit.setText("Waiting");
 
+        
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// Range
         jLabel_range.setText("Range (nm) :");
 
-        jTextField_rangemin.setText("0");
+        jTextField_rangemin.setText(Integer.toString(default_rmin));
 
-        jTextField_rangemax.setText("100");
-        jTextField_rangemax.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField_rangemaxActionPerformed(evt);
+        DocumentListener documentListener_rmin = new DocumentListener() {
+            public void changedUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
             }
-        });
+            public void insertUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void removeUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            private void printIt(DocumentEvent documentEvent) {
+            	if(jTextField_rangemin.getText().equals("")){
+            		rangeMin = default_rmin;
+            	} else {
+            		rangeMin = Integer.parseInt(jTextField_rangemin.getText());
+            	}
+            }
+        };
+        jTextField_rangemin.getDocument().addDocumentListener(documentListener_rmin);
+        
+        
+        jTextField_rangemax.setText(Integer.toString(default_rmax));
 
+        DocumentListener documentListener_rmax = new DocumentListener() {
+            public void changedUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void insertUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void removeUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            private void printIt(DocumentEvent documentEvent) {
+            	if(jTextField_rangemax.getText().equals("")){
+            		rangeMax = default_rmax;
+            	} else {
+            		rangeMax = Integer.parseInt(jTextField_rangemax.getText());
+            	}
+            }
+        };
+        jTextField_rangemax.getDocument().addDocumentListener(documentListener_rmax);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        
+        
         jLabel_rangehyph.setText("-");
 
         jButton_calfitcurves.setText("Fit curves");
@@ -390,10 +464,14 @@ public class PluginFrame extends javax.swing.JFrame {
     }// </editor-fold>                        
 
     
-
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////
     //// Action handlers
     
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // General
     private void jButton_locActionPerformed(java.awt.event.ActionEvent evt) {                                            
          CardLayout card = (CardLayout) panel.getLayout();
@@ -405,11 +483,12 @@ public class PluginFrame extends javax.swing.JFrame {
          card.show(panel, "cal");
     }                                           
 
-    // Calibration
-    private void jTextField_rangemaxActionPerformed(java.awt.event.ActionEvent evt) {                                                    
-        // TODO add your handling code here:
-    }                                                   
 
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    // Calibration                                   
+
+    // import images
     private void jButton_importActionPerformed(java.awt.event.ActionEvent evt) {                                               
     	JFileChooser fc = new JFileChooser();
     	fc.setCurrentDirectory(new File("/home/ronny/ownCloud/storm"));
@@ -437,6 +516,7 @@ public class PluginFrame extends javax.swing.JFrame {
 		cal_im.setRoi((int) (cal_im.getWidth()/2 - 10), (int) (cal_im.getHeight()/2 - 10), 20, 20);							// why?
     }                                              
 
+    // get the ROI
     private void jButton_roiActionPerformed(java.awt.event.ActionEvent evt) {                                            
     	Roi roitemp = cal_im.getRoi();
     	if (roitemp.getType() != Roi.RECTANGLE)  {
@@ -459,27 +539,66 @@ public class PluginFrame extends javax.swing.JFrame {
 		} 
     }                                           
 
-    private void jButton_calfitActionPerformed(java.awt.event.ActionEvent evt) {                                               
-		cal = new Calibrator(cal_im, zstep, roi);
-		cal.fitStack(jTextField_calfit);													// Passing a component to update it is not so proper
+    // fit the images
+    private void jButton_calfitActionPerformed(java.awt.event.ActionEvent evt) {     
+    	if(jTextField_stepsize.getText().equals("")){
+    		cal = new Calibrator(cal_im, default_step, roi);
+    	}	else if(jTextField_stepsize.getText().equals(Integer.toString(default_step))){
+    		cal = new Calibrator(cal_im, default_step, roi);
+    	} else {
+    		cal = new Calibrator(cal_im, zstep, roi);
+    	}
+		cal.fitStack(jTextField_calfit);													// Passing a component to update it....
 		jTextField_calfit.setText("In progress");
     }                                              
 
-    private void jButton_calfitcurvesActionPerformed(java.awt.event.ActionEvent evt) {                                                     
+    // fit the curves
+    private void jButton_calfitcurvesActionPerformed(java.awt.event.ActionEvent evt) {   
+    	
+    	if(jTextField_rangemin.getText().equals("")){										// case empty textfield
+    		rangeMin = default_rmin; 
+    	} else if(jTextField_rangemin.getText().equals(Integer.toString(default_rmin))){	// case nothing has been modified
+    		rangeMin = default_rmin; 
+    	}
+    	
+    	if(jTextField_rangemax.getText().equals("")){
+    		rangeMax = default_rmax; 
+    	} else if(jTextField_rangemax.getText().equals(Integer.toString(default_rmax))){
+    		rangeMax = default_rmax; 
+    	}
+    	
     	cal.fitCalibrationCurve(jTextField_calfitcurves,rangeMin, rangeMax);			    // same here
 		jTextField_calfit.setText("In progress");									 
     }                                                    
 
+    // save the calibration
     private void jButton_calsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
-        ////////////////////////////////////////////////////////////////////////////////////// here get input from user to save the file (path, name)
-    	cal.saveCalib("dummy");
+    	 
+    	JFileChooser fileChooser = new JFileChooser();
+    	fileChooser.setDialogTitle("Save calibration");   
+    	 
+    	int userSelection = fileChooser.showSaveDialog(this);
+    	 
+    	if (userSelection == JFileChooser.APPROVE_OPTION) {
+    	    File file = fileChooser.getSelectedFile();
+    	    cal.saveCalib(file+".csv");
+    	}
+    	
+    	//cal.saveCalib("dummy");
     }                                               
 
-    
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Localize
     private void jButton_loadcalActionPerformed(java.awt.event.ActionEvent evt) {                                                
         calib = new Calibration();
         ////////////////////////////////////////////////////////////////////////////////////// JFileCHooser
+        JFileChooser jf = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+        jf.setFileFilter(filter);
+ 
+        
         calib.readCSV(calibrationPath);
         jTextField_loccalname.setText(calibrationPath);
     }                                               
@@ -534,6 +653,10 @@ public class PluginFrame extends javax.swing.JFrame {
     Calibrator cal;
     int rangeMin, rangeMax;
     
+    static final int default_step = 10;
+    static final int default_rmin = 0;
+    static final int default_rmax = 200;
+       
     // localize
     Calibration calib;
     String calibrationPath, loc_filePath;

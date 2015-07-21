@@ -121,7 +121,7 @@ public class PluginFrame extends javax.swing.JFrame {
               printIt(documentEvent);
             }
             private void printIt(DocumentEvent documentEvent) {
-            	if(jTextField_stepsize.getText().equals("")){
+            	if(!isNumeric(jTextField_stepsize.getText())){
             		zstep = default_step;
             	} else {
             		zstep = Integer.parseInt(jTextField_stepsize.getText());
@@ -170,7 +170,7 @@ public class PluginFrame extends javax.swing.JFrame {
               printIt(documentEvent);
             }
             private void printIt(DocumentEvent documentEvent) {
-            	if(jTextField_rangemin.getText().equals("")){
+            	if(!isNumeric(jTextField_rangemin.getText())){
             		rangeMin = default_rmin;
             	} else {
             		rangeMin = Integer.parseInt(jTextField_rangemin.getText());
@@ -193,7 +193,7 @@ public class PluginFrame extends javax.swing.JFrame {
               printIt(documentEvent);
             }
             private void printIt(DocumentEvent documentEvent) {
-            	if(jTextField_rangemax.getText().equals("")){
+            	if(!isNumeric(jTextField_rangemax.getText())){
             		rangeMax = default_rmax;
             	} else {
             		rangeMax = Integer.parseInt(jTextField_rangemax.getText());
@@ -541,7 +541,7 @@ public class PluginFrame extends javax.swing.JFrame {
 
     // fit the images
     private void jButton_calfitActionPerformed(java.awt.event.ActionEvent evt) {     
-    	if(jTextField_stepsize.getText().equals("")){
+    	if(!isNumeric(jTextField_stepsize.getText())){
     		cal = new Calibrator(cal_im, default_step, roi);
     	}	else if(jTextField_stepsize.getText().equals(Integer.toString(default_step))){
     		cal = new Calibrator(cal_im, default_step, roi);
@@ -555,13 +555,13 @@ public class PluginFrame extends javax.swing.JFrame {
     // fit the curves
     private void jButton_calfitcurvesActionPerformed(java.awt.event.ActionEvent evt) {   
     	
-    	if(jTextField_rangemin.getText().equals("")){										// case empty textfield
+    	if(!isNumeric(jTextField_rangemin.getText())){										// case empty textfield
     		rangeMin = default_rmin; 
     	} else if(jTextField_rangemin.getText().equals(Integer.toString(default_rmin))){	// case nothing has been modified
     		rangeMin = default_rmin; 
     	}
     	
-    	if(jTextField_rangemax.getText().equals("")){
+    	if(!isNumeric(jTextField_rangemax.getText())){
     		rangeMax = default_rmax; 
     	} else if(jTextField_rangemax.getText().equals(Integer.toString(default_rmax))){
     		rangeMax = default_rmax; 
@@ -641,7 +641,12 @@ public class PluginFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }                                               
 
-
+    
+    
+    public boolean isNumeric(String s) {
+        return s.matches("[-+]?\\d*\\.?\\d+");
+    }
+    
     // Variables declaration - do not modify
     
     // calibration

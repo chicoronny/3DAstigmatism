@@ -410,12 +410,14 @@ public class Pipeline implements Runnable {
  	    if(fitmethod.equals("1DG")){
  	 	    fitted = gaussian2DFitter(peaks, 20);
  	    } else if(fitmethod.equals("2DG")) {
- 	 	    fitted = gaussian2DFitter(peaks, 20);
+ 	    	int dialogResult = JOptionPane.showConfirmDialog (null, "The fit can take long. Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
+ 	    	if(dialogResult == JOptionPane.YES_OPTION){
+ 	    		fitted = gaussian2DFitter(peaks, 20);
+ 	    	}
  	    } else {
  	 	    fitted = centroidFitter(peaks, 20);
  	    }
  	    System.out.println("Done");
- 	    
  	    
 		/*cal = new Calibration();
 		cal.readCSV(props.getProperty("calibrationFile", "calib.csv"));

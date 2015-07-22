@@ -364,6 +364,7 @@ public class PluginFrame extends javax.swing.JFrame {
         jButton_locsave = new javax.swing.JButton();
         jCheckBox_medianfilter = new javax.swing.JCheckBox();
 
+
         jpanel_loc.setBorder(javax.swing.BorderFactory.createTitledBorder("Localize"));
         
         //////////////////////////
@@ -451,7 +452,7 @@ public class PluginFrame extends javax.swing.JFrame {
                 jButton_locsaveActionPerformed(evt);
             }
         });
-
+        
         //////////////////////////
         /// Layout
         javax.swing.GroupLayout jpanel_locLayout = new javax.swing.GroupLayout(jpanel_loc);
@@ -505,15 +506,16 @@ public class PluginFrame extends javax.swing.JFrame {
                     .addComponent(jLabel_fitmethod)
                     .addComponent(jComboBox_fitmethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel_winsize)
-                    .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jCheckBox_medianfilter))
+                .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jCheckBox_medianfilter)
+                    .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel_winsize)
+                        .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(25, 25, 25)
                 .addComponent(jButton_locfit)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButton_locsave)
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         panel.add(jpanel_loc, "loc");
 
@@ -601,7 +603,8 @@ public class PluginFrame extends javax.swing.JFrame {
         cal_nSlice = cal_im.getNSlices();
 		new StackWindow(cal_im);
 		cal_im.setRoi((int) (cal_im.getWidth()/2 - 10), (int) (cal_im.getHeight()/2 - 10), 20, 20);		
-		stack_fitted =false;
+		stack_fitted =false;		
+		curve_fitted =false;
     }                                              
 
     // get the ROI
@@ -664,7 +667,8 @@ public class PluginFrame extends javax.swing.JFrame {
 	    	}
 	    	
 	    	cal.fitCalibrationCurve(jTextField_calfitcurves,rangeMin, rangeMax);			    // same here
-			jTextField_calfit.setText("In progress");			
+			jTextField_calfit.setText("In progress");
+			curve_fitted = true;
  	    } else {
     		JOptionPane.showMessageDialog(this,
     			    "No fitted stack",
@@ -675,19 +679,21 @@ public class PluginFrame extends javax.swing.JFrame {
 
     // save the calibration
     private void jButton_calsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
-    	 
-    	JFileChooser fileChooser = new JFileChooser();
-    	fileChooser.setDialogTitle("Save calibration");   
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
-        fileChooser.setFileFilter(filter);
-
-    	int userSelection = fileChooser.showSaveDialog(this);
-    	 
-    	if (userSelection == JFileChooser.APPROVE_OPTION) {
-    	    File file = fileChooser.getSelectedFile();
-    	    cal.saveCalib(file+".csv");
+    	if(curve_fitted){ 
+	    	JFileChooser fileChooser = new JFileChooser();
+	    	fileChooser.setDialogTitle("Save calibration");   
+	        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+	        fileChooser.setFileFilter(filter);
+	
+	    	int userSelection = fileChooser.showSaveDialog(this);
+	    	 
+	    	if (userSelection == JFileChooser.APPROVE_OPTION) {
+	    	    File file = fileChooser.getSelectedFile();
+	    	    cal.saveCalib(file+".csv");
+	    	}
+    	} else {
+    		
     	}
-    	
     	//cal.saveCalib("dummy");
     }                                               
 
@@ -778,21 +784,28 @@ public class PluginFrame extends javax.swing.JFrame {
     	}
     }                                              
 
+    // Save 
     private void jButton_locsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
-        JFileChooser jf = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
-        jf.setFileFilter(filter);
-    	jf.setDialogTitle("Save results");   
-   	 
-    	int userSelection = jf.showSaveDialog(this);
-    	 
-    	if (userSelection == JFileChooser.APPROVE_OPTION) {
-    	    File file = jf.getSelectedFile();
-    	    p.saveCSV(file.getAbsolutePath());
-    	}
-    }                                               
+    	if(p.getNumPeaks()>0){
+	    	JFileChooser jf = new JFileChooser();
+	        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+	        jf.setFileFilter(filter);
+	    	jf.setDialogTitle("Save results");   
+	   	 
+	    	int userSelection = jf.showSaveDialog(this);
+	    	 
+	    	if (userSelection == JFileChooser.APPROVE_OPTION) {
+	    	    File file = jf.getSelectedFile();
+	    	    p.saveCSV(file.getAbsolutePath());
+	    	}
+	    } else {
+    		JOptionPane.showMessageDialog(this,
+    			    "No peak to save",
+    			    "Warning",
+    			    JOptionPane.WARNING_MESSAGE);
+	    }
+    }                                       
 
-    
     ///////////////////////////////////////////////////////////////////
     /// Misc functions
     public boolean isNumeric(String s) {
@@ -811,6 +824,7 @@ public class PluginFrame extends javax.swing.JFrame {
     Calibrator cal;
     int rangeMin, rangeMax;
     boolean stack_fitted=false;
+    boolean curve_fitted=false;
     static final int default_step = 10;
     static final int default_rmin = 0;
     static final int default_rmax = 200;

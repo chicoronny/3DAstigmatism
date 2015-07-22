@@ -380,6 +380,10 @@ public class Pipeline implements Runnable {
 	 	 System.out.println("5 - wrote result to file");
 	}
 
+	public int getNumPeaks(){
+		return fitted.size();
+	}
+	
 	@Override
 	public void run() {
 		stackSize = img.getStackSize();

@@ -258,7 +258,7 @@ public class Pipeline implements Runnable {
 					
 						if (results!=null){
 							double SxSy = results[2]*results[2] - results[3]*results[3];			
-							fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy)));
+							fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
 						}
 					}
 				}
@@ -267,6 +267,8 @@ public class Pipeline implements Runnable {
 
 		ThreadUtil.startAndJoin(threads);
 		System.out.println("Peaks fitted: " + fitted.size());
+		JOptionPane.showMessageDialog(new JFrame(),
+			    "Fitting done!");
 		return fitted;
 	}
 	
@@ -402,7 +404,7 @@ public class Pipeline implements Runnable {
  	    } else if(fitmethod.equals("2DG")) {
  	 	    fitted = gaussian2DFitter(peaks, 20);
  	    } else {
- 	 	    fitted = gaussian2DFitter(peaks, 20);
+ 	 	    fitted = centroidFitter(peaks, 20);
  	    }
  	    System.out.println("Done");
  	    

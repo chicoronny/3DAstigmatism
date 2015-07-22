@@ -67,7 +67,7 @@ public class CentroidFitter {
 	}
 	
 	public static double[] fitCentroidandWidth(ImageProcessor ip, Roi roi, int threshold){
-		double[] centroid = new double[4];
+		double[] centroid = new double[6];
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
 		int xstart = (int) roi.getXBase();
@@ -124,7 +124,6 @@ public class CentroidFitter {
 			centroid[3] = stdy;
 		}
 
-		
 		return centroid;
 	}
 

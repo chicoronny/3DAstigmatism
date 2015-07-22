@@ -99,7 +99,7 @@ public class Calibrator {
 				public void run() {
 					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
 						ImageProcessor ip = is.getProcessor(i + 1);
-						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 3000, 1000);
+						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 100, 100);
 						double[] results = gf.fit();
 						if (results!=null){
 							Wx[i]=results[2];
@@ -112,8 +112,8 @@ public class Calibrator {
 		}
 		ThreadUtil.startAndJoin(threads);
 		// Find index of focus and map zgrid
-		indexZ0 = findIntersection(Wx, Wy);
-		createZgrid(zgrid, indexZ0);
+		//indexZ0 = findIntersection(Wx, Wy);
+		createZgrid(zgrid, 0);
 		
 		fixCurve(Wx);
 		fixCurve(Wy);
@@ -143,7 +143,7 @@ public class Calibrator {
 					calculateRange(rStart, rEnd);
 			    	
 					try{
-						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 30000, 10000);
+						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
 			    	} catch (TooManyEvaluationsException e) {
 			    		System.err.println("Too many evaluations!");				
 			    	}  catch (TooManyIterationsException e) {

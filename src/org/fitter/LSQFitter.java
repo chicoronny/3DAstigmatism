@@ -3,11 +3,6 @@ package org.fitter;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
-
-
-
-
-
 // Plugin classes
 import org.data.Calibration;
 import org.data.CalibrationCurve;
@@ -77,35 +72,43 @@ public class LSQFitter {
 	public void fitCurves(double[] z, double[] wx, double[] wy, double[] param, double[] curvex, double[] curvey,
 			int rStart, int rEnd, int maxIter, int maxEval) {
 
-		double[] rangedZ = new double[rEnd - rStart + 1];
-		double[] rangedWx = new double[rEnd - rStart + 1];
-		double[] rangedWy = new double[rEnd - rStart + 1];
+	  	double[] rangedZ = new double[rEnd-rStart+1];
+    	double[] rangedWx = new double[rEnd-rStart+1];
+    	double[] rangedWy = new double[rEnd-rStart+1];
+    	
+    	java.lang.System.arraycopy(z, rStart, rangedZ, 0, rEnd-rStart+1);
+    	java.lang.System.arraycopy(wx, rStart, rangedWx, 0, rEnd-rStart+1);
+    	java.lang.System.arraycopy(wy, rStart, rangedWy, 0, rEnd-rStart+1); 
+    	
+        final CalibrationCurve problem = new CalibrationCurve(rangedZ,rangedWx, rangedWy);
+        
+        LevenbergMarquardtOptimizer optimizer = getOptimizer();
 
-		System.arraycopy(z, rStart, rangedZ, 0, rEnd - rStart + 1);
-		System.arraycopy(wx, rStart, rangedWx, 0, rEnd - rStart + 1);
-		System.arraycopy(wy, rStart, rangedWy, 0, rEnd - rStart + 1);
+        final Optimum optimum = optimizer.optimize(
+                builder(problem)
+                        .target(problem.getTarget())
+                        //.checkerPair(new SimplePointChecker(10e-5, 10e-5))
+                        //.parameterValidator(new ParamValidatorCalibCurves())
+                        .start(problem.getInitialGuess())
+                        .maxIterations(maxIter)
+                        .maxEvaluations(maxIter)
+                        .build()
+        );
+        
+    	// Copy the fitted parameters
+        double[] result = optimum.getPoint().toArray();
+        for(int i=0; i<PARAM_1D_LENGTH;i++){
+        	param[i] = result[i];
+            //System.out.println(param[i]);
+        }
+        
+        // Copy the fitted curve values																				
+        double[] values = problem.valuesWith(z, result);
 
-		final CalibrationCurve problem = new CalibrationCurve(rangedZ, rangedWx, rangedWy);
-
-		LevenbergMarquardtOptimizer optimizer = getOptimizer();
-
-		final Optimum optimum = optimizer.optimize(builder(problem).target(problem.getTarget())
-				//.checkerPair(new SimplePointChecker<PointVectorValuePair>(10e-9, 10e-9))
-				//.parameterValidator(new ParamValidatorCalibCurves())
-				.start(problem.getInitialGuess()).maxIterations(maxIter).maxEvaluations(maxEval).build());
-
-		// Copy the fitted parameters
-		double[] result = optimum.getPoint().toArray();
-		for (int i = 0; i < PARAM_1D_LENGTH; i++) 
-			param[i] = result[i];
-
-		// Copy the fitted curve values
-		double[] values = CalibrationCurve.valuesWith(z, result);
-
-		for (int i = 0; i < curvex.length; i++) {
-			curvex[i] = values[i];
-			curvey[i] = values[i + curvex.length];
-		}
+        for(int i=0; i<curvex.length;i++){
+        	curvex[i] = values[i];
+        	curvey[i] = values[i+curvex.length];
+        }
 	}
 
 

@@ -20,7 +20,8 @@ public class Calibration {
 	public static int INDEX_BY = 5;
 	public static int INDEX_C = 6;
 	public static int INDEX_D = 7;
-	public static int PARAM_LENGTH = 8;
+	public static int INDEX_Mp = 8;
+	public static int PARAM_LENGTH = 9;
 
 	double[] zgrid;										// z positions of the slices in the stack
 	double[] Wx, Wy, Calibcurve;						// 1D and 2D fit results

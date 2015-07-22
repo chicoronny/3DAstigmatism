@@ -12,6 +12,7 @@ import java.io.File;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -46,8 +47,55 @@ public class PluginFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         panel = new javax.swing.JPanel();
+
+        jButton_cal = new javax.swing.JButton();
+        jButton_loc = new javax.swing.JButton();
+        jpanel_cal = new javax.swing.JPanel();  
+        jpanel_loc = new javax.swing.JPanel();
+        
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        panel.setPreferredSize(new java.awt.Dimension(250, 300));
+        panel.setLayout(new java.awt.CardLayout());
+
+        //////////////////////////
+        /// Calibration and localization buttons
+        jButton_cal.setText("New calibration");
+        jButton_cal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_calActionPerformed(evt);
+            }
+        });
+
+        jButton_loc.setText("Localize");
+        jButton_loc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_locActionPerformed(evt);
+            }
+        });
+        
+        //////////////////////////
+        /// Default empty panel
         jpanel_default = new javax.swing.JPanel();
-        jpanel_cal = new javax.swing.JPanel();
+
+        javax.swing.GroupLayout jpanel_defaultLayout = new javax.swing.GroupLayout(jpanel_default);
+        jpanel_default.setLayout(jpanel_defaultLayout);
+        jpanel_defaultLayout.setHorizontalGroup(
+            jpanel_defaultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 272, Short.MAX_VALUE)
+        );
+        jpanel_defaultLayout.setVerticalGroup(
+            jpanel_defaultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 304, Short.MAX_VALUE)
+        );
+
+        panel.add(jpanel_default, "def");
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// Calibration
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         jButton_import = new javax.swing.JButton();
         jTextField_calimname = new javax.swing.JTextField();
         jLabel_stepsize = new javax.swing.JLabel();
@@ -63,42 +111,11 @@ public class PluginFrame extends javax.swing.JFrame {
         jButton_calfitcurves = new javax.swing.JButton();
         jTextField_calfitcurves = new javax.swing.JTextField();
         jButton_calsave = new javax.swing.JButton();
-        jpanel_loc = new javax.swing.JPanel();
-        jButton_loadcal = new javax.swing.JButton();
-        jTextField_loccalname = new javax.swing.JTextField();
-        jButton_locfit = new javax.swing.JButton();
-        jButton_loadim = new javax.swing.JButton();
-        jTextField_imname = new javax.swing.JTextField();
-        jLabel_fitmethod = new javax.swing.JLabel();
-        jComboBox_fitmethod = new javax.swing.JComboBox();
-        jLabel_winsize = new javax.swing.JLabel();
-        jTextField_winsize = new javax.swing.JTextField();
-        jButton_locsave = new javax.swing.JButton();
-        jButton_cal = new javax.swing.JButton();
-        jButton_loc = new javax.swing.JButton();
-
-        jCheckBox_medianfilter = new javax.swing.JCheckBox();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        panel.setPreferredSize(new java.awt.Dimension(250, 300));
-        panel.setLayout(new java.awt.CardLayout());
-
-        javax.swing.GroupLayout jpanel_defaultLayout = new javax.swing.GroupLayout(jpanel_default);
-        jpanel_default.setLayout(jpanel_defaultLayout);
-        jpanel_defaultLayout.setHorizontalGroup(
-            jpanel_defaultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 272, Short.MAX_VALUE)
-        );
-        jpanel_defaultLayout.setVerticalGroup(
-            jpanel_defaultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 304, Short.MAX_VALUE)
-        );
-
-        panel.add(jpanel_default, "def");
-
+        
         jpanel_cal.setBorder(javax.swing.BorderFactory.createTitledBorder("Calibration"));
 
+        //////////////////////////
+        /// Import images
         jButton_import.setText("Import");
         jButton_import.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -109,11 +126,9 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_calimname.setEditable(false); 
         jTextField_calimname.setText("Image name");
 
-        
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////
         /// Step size
         jLabel_stepsize.setText("Step size (nm) :");
-
         jTextField_stepsize.setText(Integer.toString(default_step));
         
         DocumentListener documentListener_step = new DocumentListener() {
@@ -136,7 +151,9 @@ public class PluginFrame extends javax.swing.JFrame {
         };
         jTextField_stepsize.getDocument().addDocumentListener(documentListener_step);
         
-        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////
+        /// ROI
         jButton_roi.setText("Select ROI");
         jButton_roi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -147,6 +164,9 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_roi.setEditable(false);
         jTextField_roi.setText("ROI position");
 
+
+        //////////////////////////
+        /// Fit stack
         jButton_calfit.setText("Fit bead");
         jButton_calfit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -157,14 +177,12 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_calfit.setEditable(false);
         jTextField_calfit.setText("Waiting");
 
-        
-        
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// Range
+        //////////////////////////
+        /// Range of calibration curve fit
         jLabel_range.setText("Range (nm) :");
+        jLabel_rangehyph.setText("-");
 
         jTextField_rangemin.setText(Integer.toString(default_rmin));
-
         DocumentListener documentListener_rmin = new DocumentListener() {
             public void changedUpdate(DocumentEvent documentEvent) {
               printIt(documentEvent);
@@ -185,9 +203,7 @@ public class PluginFrame extends javax.swing.JFrame {
         };
         jTextField_rangemin.getDocument().addDocumentListener(documentListener_rmin);
         
-        
         jTextField_rangemax.setText(Integer.toString(default_rmax));
-
         DocumentListener documentListener_rmax = new DocumentListener() {
             public void changedUpdate(DocumentEvent documentEvent) {
               printIt(documentEvent);
@@ -208,12 +224,8 @@ public class PluginFrame extends javax.swing.JFrame {
         };
         jTextField_rangemax.getDocument().addDocumentListener(documentListener_rmax);
 
-        ////////////////////////////////////////////////////////////////////////////////////////////
-
-        
-        
-        jLabel_rangehyph.setText("-");
-
+        //////////////////////////
+        /// Fit calibration curves
         jButton_calfitcurves.setText("Fit curves");
         jButton_calfitcurves.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -224,6 +236,8 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_calfitcurves.setEditable(false);
         jTextField_calfitcurves.setText("Waiting");
 
+        //////////////////////////
+        /// Save 
         jButton_calsave.setText("Save calibration");
         jButton_calsave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -231,6 +245,8 @@ public class PluginFrame extends javax.swing.JFrame {
             }
         });
 
+        //////////////////////////
+        /// Layout
         javax.swing.GroupLayout jpanel_calLayout = new javax.swing.GroupLayout(jpanel_cal);
         jpanel_cal.setLayout(jpanel_calLayout);
         jpanel_calLayout.setHorizontalGroup(
@@ -315,12 +331,29 @@ public class PluginFrame extends javax.swing.JFrame {
         );
 
         panel.add(jpanel_cal, "cal");
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// Localization
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+        jButton_loadcal = new javax.swing.JButton();
+        jTextField_loccalname = new javax.swing.JTextField();
+        jButton_locfit = new javax.swing.JButton();
+        jButton_loadim = new javax.swing.JButton();
+        jTextField_imname = new javax.swing.JTextField();
+        jLabel_fitmethod = new javax.swing.JLabel();
+        jComboBox_fitmethod = new javax.swing.JComboBox();
+        jLabel_winsize = new javax.swing.JLabel();
+        jTextField_winsize = new javax.swing.JTextField();
+        jButton_locsave = new javax.swing.JButton();
+        jCheckBox_medianfilter = new javax.swing.JCheckBox();
+
         jpanel_loc.setBorder(javax.swing.BorderFactory.createTitledBorder("Localize"));
-
+        
+        //////////////////////////
+        /// Load calibration
         jButton_loadcal.setText("Load calibration");
         jButton_loadcal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -331,23 +364,21 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_loccalname.setEditable(false);
         jTextField_loccalname.setText("Calibration name");
 
-        jButton_locfit.setText("Fit stack");
-        jButton_locfit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton_locfitActionPerformed(evt);
-            }
-        });
-
+        //////////////////////////
+        /// Load images
         jButton_loadim.setText("Load images");
         jButton_loadim.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton_loadimActionPerformed(evt);
             }
         });
-
         jTextField_imname.setEditable(false);
         jTextField_imname.setText("Stack name");
 
+        
+
+        //////////////////////////
+        /// Fit method
         jLabel_fitmethod.setText("Fit method :");
 
         jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1D Gaussian proj", "2D Elliptical Gauss", "Centroid" }));
@@ -357,18 +388,9 @@ public class PluginFrame extends javax.swing.JFrame {
             }
         });
 
+        //////////////////////////
+        /// Median filtering
         jLabel_winsize.setText("Median filter size :");
-
-        
-        jCheckBox_medianfilter.setSelected(true);
-        jCheckBox_medianfilter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox_medianfilterActionPerformed(evt);
-            }
-        });
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // win size
         jTextField_winsize.setText(Integer.toString(default_wsize));
         
         DocumentListener documentListener_wsize = new DocumentListener() {
@@ -391,9 +413,24 @@ public class PluginFrame extends javax.swing.JFrame {
         };
         jTextField_winsize.getDocument().addDocumentListener(documentListener_wsize);
         
-        
-        //////////////////////////////////////////////////////////////////////////////////////
-        
+        jCheckBox_medianfilter.setSelected(true);
+        jCheckBox_medianfilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox_medianfilterActionPerformed(evt);
+            }
+        });
+
+        //////////////////////////
+        /// Fit stack
+        jButton_locfit.setText("Fit stack");
+        jButton_locfit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_locfitActionPerformed(evt);
+            }
+        });
+
+        //////////////////////////
+        /// Save results
         jButton_locsave.setText("Save");
         jButton_locsave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -401,6 +438,8 @@ public class PluginFrame extends javax.swing.JFrame {
             }
         });
 
+        //////////////////////////
+        /// Layout
         javax.swing.GroupLayout jpanel_locLayout = new javax.swing.GroupLayout(jpanel_loc);
         jpanel_loc.setLayout(jpanel_locLayout);
         jpanel_locLayout.setHorizontalGroup(
@@ -464,20 +503,10 @@ public class PluginFrame extends javax.swing.JFrame {
         );
         panel.add(jpanel_loc, "loc");
 
-        jButton_cal.setText("New calibration");
-        jButton_cal.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton_calActionPerformed(evt);
-            }
-        });
-
-        jButton_loc.setText("Localize");
-        jButton_loc.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton_locActionPerformed(evt);
-            }
-        });
-
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// Global layout
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -726,11 +755,13 @@ public class PluginFrame extends javax.swing.JFrame {
     }                                               
 
     
-    
+    ///////////////////////////////////////////////////////////////////
+    /// Misc functions
     public boolean isNumeric(String s) {
         return s.matches("[-+]?\\d*\\.?\\d+");
     }
     
+    //////////////////////////////////////////////////////////////////
     // Variables declaration - do not modify
     
     // calibration

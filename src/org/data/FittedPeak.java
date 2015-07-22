@@ -2,7 +2,7 @@ package org.data;
 
 public class FittedPeak extends Peak {
 	
-	private double fitX, fitY, z_;
+	private double fitX, fitY, z_, fitI, fitBg;
 
 	public FittedPeak(int x, int y, int value, double fitX, double fitY, double z) {
 		super(x, y, value);
@@ -25,6 +25,15 @@ public class FittedPeak extends Peak {
 		z_ = z;
 	}
 	
+	public FittedPeak(int slice, int x, int y, int value, double sx, double sy, double fitX, double fitY, double z, double fitI, double fitBg) {
+		super(slice, x, y, value, sx, sy);
+		this.fitX = fitX;
+		this.fitY = fitY;
+		this.fitI = fitI;
+		this.fitBg = fitBg;
+		z_ = z;
+	}
+	
 	public FittedPeak(Peak p, double fitX, double fitY, double z){
 		super(p);
 		this.fitX = fitX;
@@ -33,7 +42,7 @@ public class FittedPeak extends Peak {
 	}
 	
 	public String toString(){
-		String s = "" +  getID() + "," + getSlice() + "," + getX() + "," + getY()+ "," + getValue() + "," + fitX + "," + fitY+ "," + z_ + "\n";
+		String s = "" +  fitX + "," + fitY+ "," + z_ + "," + fitI + "," + getSlice() + "\n";
 		return s;
 	}
 

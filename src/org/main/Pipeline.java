@@ -50,8 +50,13 @@ public class Pipeline implements Runnable {
 	private Properties props;
 	private int maxIter;
 	private int maxEval;
+	private int winsize;
 	private Calibration cal;
 	private int numThreads = Runtime.getRuntime().availableProcessors();
+	private String fitmethod;
+	List<FittedPeak> fitted;
+	private boolean filter;
+
 	
 	public Pipeline(String path) {
 		props = new Properties();
@@ -61,6 +66,16 @@ public class Pipeline implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public Pipeline(Calibration cal, int wsize, String fitmethod, ImagePlus img, boolean filter) {
+		this.cal = cal;
+		maxIter = 3000;
+		maxEval = 1000;
+		this.fitmethod = fitmethod;
+		this.winsize = wsize;
+		this.img = img;
+		this.filter = filter;
 	}
 	
 	private void loadImages(String startpath){
@@ -183,7 +198,7 @@ public class Pipeline implements Runnable {
 							results = gf.fit();
 							if (results!=null){
 								double SxSy = results[2]*results[2] - results[3]*results[3];			
-								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy)));
+								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], results[5]));
 							}
 						}
 					}
@@ -347,10 +362,39 @@ public class Pipeline implements Runnable {
 
 		return chunks;
 	}
+	
+	public void saveCSV(String path){
+		 csvWriter w = new csvWriter(new File(path+".csv"));
+	 	 for (FittedPeak p:fitted)
+	 	    	w.process(p.toString());
+	 	 w.close();
+	 	 System.out.println("5 - wrote result to file");
+	}
 
 	@Override
 	public void run() {
-		cal = new Calibration();
+		stackSize = img.getStackSize();
+		getThresholds();
+		
+		if(filter){
+			ImagePlus imMedian = medianFilter(winsize);
+			ImageCalculator calcul = new ImageCalculator(); 
+			calcul.run("Substract", img, imMedian);
+		}
+		
+		List<Peak> peaks = NMSFinder(10,300);
+		
+ 	    if(fitmethod.equals("1DG")){
+ 	 	    fitted = gaussian2DFitter(peaks, 20);
+ 	    } else if(fitmethod.equals("2DG")) {
+ 	 	    fitted = gaussian2DFitter(peaks, 20);
+ 	    } else {
+ 	 	    fitted = gaussian2DFitter(peaks, 20);
+ 	    }
+ 	    System.out.println("Done");
+ 	    
+ 	    
+		/*cal = new Calibration();
 		cal.readCSV(props.getProperty("calibrationFile", "calib.csv"));
 		maxIter = Integer.parseInt(props.getProperty("maxIter", "3000"));
 		maxEval = Integer.parseInt(props.getProperty("maxEval", "1000"));
@@ -371,7 +415,7 @@ public class Pipeline implements Runnable {
  	    for (FittedPeak p:fitted)
  	    	w.process(p.toString());
  	    w.close();
- 	    System.out.println("5 - wrote result to file: " + props.getProperty("ouputPath"));
+ 	    System.out.println("5 - wrote result to file: " + props.getProperty("ouputPath"));*/
 	}
 
 }

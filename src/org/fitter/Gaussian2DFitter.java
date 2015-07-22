@@ -4,7 +4,9 @@ import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
@@ -22,6 +24,8 @@ public class Gaussian2DFitter {
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
+	public static final int NUM_PARAMTER = 6;
+
 
 	public Gaussian2DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
 		ip = ip_;
@@ -69,7 +73,7 @@ public class Gaussian2DFitter {
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
-		double [] result = new double[4];
+		double [] result = new double[NUM_PARAMTER];
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		try {
@@ -77,6 +81,7 @@ public class Gaussian2DFitter {
 	                builder(eg)
 	                .target(Ival)
 	                .checkerPair(new ConvChecker2DGauss())
+                    .parameterValidator(new ParamValidator2DGauss())
 	                .start(eg.getInitialGuess(ip,roi))
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
@@ -94,8 +99,10 @@ public class Gaussian2DFitter {
 		
         result[0] = fittedEG[0];
         result[1] = fittedEG[1];
-        result[2] = Math.abs(fittedEG[2]);
-        result[3] = Math.abs(fittedEG[3]);
+        result[2] = fittedEG[2];
+        result[3] = fittedEG[3];
+        result[4] = fittedEG[4];
+        result[5] = fittedEG[5];
         	
 		return result;
 	}	
@@ -133,6 +140,33 @@ public class Gaussian2DFitter {
 	        lastResult_ = false;
 			return false;
 		}
+	}
+
+	private class ParamValidator2DGauss implements ParameterValidator {
+		public static final int INDEX_X0 = 0;
+		public static final int INDEX_Y0 = 1;
+		public static final int INDEX_SX = 2;
+		public static final int INDEX_SY = 3;
+		public static final int INDEX_I0 = 4;
+		public static final int INDEX_Bg = 5;
+		
+		@Override
+		public RealVector validate(RealVector arg) {
+			if(arg.getEntry(INDEX_SX)<0){
+				arg.setEntry(INDEX_SX, -arg.getEntry(INDEX_SX));
+			}
+			if(arg.getEntry(INDEX_SY)<0){
+				arg.setEntry(INDEX_SY, -arg.getEntry(INDEX_SY));
+			}
+			if(arg.getEntry(INDEX_I0)<0){
+				arg.setEntry(INDEX_I0, 0);
+			}
+			if(arg.getEntry(INDEX_Bg)<0){
+				arg.setEntry(INDEX_Bg, 0);
+			}
+			return arg;
+		}
+
 	}
 
 }

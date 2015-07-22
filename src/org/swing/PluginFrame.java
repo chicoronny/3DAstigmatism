@@ -10,6 +10,7 @@ import ij.plugin.FolderOpener;
 import java.awt.CardLayout;
 import java.io.File;
 
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -17,7 +18,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.Document;
 
 import org.data.Calibration;
+import org.data.FittedPeak;
+import org.data.csvWriter;
 import org.main.Calibrator;
+import org.main.Pipeline;
 
 /**
  *
@@ -72,6 +76,8 @@ public class PluginFrame extends javax.swing.JFrame {
         jButton_locsave = new javax.swing.JButton();
         jButton_cal = new javax.swing.JButton();
         jButton_loc = new javax.swing.JButton();
+
+        jCheckBox_medianfilter = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -310,6 +316,9 @@ public class PluginFrame extends javax.swing.JFrame {
 
         panel.add(jpanel_cal, "cal");
 
+        
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         jpanel_loc.setBorder(javax.swing.BorderFactory.createTitledBorder("Localize"));
 
         jButton_loadcal.setText("Load calibration");
@@ -348,10 +357,43 @@ public class PluginFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel_winsize.setText("Window size :");
+        jLabel_winsize.setText("Median filter size :");
 
-        jTextField_winsize.setText("5");
+        
+        jCheckBox_medianfilter.setSelected(true);
+        jCheckBox_medianfilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox_medianfilterActionPerformed(evt);
+            }
+        });
 
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // win size
+        jTextField_winsize.setText(Integer.toString(default_wsize));
+        
+        DocumentListener documentListener_wsize = new DocumentListener() {
+            public void changedUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void insertUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            public void removeUpdate(DocumentEvent documentEvent) {
+              printIt(documentEvent);
+            }
+            private void printIt(DocumentEvent documentEvent) {
+            	if(!isNumeric(jTextField_winsize.getText())){
+            		winsize = default_wsize;
+            	} else {
+            		winsize = Integer.parseInt(jTextField_winsize.getText());
+            	}
+            }
+        };
+        jTextField_winsize.getDocument().addDocumentListener(documentListener_wsize);
+        
+        
+        //////////////////////////////////////////////////////////////////////////////////////
+        
         jButton_locsave.setText("Save");
         jButton_locsave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -381,7 +423,10 @@ public class PluginFrame extends javax.swing.JFrame {
                     .addGroup(jpanel_locLayout.createSequentialGroup()
                         .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jComboBox_fitmethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jpanel_locLayout.createSequentialGroup()
+                                .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jCheckBox_medianfilter)))
                         .addGap(0, 8, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(jpanel_locLayout.createSequentialGroup()
@@ -409,14 +454,14 @@ public class PluginFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel_winsize)
-                    .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
+                    .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBox_medianfilter))
+                .addGap(25, 25, 25)
                 .addComponent(jButton_locfit)
                 .addGap(18, 18, 18)
                 .addComponent(jButton_locsave)
-                .addContainerGap(46, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
-
         panel.add(jpanel_loc, "loc");
 
         jButton_cal.setText("New calibration");
@@ -491,7 +536,6 @@ public class PluginFrame extends javax.swing.JFrame {
     // import images
     private void jButton_importActionPerformed(java.awt.event.ActionEvent evt) {                                               
     	JFileChooser fc = new JFileChooser();
-    	fc.setCurrentDirectory(new File("/home/ronny/ownCloud/storm"));
     	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     	
     	int returnVal = fc.showOpenDialog(this);
@@ -513,7 +557,7 @@ public class PluginFrame extends javax.swing.JFrame {
         
         cal_nSlice = cal_im.getNSlices();
 		new StackWindow(cal_im);
-		cal_im.setRoi((int) (cal_im.getWidth()/2 - 10), (int) (cal_im.getHeight()/2 - 10), 20, 20);							// why?
+		cal_im.setRoi((int) (cal_im.getWidth()/2 - 10), (int) (cal_im.getHeight()/2 - 10), 20, 20);							
     }                                              
 
     // get the ROI
@@ -576,7 +620,9 @@ public class PluginFrame extends javax.swing.JFrame {
     	 
     	JFileChooser fileChooser = new JFileChooser();
     	fileChooser.setDialogTitle("Save calibration");   
-    	 
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+        fileChooser.setFileFilter(filter);
+
     	int userSelection = fileChooser.showSaveDialog(this);
     	 
     	if (userSelection == JFileChooser.APPROVE_OPTION) {
@@ -591,21 +637,28 @@ public class PluginFrame extends javax.swing.JFrame {
     /////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////
     // Localize
+    
+    // load calibration
     private void jButton_loadcalActionPerformed(java.awt.event.ActionEvent evt) {                                                
         calib = new Calibration();
-        ////////////////////////////////////////////////////////////////////////////////////// JFileCHooser
         JFileChooser jf = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
         jf.setFileFilter(filter);
- 
+    	jf.setDialogTitle("Load calibration");   
+   	 
+    	int userSelection = jf.showOpenDialog(this);
+    	 
+    	if (userSelection == JFileChooser.APPROVE_OPTION) {
+    	    File file = jf.getSelectedFile();
+            calib.readCSV(file.getAbsolutePath());
+            jTextField_loccalname.setText(file.getName());
+    	}
         
-        calib.readCSV(calibrationPath);
-        jTextField_loccalname.setText(calibrationPath);
     }                                               
 
+    // load images
     private void jButton_loadimActionPerformed(java.awt.event.ActionEvent evt) {                                               
     	JFileChooser fc = new JFileChooser();
-    	fc.setCurrentDirectory(new File("/home/ronny/ownCloud/storm"));
     	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     	
     	int returnVal = fc.showOpenDialog(this);
@@ -618,27 +671,58 @@ public class PluginFrame extends javax.swing.JFrame {
         loc_filePath = file.getAbsolutePath();
         
         if (file.isDirectory()){
-        	loc_im = FolderOpener.open(cal_filePath);
+        	loc_im = FolderOpener.open(loc_filePath);
         }
         
         if (file.isFile()){
-        	loc_im = new ImagePlus(cal_filePath);
+        	loc_im = new ImagePlus(loc_filePath);
         }
+        
         
         loc_nSlice = loc_im.getNSlices();
 		new StackWindow(loc_im);
     }                                              
 
     private void jComboBox_fitmethodPropertyChange(java.beans.PropertyChangeEvent evt) {                                                   
-        // TODO add your handling code here:
-    }                                                  
+    	JComboBox combo = (JComboBox)evt.getSource();
+        int ind = combo.getSelectedIndex();
+        switch(ind){
+        case 0:
+        	fitmethod = "1DG";
+        	break;
+        	
+        case 1:
+        	fitmethod = "2DG";
+        	break;
+        	
+        case 2:
+        	fitmethod = "centroid";
+        	break;
+        }
+    }    
+    
+    private void jCheckBox_medianfilterActionPerformed(java.awt.event.ActionEvent evt){
+    	median_filt = jCheckBox_medianfilter.isSelected();
+    }
 
+    // fit frames
     private void jButton_locfitActionPerformed(java.awt.event.ActionEvent evt) {                                               
-        // TODO add your handling code here:
+    	p = new Pipeline(calib, winsize, fitmethod, loc_im, median_filt);
+    	p.run();
     }                                              
 
     private void jButton_locsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
-        // TODO add your handling code here:
+        JFileChooser jf = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+        jf.setFileFilter(filter);
+    	jf.setDialogTitle("Save results");   
+   	 
+    	int userSelection = jf.showSaveDialog(this);
+    	 
+    	if (userSelection == JFileChooser.APPROVE_OPTION) {
+    	    File file = jf.getSelectedFile();
+    	    p.saveCSV(file.getAbsolutePath());
+    	}
     }                                               
 
     
@@ -664,9 +748,16 @@ public class PluginFrame extends javax.swing.JFrame {
        
     // localize
     Calibration calib;
-    String calibrationPath, loc_filePath;
+    String calibrationPath, loc_filePath, fitmethod;
     ImagePlus loc_im;
     int loc_nSlice;
+    int winsize;
+    boolean median_filt = true;
+
+    static final int default_wsize = 5;
+    static final String default_fit = "1DG";
+    
+    Pipeline p;
     
     // swing
     private javax.swing.JButton jButton_cal;
@@ -680,6 +771,7 @@ public class PluginFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButton_locfit;
     private javax.swing.JButton jButton_locsave;
     private javax.swing.JButton jButton_roi;
+    private javax.swing.JCheckBox jCheckBox_medianfilter;
     private javax.swing.JComboBox jComboBox_fitmethod;
     private javax.swing.JLabel jLabel_fitmethod;
     private javax.swing.JLabel jLabel_range;

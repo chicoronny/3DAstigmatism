@@ -22,11 +22,6 @@ public class CalibrationCurve {
     private double minx, miny, minz; 
 
     public CalibrationCurve(double[] z, double[] wx, double[] wy) {
-
-    	for(int i=0;i<z.length;i++){
-    		System.out.println(z[i]);
-    	}
-    	
     	length = z.length;
     	zgrid = new double[2*length];
     	java.lang.System.arraycopy(z, 0, zgrid, 0, length);

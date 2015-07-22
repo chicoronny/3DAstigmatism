@@ -26,7 +26,7 @@ public class Calibrator {
 
 	/////////////////////////////
 	// Fitting parameters
-	public static int PARAM_1D_LENGTH = 8;				// Number of parameters to fit in 1D (calibration curve)
+	public static int PARAM_1D_LENGTH = 9;				// Number of parameters to fit in 1D (calibration curve)
 	public static int PARAM_2D_LENGTH = 6;				// Number of parameters to fit in 2D (elliptical gaussian)
 	int MAX_ITERATIONS_1D = 100;
 	int MAX_ITERATIONS_2D = 100;

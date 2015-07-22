@@ -174,7 +174,8 @@ public class Calibration {
 						Double.parseDouble(s[4]),
 						Double.parseDouble(s[5]),
 						Double.parseDouble(s[6]),
-						Double.parseDouble(s[7])};
+						Double.parseDouble(s[7]),
+						Double.parseDouble(s[8])};
 			}
 			br.close();
 		} catch (IOException e) {

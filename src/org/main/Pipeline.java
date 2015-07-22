@@ -46,6 +46,7 @@ public class Pipeline implements Runnable {
 	public static int INDEX_BY = 5;
 	public static int INDEX_C = 6;
 	public static int INDEX_D = 7;
+	public static int INDEX_Mp = 8;
 	
 	private Properties props;
 	private int maxIter;
@@ -268,6 +269,7 @@ public class Pipeline implements Runnable {
 		final double[] curve = cal.getCalibcurve();
 		final double[] zgrid = cal.getZgrid();
 		final int end = curve.length-1;
+		
 		if(end < 1) return 0;
 		if(curve.length != zgrid.length) return 0;
 		
@@ -276,7 +278,7 @@ public class Pipeline implements Runnable {
 			return Math.min(curve[0],curve[end]);
 		if (SxSy > Math.max(curve[0],curve[end]) )
 			return Math.max(curve[0],curve[end]);
-		
+
 		return calcIterZ(SxSy, Math.min(zgrid[0],zgrid[end]), Math.max(zgrid[0],zgrid[end]), 1e-4);
 		
 	}
@@ -292,35 +294,37 @@ public class Pipeline implements Runnable {
 		double curveWx = valuesWith(start,cal.getparam())[0];
 		double curveWy = valuesWith(start,cal.getparam())[1];
 		double calib = curveWx*curveWx-curveWy*curveWy;
+		//System.out.println("---------------");
+		//System.out.println(SxSy);
 		double distance = Math.abs(calib - SxSy);
 		double idx = start;
 		for ( double c = start+zStep ; c<=end; c += zStep){
 			curveWx = valuesWith(c,cal.getparam())[0];
 			curveWy = valuesWith(c,cal.getparam())[1];
 			calib = curveWx*curveWx-curveWy*curveWy;
+			//System.out.println("---");
+			//System.out.println(calib);
 		    double cdistance = Math.abs(calib - SxSy);
 		    if(cdistance < distance){
 		        idx = c;
 		        distance = cdistance;
 		    }
 		}
-		if (zStep<=precision) 
+		if (zStep<=precision){ 
 			return idx;
-		else
+		} else
 			return calcIterZ(SxSy,idx - zStep, idx + zStep, precision);
 	}
 
-	// with 8 Parameters
+	// with 9 Parameters
 	private double[] valuesWith(double z, double[] params) {
 		double[] values = new double[2];
 		double b;
 		
-		b = (z - params[INDEX_C]) / params[INDEX_D];
-		values[0] = params[INDEX_WX]
-				* Math.sqrt(1 + b * b + params[INDEX_AX] * b * b * b + params[INDEX_BX] * b * b * b * b);
+		b = (z-params[INDEX_C]-params[INDEX_Mp])/params[INDEX_D];
+		values[0] = params[INDEX_WX]*Math.sqrt(1+b*b+params[INDEX_AX]*b*b*b+params[INDEX_BX]*b*b*b*b);
 	
-	
-		b = (z + params[INDEX_C]) / params[INDEX_D];
+		b = (z+params[INDEX_C]-params[INDEX_Mp])/params[INDEX_D];
 		values[1] = params[INDEX_WY]
 				* Math.sqrt(1 + b * b + params[INDEX_AY] * b * b * b + params[INDEX_BY] * b * b * b * b);
 		

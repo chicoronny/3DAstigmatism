@@ -36,7 +36,7 @@ public class LSQFitter {
 
 	// ///////////////////////////
 	// Misc
-	public static int PARAM_1D_LENGTH = 8; // Number of parameters to fit in 1D (calibration curve)
+	public static int PARAM_1D_LENGTH = 9; // Number of parameters to fit in 1D (calibration curve)
 //	public static int PARAM_2D_LENGTH = 6; // Number of parameters to fit in 2D (elliptical Gaussian)
 	public static int PARAM_3D_LENGTH = 5; // Number of parameters to fit in 2D (elliptical Gaussian with z)	
 	
@@ -97,6 +97,7 @@ public class LSQFitter {
         
     	// Copy the fitted parameters
         double[] result = optimum.getPoint().toArray();
+
         for(int i=0; i<PARAM_1D_LENGTH;i++){
         	param[i] = result[i];
             //System.out.println(param[i]);

@@ -22,6 +22,7 @@ import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.data.Calibration;
 import org.data.Chunk;
@@ -210,6 +211,10 @@ public class Pipeline implements Runnable {
 		
 		ThreadUtil.startAndJoin(threads);
 		System.out.println("Peaks fitted: " + fitted.size());
+		
+		JOptionPane.showMessageDialog(new JFrame(),
+			    "Fitting done!");
+		
 		return fitted;
 	}
 	

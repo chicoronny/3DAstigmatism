@@ -8,11 +8,14 @@ import ij.gui.StackWindow;
 import ij.plugin.FolderOpener;
 
 import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.File;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -53,8 +56,19 @@ public class PluginFrame extends javax.swing.JFrame {
         jpanel_cal = new javax.swing.JPanel();  
         jpanel_loc = new javax.swing.JPanel();
         
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE  );
 
+        //////////////////////////
+        /// Position
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        // Determine the new location of the window
+        int w = this.getSize().width;
+        int h = this.getSize().height;
+        int x = (dim.width-w)/2;
+        int y = (dim.height-h)/2;
+        // Move the window
+        this.setLocation(x, y);
+        
         panel.setPreferredSize(new java.awt.Dimension(250, 300));
         panel.setLayout(new java.awt.CardLayout());
 
@@ -381,7 +395,7 @@ public class PluginFrame extends javax.swing.JFrame {
         /// Fit method
         jLabel_fitmethod.setText("Fit method :");
 
-        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1D Gaussian proj", "2D Elliptical Gauss", "Centroid" }));
+        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "1D Gauss proj", "Centroid" }));
         jComboBox_fitmethod.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 jComboBox_fitmethodPropertyChange(evt);
@@ -586,7 +600,8 @@ public class PluginFrame extends javax.swing.JFrame {
         
         cal_nSlice = cal_im.getNSlices();
 		new StackWindow(cal_im);
-		cal_im.setRoi((int) (cal_im.getWidth()/2 - 10), (int) (cal_im.getHeight()/2 - 10), 20, 20);							
+		cal_im.setRoi((int) (cal_im.getWidth()/2 - 10), (int) (cal_im.getHeight()/2 - 10), 20, 20);		
+		stack_fitted =false;
     }                                              
 
     // get the ROI
@@ -614,34 +629,48 @@ public class PluginFrame extends javax.swing.JFrame {
 
     // fit the images
     private void jButton_calfitActionPerformed(java.awt.event.ActionEvent evt) {     
-    	if(!isNumeric(jTextField_stepsize.getText())){
-    		cal = new Calibrator(cal_im, default_step, roi);
-    	}	else if(jTextField_stepsize.getText().equals(Integer.toString(default_step))){
-    		cal = new Calibrator(cal_im, default_step, roi);
+	   if(cal_im!=null){
+		   if(!isNumeric(jTextField_stepsize.getText())){
+	    		cal = new Calibrator(cal_im, default_step, roi);
+	    	}	else if(jTextField_stepsize.getText().equals(Integer.toString(default_step))){
+	    		cal = new Calibrator(cal_im, default_step, roi);
+	    	} else {
+	    		cal = new Calibrator(cal_im, zstep, roi);
+	    	}
+    		cal.fitStack(jTextField_calfit);													// Passing a component to update it....
+    		jTextField_calfit.setText("In progress");
+    		stack_fitted=true;
     	} else {
-    		cal = new Calibrator(cal_im, zstep, roi);
+    		JOptionPane.showMessageDialog(this,
+    			    "No image loaded",
+    			    "Warning",
+    			    JOptionPane.WARNING_MESSAGE);
     	}
-		cal.fitStack(jTextField_calfit);													// Passing a component to update it....
-		jTextField_calfit.setText("In progress");
     }                                              
 
     // fit the curves
     private void jButton_calfitcurvesActionPerformed(java.awt.event.ActionEvent evt) {   
-    	
-    	if(!isNumeric(jTextField_rangemin.getText())){										// case empty textfield
-    		rangeMin = default_rmin; 
-    	} else if(jTextField_rangemin.getText().equals(Integer.toString(default_rmin))){	// case nothing has been modified
-    		rangeMin = default_rmin; 
-    	}
-    	
-    	if(!isNumeric(jTextField_rangemax.getText())){
-    		rangeMax = default_rmax; 
-    	} else if(jTextField_rangemax.getText().equals(Integer.toString(default_rmax))){
-    		rangeMax = default_rmax; 
-    	}
-    	
-    	cal.fitCalibrationCurve(jTextField_calfitcurves,rangeMin, rangeMax);			    // same here
-		jTextField_calfit.setText("In progress");									 
+ 	    if(stack_fitted){
+	    	if(!isNumeric(jTextField_rangemin.getText())){										// case empty textfield
+	    		rangeMin = default_rmin; 
+	    	} else if(jTextField_rangemin.getText().equals(Integer.toString(default_rmin))){	// case nothing has been modified
+	    		rangeMin = default_rmin; 
+	    	}
+	    	
+	    	if(!isNumeric(jTextField_rangemax.getText())){
+	    		rangeMax = default_rmax; 
+	    	} else if(jTextField_rangemax.getText().equals(Integer.toString(default_rmax))){
+	    		rangeMax = default_rmax; 
+	    	}
+	    	
+	    	cal.fitCalibrationCurve(jTextField_calfitcurves,rangeMin, rangeMax);			    // same here
+			jTextField_calfit.setText("In progress");			
+ 	    } else {
+    		JOptionPane.showMessageDialog(this,
+    			    "No fitted stack",
+    			    "Warning",
+    			    JOptionPane.WARNING_MESSAGE);
+ 	    }
     }                                                    
 
     // save the calibration
@@ -712,16 +741,17 @@ public class PluginFrame extends javax.swing.JFrame {
 		new StackWindow(loc_im);
     }                                              
 
+    // fit method 
     private void jComboBox_fitmethodPropertyChange(java.beans.PropertyChangeEvent evt) {                                                   
     	JComboBox combo = (JComboBox)evt.getSource();
         int ind = combo.getSelectedIndex();
         switch(ind){
         case 0:
-        	fitmethod = "1DG";
+        	fitmethod = "2DG";
         	break;
         	
         case 1:
-        	fitmethod = "2DG";
+        	fitmethod = "1DG";
         	break;
         	
         case 2:
@@ -730,14 +760,22 @@ public class PluginFrame extends javax.swing.JFrame {
         }
     }    
     
+    // median filter
     private void jCheckBox_medianfilterActionPerformed(java.awt.event.ActionEvent evt){
     	median_filt = jCheckBox_medianfilter.isSelected();
     }
 
     // fit frames
     private void jButton_locfitActionPerformed(java.awt.event.ActionEvent evt) {                                               
-    	p = new Pipeline(calib, winsize, fitmethod, loc_im, median_filt);
-    	p.run();
+    	if(loc_im!=null && calib!=null){
+    		p = new Pipeline(calib, winsize, fitmethod, loc_im, median_filt);
+    		p.run();
+    	} else {
+    		JOptionPane.showMessageDialog(this,
+    			    "Images or calibration not imported",
+    			    "Warning",
+    			    JOptionPane.WARNING_MESSAGE);
+    	}
     }                                              
 
     private void jButton_locsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
@@ -772,14 +810,14 @@ public class PluginFrame extends javax.swing.JFrame {
     Roi roi;
     Calibrator cal;
     int rangeMin, rangeMax;
-    
+    boolean stack_fitted=false;
     static final int default_step = 10;
     static final int default_rmin = 0;
     static final int default_rmax = 200;
        
     // localize
     Calibration calib;
-    String calibrationPath, loc_filePath, fitmethod;
+    String calibrationPath, loc_filePath, fitmethod="2DG";
     ImagePlus loc_im;
     int loc_nSlice;
     int winsize;

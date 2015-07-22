@@ -373,9 +373,17 @@ public class Pipeline implements Runnable {
 
 		return chunks;
 	}
-	
+
 	public void saveCSV(String path){
 		 csvWriter w = new csvWriter(new File(path+".csv"));
+	 	 for (FittedPeak p:fitted)
+	 	    	w.process(p.toString());
+	 	 w.close();
+	 	 System.out.println("5 - wrote result to file");
+	}
+	
+	public void saveTXT(String path){
+		 csvWriter w = new csvWriter(new File(path+".txt"));
 	 	 for (FittedPeak p:fitted)
 	 	    	w.process(p.toString());
 	 	 w.close();

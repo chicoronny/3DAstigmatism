@@ -396,7 +396,8 @@ public class PluginFrame extends javax.swing.JFrame {
         /// Fit method
         jLabel_fitmethod.setText("Fit method :");
 
-        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "1D Gauss proj", "Centroid" }));
+        //jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "1D Gauss proj", "Centroid" }));
+        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "Centroid" }));
         jComboBox_fitmethod.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 jComboBox_fitmethodPropertyChange(evt);
@@ -788,7 +789,7 @@ public class PluginFrame extends javax.swing.JFrame {
     private void jButton_locsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
     	if(p.getNumPeaks()>0){
 	    	JFileChooser jf = new JFileChooser();
-	        FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+	        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt");
 	        jf.setFileFilter(filter);
 	    	jf.setDialogTitle("Save results");   
 	   	 
@@ -796,7 +797,7 @@ public class PluginFrame extends javax.swing.JFrame {
 	    	 
 	    	if (userSelection == JFileChooser.APPROVE_OPTION) {
 	    	    File file = jf.getSelectedFile();
-	    	    p.saveCSV(file.getAbsolutePath());
+	    	    p.saveTXT(file.getAbsolutePath());
 	    	}
 	    } else {
     		JOptionPane.showMessageDialog(this,

@@ -42,7 +42,7 @@ public class FittedPeak extends Peak {
 	}
 	
 	public String toString(){
-		String s = "" +  fitX + "," + fitY+ "," + z_ + "," + fitI + "," + getSlice() + "\n";
+		String s = fitX + "\t" + fitY+ "\t" + z_ + "\t" + fitI + "\t" + getSlice() + "\r\n";
 		return s;
 	}
 

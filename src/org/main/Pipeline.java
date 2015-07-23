@@ -58,7 +58,8 @@ public class Pipeline implements Runnable {
 	private String fitmethod;
 	List<FittedPeak> fitted;
 	private boolean filter;
-
+	private Thread[] threads;
+	private boolean stop =false;
 	
 	public Pipeline(String path) {
 		props = new Properties();
@@ -174,47 +175,52 @@ public class Pipeline implements Runnable {
 		final ImageStack is = img.getStack();
 		final int halfSize =size / 2;
 		final Vector< Chunk > chunks = divideIntoChunks( stackSize, numThreads  );
-		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
+		threads = ThreadUtil.createThreadArray(numThreads);
 		for ( int i = 0; i < threads.length; i++ ){
 			final Chunk chunk = chunks.get( i );
 			threads[ i ] = new Thread( "FitterChunk " + i ){
 				@Override
 				public void run(){	
 					for (long j = 0;j<chunk.getLoopSize();j++){
-						long frame = chunk.getStartPosition() + j;
-	
-						List<Peak> slicePeaks = new ArrayList<Peak>();
-						for (Peak peak: peaks)
-							if (peak.getSlice() == frame)
-								slicePeaks.add(peak);
-						
-						if (slicePeaks.isEmpty()) continue;
-						
-						ImageProcessor ip = is.getProcessor((int) frame);
-						
-						for (Peak p : slicePeaks) {
-							final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
-							final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
-							Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
-							double[] results = null;
-							results = gf.fit();
-							if (results!=null){
-								double SxSy = results[2]*results[2] - results[3]*results[3];			
-								fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], results[5]));
+						if(!stop){
+							long frame = chunk.getStartPosition() + j;
+		
+							List<Peak> slicePeaks = new ArrayList<Peak>();
+							for (Peak peak: peaks)
+								if (peak.getSlice() == frame)
+									slicePeaks.add(peak);
+							
+							if (slicePeaks.isEmpty()) continue;
+							
+							ImageProcessor ip = is.getProcessor((int) frame);
+							for (Peak p : slicePeaks) {
+								final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
+								final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+								Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
+								double[] results = null;
+								results = gf.fit();
+								if (results!=null){
+									double SxSy = results[2]*results[2] - results[3]*results[3];			
+									fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], results[5]));
+								}
 							}
 						}
 					}
-					
 				}
 			};
 		}
 		
 		ThreadUtil.startAndJoin(threads);
-		System.out.println("Peaks fitted: " + fitted.size());
 		
-		JOptionPane.showMessageDialog(new JFrame(),
-			    "Fitting done!");
-		
+		if(stop){
+			System.out.println("Interrupted");
+			JOptionPane.showMessageDialog(new JFrame(),
+				    "Fitting interrupted.");
+		} else {
+			System.out.println("Peaks fitted: " + fitted.size());
+			JOptionPane.showMessageDialog(new JFrame(),
+				    "Fitting done!");
+		}
 		return fitted;
 	}
 	
@@ -228,47 +234,56 @@ public class Pipeline implements Runnable {
 		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
 		
 		final Vector< Chunk > chunks = divideIntoChunks( peaks.size(), numThreads  );
-		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
+		threads = ThreadUtil.createThreadArray(numThreads);
 		for ( int i = 0; i < threads.length; i++ ){
 			final Chunk chunk = chunks.get( i );
 			threads[ i ] = new Thread( "FitterChunk " + i ){
 				@Override
 				public void run(){	
 					final List<Peak> chunkPeaks = peaks.subList((int)chunk.getStartPosition(), (int)(chunk.getStartPosition()+chunk.getLoopSize()));
-					for (Peak p : chunkPeaks){
-						int xstart = p.getX()-roi_size;
-						int ystart = p.getY()-roi_size;
-						int xend = p.getX()+roi_size;
-						int yend = p.getY()+roi_size;
-						double[] results = new double[4];
-						
-						// Boundaries
-						if(xstart<0)
-							xstart = 0;
-						if(ystart < 0)
-							ystart = 0;
-						if(xend >= width)
-							xend = width-1;
-						if(yend >= height)
-							yend = height-1;
-						
-						results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
-								new Roi(xstart, ystart, xend-xstart, yend-ystart),
-								thresholds.get(p.getSlice()).intValue());
-					
-						if (results!=null){
-							double SxSy = results[2]*results[2] - results[3]*results[3];			
-							fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
-						}
+						for (Peak p : chunkPeaks){
+							if(!stop){
+								int xstart = p.getX()-roi_size;
+								int ystart = p.getY()-roi_size;
+								int xend = p.getX()+roi_size;
+								int yend = p.getY()+roi_size;
+								double[] results = new double[4];
+								
+								// Boundaries
+								if(xstart<0)
+									xstart = 0;
+								if(ystart < 0)
+									ystart = 0;
+								if(xend >= width)
+									xend = width-1;
+								if(yend >= height)
+									yend = height-1;
+								
+								results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
+										new Roi(xstart, ystart, xend-xstart, yend-ystart),
+										thresholds.get(p.getSlice()).intValue());
+							
+								if (results!=null){
+									double SxSy = results[2]*results[2] - results[3]*results[3];			
+									fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
+								}
+							}
 					}
 				}
 			};
 		}
 
 		ThreadUtil.startAndJoin(threads);
-		System.out.println("Peaks fitted: " + fitted.size());
-		JOptionPane.showMessageDialog(new JFrame(),
-			    "Fitting done!");
+		
+		if(stop){
+			System.out.println("Interrupted");
+			JOptionPane.showMessageDialog(new JFrame(),
+				    "Fitting interrupted.");
+		} else {
+			System.out.println("Peaks fitted: " + fitted.size());
+			JOptionPane.showMessageDialog(new JFrame(),
+				    "Fitting done!");
+		}
 		return fitted;
 	}
 	
@@ -394,6 +409,13 @@ public class Pipeline implements Runnable {
 		return fitted.size();
 	}
 	
+	public void stopThreads(){
+		for(Thread t:threads){
+			t.interrupt();
+		}
+		stop = true;
+	}
+	
 	@Override
 	public void run() {
 		stackSize = img.getStackSize();
@@ -410,11 +432,13 @@ public class Pipeline implements Runnable {
  	    if(fitmethod.equals("1DG")){
  	 	    fitted = gaussian2DFitter(peaks, 20);
  	    } else if(fitmethod.equals("2DG")) {
+ 	    	stop = false;
  	    	int dialogResult = JOptionPane.showConfirmDialog (null, "The fit can take long. Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
  	    	if(dialogResult == JOptionPane.YES_OPTION){
  	    		fitted = gaussian2DFitter(peaks, 20);
  	    	}
  	    } else {
+ 	    	stop = false;
  	 	    fitted = centroidFitter(peaks, 20);
  	    }
  	    System.out.println("Done");

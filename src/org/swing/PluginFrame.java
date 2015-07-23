@@ -363,6 +363,7 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_winsize = new javax.swing.JTextField();
         jButton_locsave = new javax.swing.JButton();
         jCheckBox_medianfilter = new javax.swing.JCheckBox();
+        jButton_locstop = new javax.swing.JButton();
 
 
         jpanel_loc.setBorder(javax.swing.BorderFactory.createTitledBorder("Localize"));
@@ -446,6 +447,16 @@ public class PluginFrame extends javax.swing.JFrame {
         });
 
         //////////////////////////
+        /// Stop localizing
+        jButton_locstop.setText("Stop");
+        jButton_locstop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_locstopActionPerformed(evt);
+            }
+        });
+
+        
+        //////////////////////////
         /// Save results
         jButton_locsave.setText("Save");
         jButton_locsave.addActionListener(new java.awt.event.ActionListener() {
@@ -468,9 +479,11 @@ public class PluginFrame extends javax.swing.JFrame {
                         .addComponent(jButton_loadcal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jpanel_locLayout.createSequentialGroup()
                         .addGap(16, 16, 16)
-                        .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel_winsize)
-                            .addComponent(jLabel_fitmethod))))
+                        .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jButton_locfit)
+                            .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel_winsize)
+                                .addComponent(jLabel_fitmethod)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTextField_loccalname)
@@ -481,14 +494,13 @@ public class PluginFrame extends javax.swing.JFrame {
                             .addGroup(jpanel_locLayout.createSequentialGroup()
                                 .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(jCheckBox_medianfilter)))
+                                .addComponent(jCheckBox_medianfilter))
+                            .addComponent(jButton_locstop, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 8, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(jpanel_locLayout.createSequentialGroup()
                 .addGap(94, 94, 94)
-                .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton_locfit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton_locsave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jButton_locsave, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jpanel_locLayout.setVerticalGroup(
@@ -513,10 +525,12 @@ public class PluginFrame extends javax.swing.JFrame {
                         .addComponent(jLabel_winsize)
                         .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(25, 25, 25)
-                .addComponent(jButton_locfit)
+                .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton_locfit)
+                    .addComponent(jButton_locstop))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButton_locsave)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(54, Short.MAX_VALUE))
         );
         panel.add(jpanel_loc, "loc");
 
@@ -775,8 +789,14 @@ public class PluginFrame extends javax.swing.JFrame {
     // fit frames
     private void jButton_locfitActionPerformed(java.awt.event.ActionEvent evt) {                                               
     	if(loc_im!=null && calib!=null){
-    		p = new Pipeline(calib, winsize, fitmethod, loc_im, median_filt);
-    		p.run();
+    		Thread thread = new Thread() {
+    	        public void run() {
+    	            p = new Pipeline(calib, winsize, fitmethod, loc_im, median_filt);
+    	            p.run();
+    	        }
+    	    };
+    	    thread.start();
+    		
     	} else {
     		JOptionPane.showMessageDialog(this,
     			    "Images or calibration not imported",
@@ -785,6 +805,10 @@ public class PluginFrame extends javax.swing.JFrame {
     	}
     }                                              
 
+    private void jButton_locstopActionPerformed(java.awt.event.ActionEvent evt) {                                                
+    	p.stopThreads();
+    }
+    
     // Save 
     private void jButton_locsaveActionPerformed(java.awt.event.ActionEvent evt) {                                                
     	if(p.getNumPeaks()>0){
@@ -855,6 +879,7 @@ public class PluginFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButton_locfit;
     private javax.swing.JButton jButton_locsave;
     private javax.swing.JButton jButton_roi;
+    private javax.swing.JButton jButton_locstop;
     private javax.swing.JCheckBox jCheckBox_medianfilter;
     private javax.swing.JComboBox jComboBox_fitmethod;
     private javax.swing.JLabel jLabel_fitmethod;

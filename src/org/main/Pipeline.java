@@ -261,7 +261,7 @@ public class Pipeline implements Runnable {
 								
 								results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
 										new Roi(xstart, ystart, xend-xstart, yend-ystart),
-										thresholds.get(p.getSlice()).intValue());
+											thresholds.get(p.getSlice()).intValue());
 							
 								if (results!=null){
 									double SxSy = results[2]*results[2] - results[3]*results[3];			
@@ -359,7 +359,7 @@ public class Pipeline implements Runnable {
 		ImageStack is = img.getStack();
 		for (int i=1; i<=stackSize;i++ ){
 			ImageProcessor ip = is.getProcessor(i);
-			thresholds.put(i, ip.getStatistics().mean+3*ip.getStatistics().stdDev);
+			thresholds.put(i, ip.getStatistics().mean+ip.getStatistics().stdDev);
 		}
 	}
 	

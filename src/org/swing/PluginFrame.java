@@ -772,11 +772,11 @@ public class PluginFrame extends javax.swing.JFrame {
         	break;
         	
         case 1:
-        	fitmethod = "1DG";
+        	fitmethod = "centroid";
         	break;
         	
         case 2:
-        	fitmethod = "centroid";
+        	fitmethod = "1DG";
         	break;
         }
     }    
@@ -791,7 +791,7 @@ public class PluginFrame extends javax.swing.JFrame {
     	if(loc_im!=null && calib!=null){
     		Thread thread = new Thread() {
     	        public void run() {
-    	            p = new Pipeline(calib, winsize, fitmethod, loc_im, median_filt);
+    	            p = new Pipeline(calib, winsize, fitmethod, loc_im.duplicate(), median_filt);
     	            p.run();
     	        }
     	    };

@@ -97,14 +97,9 @@ public class Gaussian2DFitter {
 		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
 			return null;
 		
-        result[0] = fittedEG[0];
-        result[1] = fittedEG[1];
-        result[2] = fittedEG[2];
-        result[3] = fittedEG[3];
-        result[4] = fittedEG[4];
-        result[5] = fittedEG[5];
-        	
-		return result;
+        result = fittedEG;
+        System.out.println(result[4]+"   "+result[5]);
+        return result;
 	}	
 	
 	private class ConvChecker2DGauss implements ConvergenceChecker<PointVectorValuePair> {

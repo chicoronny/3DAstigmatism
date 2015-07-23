@@ -107,6 +107,7 @@ public class CentroidFitter {
 				}
 			}
 		}
+
 		stdx /= sumstd;
 		stdy /= sumstd;
 		stdx = Math.sqrt(stdx);
@@ -123,7 +124,7 @@ public class CentroidFitter {
 		} else {
 			centroid[3] = stdy;
 		}
-
+		
 		return centroid;
 	}
 

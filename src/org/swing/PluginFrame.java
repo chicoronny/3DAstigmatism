@@ -731,6 +731,7 @@ public class PluginFrame extends javax.swing.JFrame {
     	    File file = jf.getSelectedFile();
             calib.readCSV(file.getAbsolutePath());
             jTextField_loccalname.setText(file.getName());
+            //System.out.println(file.getAbsolutePath());
     	}
         
     }                                               
@@ -751,6 +752,7 @@ public class PluginFrame extends javax.swing.JFrame {
         
         if (file.isDirectory()){
         	loc_im = FolderOpener.open(loc_filePath);
+        	//System.out.println(loc_filePath);
         }
         
         if (file.isFile()){

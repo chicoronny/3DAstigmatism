@@ -40,7 +40,7 @@ public class Gaussian2DFitter {
 		return builder;
     }
 	
-	private static LevenbergMarquardtOptimizer getOptimizer() {
+	private static LevenbergMarquardtOptimizer getOptimizer() { 
 		// Different convergence thresholds seem to have no effect on the resulting fit, only the number of
 		// iterations for convergence
 		final double initialStepBoundFactor = 100;
@@ -48,7 +48,7 @@ public class Gaussian2DFitter {
 		final double parRelativeTolerance = 1e-9;
 		final double orthoTolerance = 1e-9;
 		final double threshold = Precision.SAFE_MIN;
-        return new LevenbergMarquardtOptimizer(initialStepBoundFactor,
+		return new LevenbergMarquardtOptimizer(initialStepBoundFactor,
 				costRelativeTolerance, parRelativeTolerance, orthoTolerance, threshold);
 	}
 	
@@ -80,14 +80,17 @@ public class Gaussian2DFitter {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
 	                .target(Ival)
-	                .checkerPair(new ConvChecker2DGauss())
+	            //    .checkerPair(new ConvChecker2DGauss())
                     .parameterValidator(new ParamValidator2DGauss())
 	                .start(eg.getInitialGuess(ip,roi))
-	                .maxIterations(maxIter)
-	                .maxEvaluations(maxEval)
+	                .maxIterations(1000)
+	                .maxEvaluations(1000)
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
+
+	        System.out.println(optimum.getIterations());
+	        
 		} catch(TooManyEvaluationsException  e){
         	return null;
 		} catch(ConvergenceException e){
@@ -98,7 +101,7 @@ public class Gaussian2DFitter {
 			return null;
 		
         result = fittedEG;
-        System.out.println(result[4]+"   "+result[5]);
+        System.out.println(result[0]+"   "+result[1]+"   "+result[2]+"   "+result[3]+"   "+result[4]+"   "+result[5]);
         return result;
 	}	
 	
@@ -116,24 +119,28 @@ public class Gaussian2DFitter {
 		
 		@Override
 		public boolean converged(int i, PointVectorValuePair previous, PointVectorValuePair current) {
-	         if (i == iteration_)
-	             return lastResult_;
-	          
-	          iteration_ = i;
+			if (i == iteration_)
+	           return lastResult_;
+
+			if (i >100){
+				 return true;
+			}
+			
+			iteration_ = i;
 	          double[] p = previous.getPoint();
 	          double[] c = current.getPoint();
 	          
-	          if ( Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5  &&
-	                  Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1 &&
-	                  Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.02 &&
-	                  Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.02 &&
-	                  Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 2 &&
-	                  Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 2 ) {
+	          if ( Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.01  &&
+	                  Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01 &&
+	                  Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002 &&
+	                  Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002 &&
+	                  Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 0.002 &&
+	                  Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 0.002 ) {
 	             lastResult_ = true;
 	             return true;
 	          }
 	        lastResult_ = false;
-			return false;
+	        return false;
 		}
 	}
 
@@ -154,10 +161,10 @@ public class Gaussian2DFitter {
 				arg.setEntry(INDEX_SY, -arg.getEntry(INDEX_SY));
 			}
 			if(arg.getEntry(INDEX_I0)<0){
-				arg.setEntry(INDEX_I0, 0);
+				arg.setEntry(INDEX_I0, -arg.getEntry(INDEX_I0));
 			}
 			if(arg.getEntry(INDEX_Bg)<0){
-				arg.setEntry(INDEX_Bg, 0);
+				arg.setEntry(INDEX_Bg, -arg.getEntry(INDEX_Bg));
 			}
 			return arg;
 		}

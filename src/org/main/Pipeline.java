@@ -33,6 +33,8 @@ import org.filters.MedianFilter;
 import org.filters.NMS;
 import org.fitter.CentroidFitter;
 import org.fitter.Gaussian2DFitter;
+import org.fitter.Gaussian3DFitter;
+import org.fitter.LSQFitter;
 
 public class Pipeline implements Runnable {
 	private ImagePlus img;
@@ -73,7 +75,7 @@ public class Pipeline implements Runnable {
 	
 	public Pipeline(Calibration cal, int wsize, String fitmethod, ImagePlus img, boolean filter) {
 		this.cal = cal;
-		maxIter = 3000;
+		maxIter = 100;
 		maxEval = 1000;
 		this.fitmethod = fitmethod;
 		this.winsize = wsize;
@@ -174,10 +176,13 @@ public class Pipeline implements Runnable {
 		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
 		final ImageStack is = img.getStack();
 		final int halfSize =size / 2;
+		//System.out.println(halfSize);
 		final Vector< Chunk > chunks = divideIntoChunks( stackSize, numThreads  );
 		threads = ThreadUtil.createThreadArray(numThreads);
 		for ( int i = 0; i < threads.length; i++ ){
-			final Chunk chunk = chunks.get( i );
+
+	//	for ( int i = 0; i < 1; i++ ){
+				final Chunk chunk = chunks.get( i );
 			threads[ i ] = new Thread( "FitterChunk " + i ){
 				@Override
 				public void run(){	
@@ -196,12 +201,19 @@ public class Pipeline implements Runnable {
 							for (Peak p : slicePeaks) {
 								final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
 								final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
-								Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
 								double[] results = null;
+
+								//Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
+								//results = gf.fit();
+								
+								Gaussian3DFitter gf = new Gaussian3DFitter(ip, roi, maxIter, maxEval,cal);
 								results = gf.fit();
+								
+								
 								if (results!=null){
-									double SxSy = results[2]*results[2] - results[3]*results[3];			
-									fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], results[5]));
+									//double SxSy = results[2]*results[2] - results[3]*results[3];			
+									//fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], 0));//results[5]));
+									fitted.add(new FittedPeak(p,results[0], results[1], results[2], results[3]));
 								}
 							}
 						}
@@ -211,6 +223,7 @@ public class Pipeline implements Runnable {
 		}
 		
 		ThreadUtil.startAndJoin(threads);
+		//threads[0].start();
 		
 		if(stop){
 			System.out.println("Interrupted");
@@ -218,8 +231,8 @@ public class Pipeline implements Runnable {
 				    "Fitting interrupted.");
 		} else {
 			System.out.println("Peaks fitted: " + fitted.size());
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting done!");
+			//JOptionPane.showMessageDialog(new JFrame(),
+				//    "Fitting done!");
 		}
 		return fitted;
 	}
@@ -392,7 +405,7 @@ public class Pipeline implements Runnable {
 	public void saveCSV(String path){
 		 csvWriter w = new csvWriter(new File(path+".csv"));
 	 	 for (FittedPeak p:fitted)
-	 	    	w.process(p.toString());
+	 	    	w.process(p.toStringCSV());
 	 	 w.close();
 	 	 System.out.println("5 - wrote result to file");
 	}
@@ -418,6 +431,7 @@ public class Pipeline implements Runnable {
 	
 	@Override
 	public void run() {
+		System.out.println("Run pipeline");
 		stackSize = img.getStackSize();
 		getThresholds();
 		
@@ -433,10 +447,10 @@ public class Pipeline implements Runnable {
  	 	    fitted = gaussian2DFitter(peaks, 20);
  	    } else if(fitmethod.equals("2DG")) {
  	    	stop = false;
- 	    	int dialogResult = JOptionPane.showConfirmDialog (null, "The fit can take long. Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
- 	    	if(dialogResult == JOptionPane.YES_OPTION){
+ 	    	//int dialogResult = JOptionPane.showConfirmDialog (null, "The fit can take long. Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
+ 	    	//if(dialogResult == JOptionPane.YES_OPTION){
  	    		fitted = gaussian2DFitter(peaks, 20);
- 	    	}
+ 	    	//}
  	    } else {
  	    	stop = false;
  	 	    fitted = centroidFitter(peaks, 20);

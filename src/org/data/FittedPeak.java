@@ -24,7 +24,7 @@ public class FittedPeak extends Peak {
 		this.fitY = fitY;
 		z_ = z;
 	}
-	
+
 	public FittedPeak(int slice, int x, int y, int value, double sx, double sy, double fitX, double fitY, double z, double fitI, double fitBg) {
 		super(slice, x, y, value, sx, sy);
 		this.fitX = fitX;
@@ -41,8 +41,21 @@ public class FittedPeak extends Peak {
 		z_ = z;
 	}
 	
+	public FittedPeak(Peak p, double fitX, double fitY, double z, double Ifit){
+		super(p);
+		this.fitX = fitX;
+		this.fitY = fitY;
+		this.fitI = Ifit;
+		z_ = z;
+	}
+
 	public String toString(){
 		String s = fitX + "\t" + fitY+ "\t" + z_ + "\t" + fitI + "\t" + getSlice() + "\r\n";
+		return s;
+	}
+	
+	public String toStringCSV(){
+		String s = fitX + "," + fitY+ "," + z_ + "," + fitI + "," + getSlice() + "\r\n";
 		return s;
 	}
 

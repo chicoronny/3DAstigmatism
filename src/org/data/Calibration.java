@@ -195,15 +195,17 @@ public class Calibration {
 		}
 		
 		Locale.setDefault(curLocale);
+		
+		//System.out.println(param[0]+"  "+param[1]+"  "+param[2]+"  "+param[3]+"  "+param[4]+"  "+param[5]+"  "+param[6]+"  "+param[7]+"  "+param[8]);
 	}
 
 	public double getValueWx(double z) {
-		double b = (z-param[INDEX_C])/param[INDEX_D];
+		double b = (z-param[INDEX_C]-param[INDEX_Mp])/param[INDEX_D];
 		return param[INDEX_WX]*Math.sqrt(1+b*b+param[INDEX_AX]*b*b*b+param[INDEX_BX]*b*b*b*b);
 	}
 
 	public double getValueWy(double z) {
-		double b = (z-param[INDEX_C])/param[INDEX_D];
+		double b = (z+param[INDEX_C]-param[INDEX_Mp])/param[INDEX_D];
 		return param[INDEX_WY]*Math.sqrt(1+b*b+param[INDEX_AY]*b*b*b+param[INDEX_BY]*b*b*b*b);
 	}
 

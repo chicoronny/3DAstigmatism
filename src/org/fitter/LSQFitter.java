@@ -3,6 +3,7 @@ package org.fitter;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
+
 // Plugin classes
 import org.data.Calibration;
 import org.data.CalibrationCurve;
@@ -156,7 +157,7 @@ public class LSQFitter {
 		createGrids(ip, roi);
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
-		double[] result = new double[4];
+		double[] result = new double[6];
 		try {
 			final Optimum optimum = optimizer.optimize(builder(eg).target(Ival).checkerPair(new ConvChecker2DGauss())
 					.start(eg.getInitialGuess(ip, roi)).maxIterations(maxIter).maxEvaluations(maxEval).build());
@@ -174,6 +175,10 @@ public class LSQFitter {
 		result[1] = fittedEG[1];
 		result[2] = Math.abs(fittedEG[2]);
 		result[3] = Math.abs(fittedEG[3]);
+		result[4] = fittedEG[4];
+		result[5] = fittedEG[5];
+        System.out.println(result[0]+"   "+result[1]+"   "+result[2]+"   "+result[3]+"   "+fittedEG[4]+"   "+fittedEG[5]);
+
 		return result;
 	}
 
@@ -218,7 +223,7 @@ public class LSQFitter {
 	}
 
 	// / 3D fit: Elliptical Gaussian with Z
-	public double[] fit3D(ImageProcessor ip, Roi roi, Calibration cal, int maxIter, int maxEval) {
+/*	public double[] fit3D(ImageProcessor ip, Roi roi, Calibration cal, int maxIter, int maxEval) {
 
 		createGrids(ip, roi);
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(cal);
@@ -243,7 +248,7 @@ public class LSQFitter {
 			return null;
 		}
 		return results;
-	}
+	}*/
 	
 	// Misc Functions	
 	public void createGrids(ImageProcessor ip, Roi roi) {

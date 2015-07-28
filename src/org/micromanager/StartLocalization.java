@@ -15,13 +15,23 @@ public class StartLocalization {
 		calib = new Calibration();
         calib.readCSV("C:/Users/Ries/Documents/zs2_cal.csv");
     	//loc_im = FolderOpener.open("C:/Users/Ries/Documents/zs2");
-        loc_im = FolderOpener.open("C:/Users/Ries/Desktop/ImagineOptic/Data/Timelaps/data/3DMT");
+        
+        //loc_im = FolderOpener.open("C:/Users/Ries/Desktop/ImagineOptic/Data/Timelaps/data/3DMT");
+    	loc_im = FolderOpener.open("C:/Users/Ries/Documents/3D");
 
         Thread t = new Thread() {
 	        public void run() {
-	    		Pipeline p = new Pipeline(calib, 5, "2DG", loc_im.duplicate(), true);
+	        	long startTime = System.nanoTime();
+
+	    		Pipeline p = new Pipeline(calib, 5, "centroid", loc_im.duplicate(), true);
 	    		p.run();
-	    		p.saveTXT("C:/Users/Ries/Documents/result");
+	    		
+	    		long endTime = System.nanoTime();
+
+	        	long duration = (endTime - startTime)/1000000 ;
+	        	System.out.println("Duration: "+duration);
+	    		
+	    		p.saveCSV("C:/Users/Ries/Documents/result");
 	        }
 	    };
 	    t.start();

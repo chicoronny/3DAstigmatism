@@ -398,7 +398,7 @@ public class PluginFrame extends javax.swing.JFrame {
         jLabel_fitmethod.setText("Fit method :");
 
         //jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "1D Gauss proj", "Centroid" }));
-        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "Centroid" }));
+        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "3D Elliptical Gauss", "Centroid" }));
         jComboBox_fitmethod.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 jComboBox_fitmethodPropertyChange(evt);
@@ -770,7 +770,7 @@ public class PluginFrame extends javax.swing.JFrame {
         int ind = combo.getSelectedIndex();
         switch(ind){
         case 0:
-        	fitmethod = "2DG";
+        	fitmethod = "3DG";
         	break;
         	
         case 1:
@@ -789,7 +789,7 @@ public class PluginFrame extends javax.swing.JFrame {
     }
 
     // fit frames
-    private void jButton_locfitActionPerformed(java.awt.event.ActionEvent evt) {                                               
+    private void jButton_locfitActionPerformed(java.awt.event.ActionEvent evt) {    
     	if(loc_im!=null && calib!=null){
     		Thread thread = new Thread() {
     	        public void run() {
@@ -858,14 +858,14 @@ public class PluginFrame extends javax.swing.JFrame {
        
     // localize
     Calibration calib;
-    String calibrationPath, loc_filePath, fitmethod="2DG";
+    String calibrationPath, loc_filePath, fitmethod="centroid";
     ImagePlus loc_im;
     int loc_nSlice;
     int winsize;
     boolean median_filt = true;
 
     static final int default_wsize = 5;
-    static final String default_fit = "1DG";
+    static final String default_fit = "centroid";
     
     Pipeline p;
     

@@ -231,8 +231,8 @@ public class Pipeline implements Runnable {
 				    "Fitting interrupted.");
 		} else {
 			System.out.println("Peaks fitted: " + fitted.size());
-			//JOptionPane.showMessageDialog(new JFrame(),
-				//    "Fitting done!");
+			JOptionPane.showMessageDialog(new JFrame(),
+				    "Fitting done!");
 		}
 		return fitted;
 	}
@@ -276,6 +276,8 @@ public class Pipeline implements Runnable {
 										new Roi(xstart, ystart, xend-xstart, yend-ystart),
 											thresholds.get(p.getSlice()).intValue());
 							
+								System.out.println(thresholds.get(p.getSlice()).intValue());
+								
 								if (results!=null){
 									double SxSy = results[2]*results[2] - results[3]*results[3];			
 									fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
@@ -294,8 +296,9 @@ public class Pipeline implements Runnable {
 				    "Fitting interrupted.");
 		} else {
 			System.out.println("Peaks fitted: " + fitted.size());
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting done!");
+
+			//JOptionPane.showMessageDialog(new JFrame(),
+				//    "Fitting done!");
 		}
 		return fitted;
 	}
@@ -372,7 +375,7 @@ public class Pipeline implements Runnable {
 		ImageStack is = img.getStack();
 		for (int i=1; i<=stackSize;i++ ){
 			ImageProcessor ip = is.getProcessor(i);
-			thresholds.put(i, ip.getStatistics().mean+ip.getStatistics().stdDev);
+			thresholds.put(i, 0.5*ip.getStatistics().mean+0*ip.getStatistics().stdDev);
 		}
 	}
 	
@@ -444,13 +447,20 @@ public class Pipeline implements Runnable {
 		List<Peak> peaks = NMSFinder(10,300);
 		
  	    if(fitmethod.equals("1DG")){
- 	 	    fitted = gaussian2DFitter(peaks, 20);
- 	    } else if(fitmethod.equals("2DG")) {
+ 	 	    //fitted = gaussian2DFitter(peaks, 20);
+ 	    } else if(fitmethod.equals("3DG")) {
  	    	stop = false;
- 	    	//int dialogResult = JOptionPane.showConfirmDialog (null, "The fit can take long. Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
- 	    	//if(dialogResult == JOptionPane.YES_OPTION){
+ 	    	int dialogResult = JOptionPane.showConfirmDialog (null, "The fit can take long ("+peaks.size()+" detections). Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
+ 	    	if(dialogResult == JOptionPane.YES_OPTION){
+	 	       	long startTime = System.nanoTime();
+
  	    		fitted = gaussian2DFitter(peaks, 20);
- 	    	//}
+ 	    		
+ 	    		long endTime = System.nanoTime();
+ 	    		
+	 	    	long duration = (endTime - startTime)/1000000 ;
+	 	    	System.out.println(duration);
+ 	    	}
  	    } else {
  	    	stop = false;
  	 	    fitted = centroidFitter(peaks, 20);

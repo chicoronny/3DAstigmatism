@@ -89,7 +89,7 @@ public class Gaussian2DFitter {
 	        );
 			fittedEG = optimum.getPoint().toArray();
 
-	        System.out.println(optimum.getIterations());
+	        //System.out.println(optimum.getIterations());
 	        
 		} catch(TooManyEvaluationsException  e){
         	return null;
@@ -101,7 +101,7 @@ public class Gaussian2DFitter {
 			return null;
 		
         result = fittedEG;
-        System.out.println(result[0]+"   "+result[1]+"   "+result[2]+"   "+result[3]+"   "+result[4]+"   "+result[5]);
+        //System.out.println(result[0]+"   "+result[1]+"   "+result[2]+"   "+result[3]+"   "+result[4]+"   "+result[5]);
         return result;
 	}	
 	

@@ -7,10 +7,8 @@ import javax.swing.JTextField;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.data.Calibration;
+import org.fitter.CurveFitter;
 import org.fitter.Gaussian2DFitter;
-import org.fitter.LSQFitter;
-import org.graphics.ChartBuilder;
-
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -34,28 +32,23 @@ public class Calibrator {
 	
 	/////////////////////////////
 	// Results
-	double[] zgrid;									// z positions of the slices in the stack
-	volatile double[] Wx, Wy; 
-	double[] Calibcurve, paramWx, paramWy;		// 1D and 2D fit results
-	double[] curveWx, curveWy;							// quadratically fitted curves
-	int indexZ0;										// Slice number of the focus
-    
-    /////////////////////////////
+	private double[] zgrid;									// z positions of the slices in the stack
+	private volatile double[] Wx, Wy; 
+	private double[] Calibcurve, paramWx;		// 1D and 2D fit results
+	private double[] curveWx, curveWy;							// quadratically fitted curves
+	/////////////////////////////
     // Parameters from ImageStack
-    int nSlice, width, height;
+	private int nSlice;
 
 	/////////////////////////////
 	// Input from user
-    double zstep;
-    int rangeStart, rangeEnd, rangeSize;	// Both ends of the restricted z range and length of the restriction
-    volatile Roi roi;
+    private double zstep;
+    private int rangeStart, rangeEnd;	// Both ends of the restricted z range and length of the restriction
+    private volatile Roi roi;
     
-	/////////////////////////////
-	// Misc
-	LSQFitter lsq;
-	ChartBuilder cb;
-	ImageStack is;
-	Calibration cal;
+	private ImageStack is;
+	private Calibration cal;
+	private CurveFitter cf;
 	
 	/////////////////////////////
 	// Tests
@@ -64,12 +57,11 @@ public class Calibrator {
 		this.is = im.getStack();
 		this.zstep = zstep;
     	this.nSlice = im.getNSlices(); 
-    	this.width = im.getWidth(); 
-    	this.height = im.getHeight();
+    	im.getWidth(); 
+    	im.getHeight();
     	this.roi = r;
     	
-		lsq = new LSQFitter();
-		cb = new ChartBuilder();
+		cf = new CurveFitter();
 		
     	// Initialize arrays
     	zgrid = new double[nSlice];						// z position of the frames
@@ -79,8 +71,6 @@ public class Calibrator {
     	curveWx = new double[nSlice];					// value of the calibration on X
     	curveWy = new double[nSlice];					// value of the calibration on Y
     	paramWx = new double[PARAM_1D_LENGTH];			// parameters of the calibration on X
-    	paramWy = new double[PARAM_1D_LENGTH];			// parameters of the calibration on Y
- 
     	cal = new Calibration(zgrid, Wx, Wy, curveWx, curveWy, Calibcurve, paramWx);
 	}
 	
@@ -143,7 +133,7 @@ public class Calibrator {
 					calculateRange(rStart, rEnd);
 			    	
 					try{
-						lsq.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
+						cf.fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
 			    	} catch (TooManyEvaluationsException e) {
 			    		System.err.println("Too many evaluations!");				
 			    	}  catch (TooManyIterationsException e) {
@@ -201,6 +191,7 @@ public class Calibrator {
 		return zmax;
 	}
 	
+	@SuppressWarnings("unused")
 	private int findIntersection(double[] X, double[] Y){
 		int z = 0;
 		double min=1;
@@ -251,7 +242,6 @@ public class Calibrator {
 		}
 		this.rangeStart = iStart;
 		this.rangeEnd = iEnd;
-		this.rangeSize = iEnd-iStart+1;
 	}
 }
 

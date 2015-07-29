@@ -50,12 +50,12 @@ public class FittedPeak extends Peak {
 	}
 
 	public String toString(){
-		String s = fitX + "\t" + fitY+ "\t" + z_ + "\t" + fitI + "\t" + getSlice() + "\r\n";
+		String s = fitX + "\t" + fitY+ "\t" + z_ + "\t" + fitI + "\t" + fitBg + "\t" + getSlice() + "\r\n";
 		return s;
 	}
 	
 	public String toStringCSV(){
-		String s = fitX + "," + fitY+ "," + z_ + "," + fitI + "," + getSlice() + "\r\n";
+		String s = fitX + "," + fitY+ "," + z_ + "," + fitI + "," + fitBg + "," + getSlice() + "\r\n";
 		return s;
 	}
 

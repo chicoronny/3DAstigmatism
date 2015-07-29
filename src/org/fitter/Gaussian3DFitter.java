@@ -4,19 +4,20 @@ import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
+import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
-import org.data.EllipticalGaussian;
+import org.data.Calibration;
+import org.data.EllipticalGaussianZ;
 
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
-public class Gaussian2DFitter {
-
+public class Gaussian3DFitter {
+	
 	private ImageProcessor ip;
 	private Roi roi;
 	private int maxIter;
@@ -24,15 +25,17 @@ public class Gaussian2DFitter {
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
+	private Calibration cal;
 
-	public Gaussian2DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
+	public Gaussian3DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_, Calibration cal_) {
 		ip = ip_;
 		roi = roi_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
+		cal = cal_;
 	}
 	
-	private static LeastSquaresBuilder builder(EllipticalGaussian problem){
+	private static LeastSquaresBuilder builder(EllipticalGaussianZ problem){
     	LeastSquaresBuilder builder = new LeastSquaresBuilder();
     	 builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
 		return builder;
@@ -49,7 +52,7 @@ public class Gaussian2DFitter {
 		return new LevenbergMarquardtOptimizer(initialStepBoundFactor,
 				costRelativeTolerance, parRelativeTolerance, orthoTolerance, threshold);
 	}
-	
+
 	private void createGrids(){
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
@@ -69,16 +72,18 @@ public class Gaussian2DFitter {
 	}
 	
 	public double[] fit() {
+		
 		createGrids();
-		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
+		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, cal);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
-		double[] fittedEG;
+		double[] fittedEG = null;
+		
 		try {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
 	                .target(Ival)
-	                .checkerPair(new ConvChecker2DGauss())
-                    .parameterValidator(new ParamValidator2DGauss())
+	                .checkerPair(new ConvChecker3DGauss())
+                    .parameterValidator(new ParamValidator3DGauss())
 	                .start(eg.getInitialGuess(ip,roi))
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
@@ -95,71 +100,58 @@ public class Gaussian2DFitter {
 		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
 			return null;
 		
-        return fittedEG;
-	}	
-	
-	private class ConvChecker2DGauss implements ConvergenceChecker<PointVectorValuePair> {
-	    
+		return fittedEG;
+	}
+
+	// Convergence Checker
+	private class ConvChecker3DGauss implements ConvergenceChecker<PointVectorValuePair> {
+
 		int iteration_ = 0;
-	    boolean lastResult_ = false;
+		boolean lastResult_ = false;
 
 		public static final int INDEX_X0 = 0;
 		public static final int INDEX_Y0 = 1;
-		public static final int INDEX_SX = 2;
-		public static final int INDEX_SY = 3;
-		public static final int INDEX_I0 = 4;
-		public static final int INDEX_Bg = 5;
-		
+		public static final int INDEX_Z0 = 2;
+		public static final int INDEX_I0 = 3;
+		public static final int INDEX_Bg = 4;
+
 		@Override
 		public boolean converged(int i, PointVectorValuePair previous, PointVectorValuePair current) {
 			if (i == iteration_)
-	           return lastResult_;
+				return lastResult_;
 
-			if (i >100){
-				 return true;
-			}
-			
 			iteration_ = i;
-	          double[] p = previous.getPoint();
-	          double[] c = current.getPoint();
-	          
-	          if ( Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.01  &&
-	                  Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01 &&
-	                  Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002 &&
-	                  Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002 &&
-	                  Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 0.002 &&
-	                  Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 0.002 ) {
-	             lastResult_ = true;
-	             return true;
-	          }
-	        lastResult_ = false;
-	        return false;
+			double[] p = previous.getPoint();
+			double[] c = current.getPoint();
+
+			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.1 
+				&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
+				&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002 
+				&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
+				&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
+				lastResult_ = true;
+				return true;
+			}
+
+			lastResult_ = false;
+			return false;
 		}
 	}
+	
+	private class ParamValidator3DGauss implements ParameterValidator {
+		public static final int INDEX_I0 = 3;
+		public static final int INDEX_Bg = 4;
 
-	private class ParamValidator2DGauss implements ParameterValidator {
-		public static final int INDEX_SX = 2;
-		public static final int INDEX_SY = 3;
-		public static final int INDEX_I0 = 4;
-		public static final int INDEX_Bg = 5;
-		
 		@Override
 		public RealVector validate(RealVector arg) {
-			if(arg.getEntry(INDEX_SX)<0){
-				arg.setEntry(INDEX_SX, -arg.getEntry(INDEX_SX));
+			if (arg.getEntry(INDEX_I0) < 0) {
+				arg.setEntry(INDEX_I0, 0);
 			}
-			if(arg.getEntry(INDEX_SY)<0){
-				arg.setEntry(INDEX_SY, -arg.getEntry(INDEX_SY));
-			}
-			if(arg.getEntry(INDEX_I0)<0){
-				arg.setEntry(INDEX_I0, -arg.getEntry(INDEX_I0));
-			}
-			if(arg.getEntry(INDEX_Bg)<0){
-				arg.setEntry(INDEX_Bg, -arg.getEntry(INDEX_Bg));
+			if (arg.getEntry(INDEX_Bg) < 0) {
+				arg.setEntry(INDEX_Bg, 0);
 			}
 			return arg;
 		}
-
 	}
 
 }

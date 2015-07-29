@@ -14,9 +14,7 @@ public class StartLocalization {
 		System.out.println("Run localization");
 		calib = new Calibration();
         calib.readCSV("C:/Users/Ries/Documents/zs2_cal.csv");
-    	//loc_im = FolderOpener.open("C:/Users/Ries/Documents/zs2");
-        
-        //loc_im = FolderOpener.open("C:/Users/Ries/Desktop/ImagineOptic/Data/Timelaps/data/3DMT");
+
     	loc_im = FolderOpener.open("C:/Users/Ries/Documents/3D");
 
         Thread t = new Thread() {

@@ -1,10 +1,7 @@
 package org.micromanager;
 
 
-import org.micromanager.api.ScriptInterface;
 import org.swing.PluginFrame;
-
-import mmcorej.CMMCore;
 //import org.micromanager.MainFrame;
 
 

@@ -18,8 +18,8 @@ public class CalibrationCurve {
 	
     private double[] zgrid, w;
     private int length;
-    private int minIndexx, minIndexy, minIndexz;
-    private double minx, miny, minz; 
+    private int minIndexx, minIndexy;
+    private double minx, miny; 
 
     public CalibrationCurve(double[] z, double[] wx, double[] wy) {
     	length = z.length;
@@ -35,8 +35,6 @@ public class CalibrationCurve {
         minx = wx[minIndexx];
         minIndexy = findMinIndex(wy);
         miny = wy[minIndexy];
-        //minIndexz = findMinIndex(z);
-        //minz = wy[minIndexz];
     }
     
     public int findMinIndex(double[] A){

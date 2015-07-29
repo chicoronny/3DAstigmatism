@@ -3,7 +3,6 @@ package org.data;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
-import java.io.File;
 import java.util.Arrays;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
@@ -54,7 +53,7 @@ public class EllipticalGaussianZ {
     }
 
 	
-    public MultivariateVectorFunction getModelFunction(final int[] xgrid, final int[] ygrid) {
+    public MultivariateVectorFunction getModelFunction() {
         return new MultivariateVectorFunction() {
             @Override
             public double[] value(double[] params) throws IllegalArgumentException {
@@ -67,7 +66,7 @@ public class EllipticalGaussianZ {
         };
     }
     
-    public MultivariateMatrixFunction getModelFunctionJacobian(final int[] xgrid, final int[] ygrid) {
+    public MultivariateMatrixFunction getModelFunctionJacobian() {
         return new MultivariateMatrixFunction() {
             @Override
             public double[][] value(double[] point) throws IllegalArgumentException {
@@ -76,22 +75,16 @@ public class EllipticalGaussianZ {
             	 
             	 
         	     for (int i = 0; i < xgrid.length; ++i) {
-        	    	 //System.out.println("-----------");
-        	    	 //System.out.println(i);
         	    	 
         	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*Ey(ygrid[i], point)*dEx(xgrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_X0] );
         	    	 
         	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*Ex(xgrid[i], point)*dEy(ygrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_Y0]);
         	    	 
         	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*(dEsx(xgrid[i],point)*Ey(ygrid[i], point)*dSx(point[INDEX_Z0])+Ex(xgrid[i],point)*dEsy(ygrid[i], point)*dSy(point[INDEX_Z0]));
         	    	 
         	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i],point);
-        	    	 //System.out.println(jacobian[i][INDEX_I0]);
         	    	 
         	    	 jacobian[i][INDEX_Bg] = 1;
-        	    	 //System.out.println(jacobian[i][INDEX_Bg]);
         	     }
         	     
 				return jacobian;
@@ -102,9 +95,8 @@ public class EllipticalGaussianZ {
 	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
-	        
-	    CentroidFitter cf = new CentroidFitter();
-	    double[] centroid = cf.fitCentroidandWidth(ip,roi,(int) (ip.getStatistics().mean+2*ip.getStatistics().stdDev));
+	    
+	    double[] centroid = CentroidFitter.fitCentroidandWidth(ip,roi,(int) (ip.getStatistics().mean+2*ip.getStatistics().stdDev));
 	    
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
@@ -118,17 +110,6 @@ public class EllipticalGaussianZ {
 
 	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin();
 	    initialGuess[INDEX_Bg] = ip.getMin();
-
-	    //System.out.println("---------------");
-	    //System.out.println("First guess");
-	    //System.out.println(initialGuess[0]+" "+initialGuess[1]+" "+initialGuess[2]+" "+initialGuess[3]+" "+initialGuess[4]);
-
-	    /*csvWriter w = new csvWriter(new File("C:/Users/Ries/Documents/3Dtest2.csv"));
-	 	 for (int i=0;i<xgrid.length;i++){
-	 	    	w.process(xgrid[i]+","+ygrid[i]+","+getValue(initialGuess,xgrid[i],ygrid[i])+"\n");
-	 	 }
-	 	 w.close();
-	    */
 	    
 		return initialGuess;
 	}

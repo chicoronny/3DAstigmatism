@@ -1,8 +1,10 @@
 package org.micromanager;
 
 
+import mmcorej.CMMCore;
+
 import org.swing.PluginFrame;
-//import org.micromanager.MainFrame;
+import org.micromanager.api.ScriptInterface;
 
 
 public class AstigPlugin implements org.micromanager.api.MMPlugin{

@@ -96,7 +96,7 @@ public class EllipticalGaussianZ {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
 	    
-	    double[] centroid = CentroidFitter.fitCentroidandWidth(ip,roi,(int) (ip.getStatistics().mean+2*ip.getStatistics().stdDev));
+	    double[] centroid = CentroidFitter.fitCentroidandWidth(ip,roi,(int) (ip.getAutoThreshold()));							
 	    
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];

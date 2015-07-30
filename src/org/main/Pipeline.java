@@ -32,8 +32,12 @@ import org.data.csvWriter;
 import org.filters.MedianFilter;
 import org.filters.NMS;
 import org.fitter.CentroidFitter;
+
 import org.fitter.Gaussian1DFitter;
 import org.fitter.Gaussian3DFitter;
+
+import org.fitter.Gaussian2DFitter;
+import org.fitter.Gaussian3DFitter2;
 
 public class Pipeline implements Runnable {
 	private ImagePlus img;
@@ -255,7 +259,7 @@ public class Pipeline implements Runnable {
 								final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
 								double[] results = null;
 								
-								Gaussian3DFitter gf = new Gaussian3DFitter(ip, roi, maxIter, maxEval,cal);
+								Gaussian3DFitter2 gf = new Gaussian3DFitter2(ip, roi, maxIter, maxEval,cal);
 								results = gf.fit();
 								
 								

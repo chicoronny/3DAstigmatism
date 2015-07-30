@@ -33,7 +33,7 @@ import org.filters.MedianFilter;
 import org.filters.NMS;
 import org.fitter.CentroidFitter;
 import org.fitter.Gaussian2DFitter;
-import org.fitter.Gaussian3DFitter;
+import org.fitter.Gaussian3DFitter2;
 import org.fitter.LSQFitter;
 
 public class Pipeline implements Runnable {
@@ -206,7 +206,7 @@ public class Pipeline implements Runnable {
 								//Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, maxIter, maxEval);
 								//results = gf.fit();
 								
-								Gaussian3DFitter gf = new Gaussian3DFitter(ip, roi, maxIter, maxEval,cal);
+								Gaussian3DFitter2 gf = new Gaussian3DFitter2(ip, roi, maxIter, maxEval,cal);
 								results = gf.fit();
 								
 								

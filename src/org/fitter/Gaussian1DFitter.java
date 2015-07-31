@@ -103,8 +103,8 @@ public class Gaussian1DFitter {
 			//
 			result[2] = Math.abs(fittedGx[1]);
 			result[3] = Math.abs(fittedGy[1]);
-			result[4] = fittedGy[2]+fittedGx[2];
-			result[5] = fittedGy[3]+fittedGx[3];
+			result[4] = (fittedGy[2]+fittedGx[2])/2;
+			result[5] = (fittedGy[3]+fittedGx[3])/2;
 			return result;
 
 		} catch (TooManyEvaluationsException e) {

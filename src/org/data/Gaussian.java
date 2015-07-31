@@ -24,7 +24,7 @@ public class Gaussian {
 	public static int INDEX_Bg = 3;
 	public static int PARAM_LENGTH = 4;
 	
-	static double defaultSigma = 1.6;
+	static double defaultSigma = 1.5;
 	
 	public Gaussian(int[] xgrid){
 		this.xgrid = xgrid;

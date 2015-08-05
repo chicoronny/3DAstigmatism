@@ -58,7 +58,6 @@ public class Gaussian3DFitter2 {
 		final double threshold = Precision.SAFE_MIN;
 		return new LevenbergMarquardtOptimizer(initialStepBoundFactor,
 				costRelativeTolerance, parRelativeTolerance, orthoTolerance, threshold);
-		//return new LevenbergMarquardtOptimizer();
 	}
 	
 	private void createGrids(){
@@ -112,10 +111,10 @@ public class Gaussian3DFitter2 {
 	        //	return null;
 	        //}
         } catch(TooManyEvaluationsException e){
-        	System.out.println("Too many evaluations");
+        	//System.out.println("Too many evaluations");
         	return null;
         } catch(TooManyIterationsException e){
-        	System.out.println("Too many iterations");
+        	//System.out.println("Too many iterations");
         	return null;
         }
         return results;

@@ -1,8 +1,12 @@
 package org.main;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
+import ij.io.FileInfo;
+import ij.io.TiffDecoder;
+import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
 import ij.plugin.ImageCalculator;
 import ij.process.ImageProcessor;
@@ -32,15 +36,13 @@ import org.data.csvWriter;
 import org.filters.MedianFilter;
 import org.filters.NMS;
 import org.fitter.CentroidFitter;
-
 import org.fitter.Gaussian1DFitter;
-import org.fitter.Gaussian3DFitter;
-
-import org.fitter.Gaussian2DFitter;
+//import org.fitter.Gaussian3DFitter;
+//import org.fitter.Gaussian2DFitter;
 import org.fitter.Gaussian3DFitter2;
 
 public class Pipeline implements Runnable {
-	private ImagePlus img;
+	private ImageStack img;
 	private int stackSize;
 	private Map<Integer,Double> thresholds;
 	
@@ -63,8 +65,11 @@ public class Pipeline implements Runnable {
 	private String fitmethod;
 	List<FittedPeak> fitted;
 	private boolean filter;
-	private ThreadGroup group;
+	private Thread[] threads;
 	private boolean stop =false;
+	private int gridSize;
+	private int maxNumPeaks;
+	private int filterSize;
 	
 	public Pipeline(String path) {
 		props = new Properties();
@@ -76,18 +81,20 @@ public class Pipeline implements Runnable {
 		}
 	}
 	
-	public Pipeline(Calibration cal, int wsize, String fitmethod, ImagePlus img, boolean filter) {
+	public Pipeline(Calibration cal, int fsize, String fitmethod, ImageStack img, boolean filter) {
 		props = new Properties();
 		this.cal = cal;
 		maxIter = 100;
 		maxEval = 1000;
 		this.fitmethod = fitmethod;
-		this.winsize = wsize;
+		this.winsize = 20;
+		this.filterSize = fsize;
 		this.img = img;
 		this.filter = filter;
 	}
 	
-	@SuppressWarnings("unused")
+	
+	@SuppressWarnings({ "static-access", "unused" })
 	private void loadImages(String startpath){
 		
 		JFileChooser fc = new JFileChooser(startpath);
@@ -96,15 +103,34 @@ public class Pipeline implements Runnable {
    	 
         if (returnVal != JFileChooser.APPROVE_OPTION) return;
 		File file = fc.getSelectedFile();
-		String filename = file.getAbsolutePath();
         
-		if (file.isDirectory())
-			img = FolderOpener.open(filename);	
+		if (file.isDirectory()){
+        	FolderOpener fo = new FolderOpener();
+        	fo.openAsVirtualStack(true);
+        	img = fo.open(file.getAbsolutePath()).getStack();
+        }
+        
+        if (file.isFile()){
+        	File dir = file.getParentFile();
+        	TiffDecoder td = new TiffDecoder(dir.getAbsolutePath(), file.getName());
+        	FileInfo[] info;
+			try {info = td.getTiffInfo();}
+    		catch (IOException e) {
+    			String msg = e.getMessage();
+    			if (msg==null||msg.equals("")) msg = ""+e;
+    			IJ.error("TiffDecoder", msg);
+    			return;
+    		}
+    		if (info==null || info.length==0) {
+    			IJ.error("Virtual Stack", "This does not appear to be a TIFF stack");
+    			return;
+    		}
+        	FileInfoVirtualStack fivs = new FileInfoVirtualStack(info[0], false);
+        	img = fivs;
+        	System.out.println("Slices: " + fivs.getSize());
+        }
 		
-		if (file.isFile())
-			img = new ImagePlus(filename);
-		
-		stackSize = img.getStackSize();
+		stackSize = img.getSize();
 		getThresholds();
 		System.out.println("Images loaded and thresholded");
 	}
@@ -116,12 +142,12 @@ public class Pipeline implements Runnable {
 		// Determine dimensions of the image
 		final int w = img.getWidth();
 		final int h = img.getHeight();
-		final int d = img.getStackSize();
+		final int d = img.getSize();
 
 		final ImageProcessor[] in = new ImageProcessor[d];
 		final ShortProcessor result = new ShortProcessor(w,h);
 		for (int z = 0; z < d; z++) 
-			in[z] = img.getStack().getProcessor(z + 1);		
+			in[z] = img.getProcessor(z + 1);		
 		
 		final Vector< Chunk > chunks = divideIntoChunks( w*h, numThreads  );
 		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
@@ -161,194 +187,82 @@ public class Pipeline implements Runnable {
 		return out;
 	}
 	
-	private List<Peak> NMSFinder(int n, int max){
-		List<Peak> peaks = new ArrayList<Peak>();
-		NMS nms = new NMS();
-		ImageStack is = img.getStack();
-		for(int i=1;i<=stackSize;i++){																															////////// stack length
-			ImageProcessor ip = is.getProcessor(i);
-			Double cutoff = thresholds.get(i);
-			if (cutoff==null) cutoff=0d;
-			nms.run(i,ip, n, max, cutoff, false);													
-			peaks.addAll(nms.getPeaks());
+	private List<FittedPeak> gaussian1DFitter(final List<Peak> peaks, ImageProcessor ip, final int size) {
+		final List<FittedPeak>fitted = new ArrayList<FittedPeak>();
+		final int halfSize =size / 2;
+				
+		if (peaks.isEmpty()) return fitted;
+		
+		for (Peak p : peaks) {
+			final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
+			final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+			Gaussian1DFitter lf = new Gaussian1DFitter(ip, roi, maxIter, maxEval);
+			double[] results = null;
+			results = lf.fit();
+			if (results!=null){
+				double SxSy = results[2]*results[2] - results[3]*results[3];			
+				fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], results[5]));
+			}
 		}
-		System.out.println("Peaks found: " + peaks.size());
-		return peaks;
+					
+		return fitted;
 	}
 	
-	private List<FittedPeak> gaussian1DFitter(final List<Peak> peaks, final int size) {
-		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
-		final ImageStack is = img.getStack();
+	private List<FittedPeak> gaussian3DFitter(final List<Peak> peaks, ImageProcessor ip, final int size){
+		
+		final List<FittedPeak>fitted = new ArrayList<FittedPeak>();
 		final int halfSize =size / 2;
-		final Vector< Chunk > chunks = divideIntoChunks( stackSize, numThreads  );
-		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
-		for ( int i = 0; i < threads.length; i++ ){
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread(group, "FitterChunk " + i ){
-				@Override
-				public void run(){	
-					for (long j = 0;j<chunk.getLoopSize();j++){
-						if(!stop){
-							long frame = chunk.getStartPosition() + j;
-		
-							List<Peak> slicePeaks = new ArrayList<Peak>();
-							for (Peak peak: peaks)
-								if (peak.getSlice() == frame)
-									slicePeaks.add(peak);
 							
-							if (slicePeaks.isEmpty()) continue;
-							
-							ImageProcessor ip = is.getProcessor((int) frame);
-							for (Peak p : slicePeaks) {
-								final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
-								final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
-								Gaussian1DFitter lf = new Gaussian1DFitter(ip, roi, maxIter, maxEval);
-								double[] results = null;
-								results = lf.fit();
-								if (results!=null){
-									double SxSy = results[2]*results[2] - results[3]*results[3];			
-									fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], results[5]));
-								}
-							}
-						}
-					}
-				}
-			};
-		}
+		if (peaks.isEmpty()) return fitted;
 		
-		ThreadUtil.startAndJoin(threads);
-		
-		if(stop){
-			System.out.println("Interrupted");
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting interrupted.");
-		} else {
-			System.out.println("Peaks fitted: " + fitted.size());
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting done!");
+		for (Peak p : peaks) {
+			final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
+			final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+			double[] results = null;
+			
+			Gaussian3DFitter2 gf = new Gaussian3DFitter2(ip, roi, maxIter, maxEval,cal);
+			results = gf.fit();
+			
+			if (results!=null){
+				//double SxSy = results[2]*results[2] - results[3]*results[3];			
+				//fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], 0));//results[5]));
+				fitted.add(new FittedPeak(p,results[0], results[1], results[2], results[3]));
+			}
 		}
 		return fitted;
 	}
 	
-	private List<FittedPeak> gaussian3DFitter(final List<Peak> peaks, final int size){
+	private List<FittedPeak> centroidFitter(final List<Peak> peaks, ImageProcessor ip, final int roi_size, int cutoff){
 		
-		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
-		final ImageStack is = img.getStack();
-		final int halfSize =size / 2;
-		final Vector< Chunk > chunks = divideIntoChunks( stackSize, numThreads  );
-		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
-		for ( int i = 0; i < threads.length; i++ ){
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( group, "FitterChunk " + i ){
-				@Override
-				public void run(){	
-					for (long j = 0;j<chunk.getLoopSize();j++){
-						if(!stop){
-							long frame = chunk.getStartPosition() + j;
-		
-							List<Peak> slicePeaks = new ArrayList<Peak>();
-							for (Peak peak: peaks)
-								if (peak.getSlice() == frame)
-									slicePeaks.add(peak);
-							
-							if (slicePeaks.isEmpty()) continue;
-							
-							ImageProcessor ip = is.getProcessor((int) frame);
-							for (Peak p : slicePeaks) {
-								final Roi origroi = new Roi(p.getX() - halfSize, p.getY() - halfSize, size, size);
-								final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
-								double[] results = null;
-								
-								Gaussian3DFitter2 gf = new Gaussian3DFitter2(ip, roi, maxIter, maxEval,cal);
-								results = gf.fit();
-								
-								
-								if (results!=null){
-									//double SxSy = results[2]*results[2] - results[3]*results[3];			
-									//fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy), results[4], 0));//results[5]));
-									fitted.add(new FittedPeak(p,results[0], results[1], results[2], results[3]));
-								}
-							}
-						}
-					}
-				}
-			};
-		}
-		
-		ThreadUtil.startAndJoin(threads);
-		
-		if(stop){
-			System.out.println("Interrupted");
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting interrupted.");
-		} else {
-			System.out.println("Peaks fitted: " + fitted.size());
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting done!");
-		}
-		return fitted;
-	}
-	
-	private List<FittedPeak> centroidFitter(final List<Peak> peaks, final int roi_size){
-		
-		final ImageStack is = img.getStack();
 		final int width = img.getWidth();
 		final int height = img.getHeight();
-		final List<FittedPeak>fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
-		
-		final Vector< Chunk > chunks = divideIntoChunks( peaks.size(), numThreads  );
-		Thread[] threads = ThreadUtil.createThreadArray(numThreads);
-		for ( int i = 0; i < threads.length; i++ ){
-			final Chunk chunk = chunks.get( i );
-			threads[ i ] = new Thread( group, "FitterChunk " + i ){
-				@Override
-				public void run(){	
-					final List<Peak> chunkPeaks = peaks.subList((int)chunk.getStartPosition(), (int)(chunk.getStartPosition()+chunk.getLoopSize()));
-						for (Peak p : chunkPeaks){
-							if(!stop){
-								int xstart = p.getX()-roi_size;
-								int ystart = p.getY()-roi_size;
-								int xend = p.getX()+roi_size;
-								int yend = p.getY()+roi_size;
-								double[] results = new double[4];
-								
-								// Boundaries
-								if(xstart<0)
-									xstart = 0;
-								if(ystart < 0)
-									ystart = 0;
-								if(xend >= width)
-									xend = width-1;
-								if(yend >= height)
-									yend = height-1;
-								
-								results = CentroidFitter.fitCentroidandWidth(is.getProcessor(p.getSlice()), 
-										new Roi(xstart, ystart, xend-xstart, yend-ystart),
-											thresholds.get(p.getSlice()).intValue());
-							
-								//System.out.println(thresholds.get(p.getSlice()).intValue());
-								
-								if (results!=null){
-									double SxSy = results[2]*results[2] - results[3]*results[3];			
-									fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
-								}
-							}
-					}
+		final List<FittedPeak>fitted = new ArrayList<FittedPeak>();
+	
+		for (Peak p : peaks){			
+				int xstart = p.getX()-roi_size;
+				int ystart = p.getY()-roi_size;
+				int xend = p.getX()+roi_size;
+				int yend = p.getY()+roi_size;
+				double[] results = new double[4];
+				
+				// Boundaries
+				if(xstart<0)
+					xstart = 0;
+				if(ystart < 0)
+					ystart = 0;
+				if(xend >= width)
+					xend = width-1;
+				if(yend >= height)
+					yend = height-1;
+				
+				results = CentroidFitter.fitCentroidandWidth(ip, new Roi(xstart, ystart, xend-xstart, yend-ystart),	cutoff);
+											
+				if (results!=null){
+					double SxSy = results[2]*results[2] - results[3]*results[3];			
+					fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
 				}
-			};
 		}
 
-		ThreadUtil.startAndJoin(threads);
-		
-		if(stop){
-			System.out.println("Interrupted");
-			JOptionPane.showMessageDialog(new JFrame(),
-				    "Fitting interrupted.");
-		} else {
-			System.out.println("Peaks fitted: " + fitted.size());
-
-			//JOptionPane.showMessageDialog(new JFrame(), "Fitting done!");
-		}
 		return fitted;
 	}
 	
@@ -411,9 +325,8 @@ public class Pipeline implements Runnable {
 	
 	private void getThresholds(){
 		thresholds = new HashMap<Integer, Double>();
-		ImageStack is = img.getStack();
 		for (int i=1; i<=stackSize;i++ ){
-			ImageProcessor ip = is.getProcessor(i);
+			ImageProcessor ip = img.getProcessor(i);
 			//thresholds.put(i, 1*ip.getStatistics().mean+1*ip.getStatistics().stdDev);
 			thresholds.put(i, (double) ip.getAutoThreshold());
 		}
@@ -465,56 +378,84 @@ public class Pipeline implements Runnable {
 		return fitted.size();
 	}
 	
-	public void stopThreads(){
+	public void stopThreads() throws SecurityException {
 		stop = true;
-		group.interrupt();
+		/*for (Thread t : threads)
+			t.interrupt();*/
 	}
 	
 	@Override
 	public void run() {
 		System.out.println("Run pipeline");
-		stackSize = img.getStackSize();
-		getThresholds();
-		
-		if(filter){
-			ImagePlus imMedian = medianFilter(winsize);
-			ImageCalculator calcul = new ImageCalculator(); 
-			calcul.run("Substract", img, imMedian);
+
+		stackSize = img.getSize();
+
+		if (filter) {
+			ImagePlus imMedian = medianFilter(filterSize);
+			ImageCalculator calcul = new ImageCalculator();
+			calcul.run("Substract", new ImagePlus("", img), imMedian);
+		}
+
+		gridSize = Integer.parseInt(props.getProperty("gridSize", "10"));
+		maxNumPeaks = Integer.parseInt(props.getProperty("maxNumPeaks", "300"));
+
+		final List<FittedPeak> fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
+
+		final Vector<Chunk> chunks = divideIntoChunks(stackSize, numThreads);
+		threads = ThreadUtil.createThreadArray(numThreads);
+		long startTime = System.nanoTime();
+		for (int i = 0; i < threads.length; i++) {
+			final Chunk chunk = chunks.get(i);
+			threads[i] = new Thread("FitterChunk " + i) {
+				@Override
+				public void run() {
+					for (long j = 0; j < chunk.getLoopSize(); j++) {
+						if (!stop){
+							long frame = chunk.getStartPosition() + j;
+	
+							if (frame % 100 == 0)
+								System.out.println("Frame: " + frame);
+							final ImageProcessor ip = img.getProcessor((int) frame+1);
+							final double cutoff = ip.getAutoThreshold();
+							final NMS nms = new NMS();
+							nms.run((int) frame, ip, gridSize, maxNumPeaks, cutoff,	false);
+							List<Peak> peaks = nms.getPeaks();
+	
+							if (fitmethod.equals("1DG")) {
+								fitted.addAll(gaussian1DFitter(peaks, ip, winsize));
+							} else if (fitmethod.equals("3DG")) {
+								fitted.addAll(gaussian3DFitter(peaks, ip, winsize));
+							} else {
+								fitted.addAll(centroidFitter(peaks, ip, winsize, (int) cutoff));
+							}
+						}
+					}
+				}
+			};
 		}
 		
-		List<Peak> peaks = NMSFinder(
-				Integer.parseInt(props.getProperty("gridSize", "10")),
-				Integer.parseInt(props.getProperty("maxNumPeaks", "300")));
+		ThreadUtil.startAndJoin(threads);
+		long endTime = System.nanoTime();
 		
- 	    if(fitmethod.equals("1DG")){
- 	 	    fitted = gaussian1DFitter(peaks, 20);
- 	    } else if(fitmethod.equals("3DG")) {
- 	    	stop = false;
- 	    	int dialogResult = JOptionPane.showConfirmDialog (null, 
- 	    			"The fit can take long ("+peaks.size()+" detections). Do you wish to continue?","Warning", JOptionPane.OK_CANCEL_OPTION);
- 	    	if(dialogResult == JOptionPane.YES_OPTION){
-	 	       	long startTime = System.nanoTime();
+		if(stop){
+			System.out.println("Interrupted");
+			JOptionPane.showMessageDialog(new JFrame(), "Fitting interrupted.");
+		} else {
+			System.out.println("Peaks fitted: " + fitted.size());
+			JOptionPane.showMessageDialog(new JFrame(), "Fitting done!");
+		}
+		
+		long duration = (endTime - startTime) / 1000000;
+		System.out.println("Fitting of " + fitted.size() +" peaks done in "+ duration + "ms");
 
- 	    		fitted = gaussian3DFitter(peaks, 20);
- 	    		
- 	    		long endTime = System.nanoTime();
- 	    		
-	 	    	long duration = (endTime - startTime)/1000000 ;
-	 	    	System.out.println("Fitting time: " + duration);
- 	    	}
- 	    } else {
- 	    	stop = false;
- 	 	    fitted = centroidFitter(peaks, 20);
- 	    }
- 	    
- 	   if (props.getProperty("ouputPath") != null){
-			csvWriter w = new csvWriter(new File(props.getProperty("ouputPath", ".")));
+		if (props.getProperty("ouputPath") != null) {
+			csvWriter w = new csvWriter(new File(props.getProperty("ouputPath",	".")));
 			for (FittedPeak p : fitted)
 				w.process(p.toString());
 			w.close();
 			System.out.println("Done");
 		}
- 	    System.out.println("Done");
+		System.out.println("Done");
 	}
 
 }

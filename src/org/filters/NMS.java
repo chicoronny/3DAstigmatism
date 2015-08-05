@@ -25,7 +25,6 @@ public class NMS {
 	
 	public NMS(){
 		peaks = new ArrayList<Peak>();
-		imtemp_ = new ImagePlus();
 	}
 	
 	public void run(int nSlice, ImageProcessor im, int n, int max, double cutoff, boolean display){
@@ -102,7 +101,7 @@ public class NMS {
 		
 		// Display NMS result on an image
 		if(display_){																										//display_
-
+			imtemp_ = new ImagePlus();
 			//im_.show();
 			imtemp_.hide();
 			

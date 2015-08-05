@@ -3,8 +3,12 @@ package org.swing;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.Roi;
 import ij.gui.StackWindow;
+import ij.io.FileInfo;
+import ij.io.TiffDecoder;
+import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
 
 import java.awt.CardLayout;
@@ -12,6 +16,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -31,6 +36,7 @@ import org.main.Pipeline;
  */
 public class PluginFrame extends javax.swing.JFrame {
 
+	private Thread pipethread;
 	/**
      * Creates new form Plugin
      */
@@ -357,8 +363,8 @@ public class PluginFrame extends javax.swing.JFrame {
         jTextField_imname = new javax.swing.JTextField();
         jLabel_fitmethod = new javax.swing.JLabel();
         jComboBox_fitmethod = new javax.swing.JComboBox();
-        jLabel_winsize = new javax.swing.JLabel();
-        jTextField_winsize = new javax.swing.JTextField();
+        jLabel_filterSize = new javax.swing.JLabel();
+        jTextField_filterSize = new javax.swing.JTextField();
         jButton_locsave = new javax.swing.JButton();
         jCheckBox_medianfilter = new javax.swing.JCheckBox();
         jButton_locstop = new javax.swing.JButton();
@@ -395,21 +401,21 @@ public class PluginFrame extends javax.swing.JFrame {
         /// Fit method
         jLabel_fitmethod.setText("Fit method :");
 
-        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "2D Elliptical Gauss", "1D Gauss proj", "Centroid" }));
+        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Centroid", "1D Gauss Projection", "3D Elliptical Gauss" }));
         jComboBox_fitmethod.setEditable(true);
         jComboBox_fitmethod.addActionListener(new java.awt.event.ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				jComboBox_fitmethodPropertyChange(evt);
+				jComboBox_fitmethodActionPerformed(evt);
 			}
         	
         });
 
         //////////////////////////
         /// Median filtering
-        jLabel_winsize.setText("Median filter size :");
-        jTextField_winsize.setText(Integer.toString(default_wsize));
+        jLabel_filterSize.setText("Median filter size :");
+        jTextField_filterSize.setText(Integer.toString(default_wsize));
         
         DocumentListener documentListener_wsize = new DocumentListener() {
             public void changedUpdate(DocumentEvent documentEvent) {
@@ -422,14 +428,14 @@ public class PluginFrame extends javax.swing.JFrame {
               printIt(documentEvent);
             }
             private void printIt(DocumentEvent documentEvent) {
-            	if(!isNumeric(jTextField_winsize.getText())){
-            		winsize = default_wsize;
+            	if(!isNumeric(jTextField_filterSize.getText())){
+            		filterSize = default_wsize;
             	} else {
-            		winsize = Integer.parseInt(jTextField_winsize.getText());
+            		filterSize = Integer.parseInt(jTextField_filterSize.getText());
             	}
             }
         };
-        jTextField_winsize.getDocument().addDocumentListener(documentListener_wsize);
+        jTextField_filterSize.getDocument().addDocumentListener(documentListener_wsize);
         
         jCheckBox_medianfilter.setSelected(true);
         jCheckBox_medianfilter.addActionListener(new java.awt.event.ActionListener() {
@@ -483,7 +489,7 @@ public class PluginFrame extends javax.swing.JFrame {
                         .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jButton_locfit)
                             .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel_winsize)
+                                .addComponent(jLabel_filterSize)
                                 .addComponent(jLabel_fitmethod)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -493,7 +499,7 @@ public class PluginFrame extends javax.swing.JFrame {
                         .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jComboBox_fitmethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jpanel_locLayout.createSequentialGroup()
-                                .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jTextField_filterSize, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jCheckBox_medianfilter))
                             .addComponent(jButton_locstop, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -523,8 +529,8 @@ public class PluginFrame extends javax.swing.JFrame {
                 .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jCheckBox_medianfilter)
                     .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel_winsize)
-                        .addComponent(jTextField_winsize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jLabel_filterSize)
+                        .addComponent(jTextField_filterSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(25, 25, 25)
                 .addGroup(jpanel_locLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton_locfit)
@@ -734,8 +740,8 @@ public class PluginFrame extends javax.swing.JFrame {
     	}        
     }                                               
 
-    // load images
-    private void jButton_loadimActionPerformed(java.awt.event.ActionEvent evt) {                                               
+    // load images)
+	private void jButton_loadimActionPerformed(java.awt.event.ActionEvent evt) {                                               
     	JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
     	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     	fc.setDialogTitle("Import Images");
@@ -747,53 +753,63 @@ public class PluginFrame extends javax.swing.JFrame {
         
         File file = fc.getSelectedFile();
         jTextField_imname.setText(file.getName());
-        loc_filePath = file.getAbsolutePath();
         
         if (file.isDirectory()){
-        	loc_im = FolderOpener.open(loc_filePath);
+        	FolderOpener fo = new FolderOpener();
+        	fo.openAsVirtualStack(true);
+        	loc_im = fo.openFolder(file.getAbsolutePath()).getStack();
         }
         
         if (file.isFile()){
-        	loc_im = new ImagePlus(loc_filePath);
+        	File dir = file.getParentFile();
+        	TiffDecoder td = new TiffDecoder(dir.getAbsolutePath(), file.getName());
+        	FileInfo[] info;
+			try {info = td.getTiffInfo();}
+    		catch (IOException e) {
+    			String msg = e.getMessage();
+    			if (msg==null||msg.equals("")) msg = ""+e;
+    			IJ.error("TiffDecoder", msg);
+    			return;
+    		}
+    		if (info==null || info.length==0) {
+    			IJ.error("Virtual Stack", "This does not appear to be a TIFF stack");
+    			return;
+    		}
+        	FileInfoVirtualStack fivs = new FileInfoVirtualStack(info[0], false);
+        	loc_im = fivs;
+        	System.out.println("Slices: " + fivs.getSize());
         }
-        
-        loc_im.getNSlices();
-		st = new StackWindow(loc_im);
+        st = new StackWindow(new ImagePlus("",loc_im));
     }                                              
 
  // fit method 
-    private void jComboBox_fitmethodPropertyChange(ActionEvent evt) {                                                   
+    private void jComboBox_fitmethodActionPerformed(ActionEvent evt) {                                                   
 		JComboBox combo = (JComboBox) evt.getSource();
         int ind = combo.getSelectedIndex();
-        if (ind == 0)
+        if (ind == 2)
         	fitmethod = "3DG";
         else if (ind == 1)
         	fitmethod = "1DG";  
-        else if (ind == 2)
+        else if (ind == 0)
         	fitmethod = "centroid";
     }    
     
     // median filter
-    private void jCheckBox_medianfilterActionPerformed(java.awt.event.ActionEvent evt){
+    private void jCheckBox_medianfilterActionPerformed(ActionEvent evt){
     	median_filt = jCheckBox_medianfilter.isSelected();
     }
 
     // fit frames
-    private void jButton_locfitActionPerformed(java.awt.event.ActionEvent evt) {    
+    private void jButton_locfitActionPerformed(ActionEvent evt) {    
     	if(loc_im!=null && calib!=null){
-    		Thread thread = new Thread() {
+    		pipethread = new Thread("Pipe"){
+    			@Override
     	        public void run() {
-    	            p = new Pipeline(calib, winsize, fitmethod, loc_im.duplicate(), median_filt);
+    	            p = new Pipeline(calib, filterSize, fitmethod, loc_im, median_filt);
     	            p.run();
     	        }
     	    };
-    	    thread.start();
-    	    try {
-				thread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-    		
+    	    pipethread.start();
     	} else {
     		JOptionPane.showMessageDialog(this,
     			    "Images or calibration not imported",
@@ -804,7 +820,14 @@ public class PluginFrame extends javax.swing.JFrame {
     }                                              
 
     private void jButton_locstopActionPerformed(java.awt.event.ActionEvent evt) {                                                
-    	p.stopThreads();
+    	try {
+			p.stopThreads();
+			pipethread.join();
+		} catch (SecurityException e) {
+			System.err.println(e.getMessage());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
     }
     
     // Save 
@@ -856,9 +879,9 @@ public class PluginFrame extends javax.swing.JFrame {
        
     // localize
     private Calibration calib;
-    private String loc_filePath, fitmethod="centroid";
-    private ImagePlus loc_im;
-    private int winsize;
+    private String fitmethod;
+    private ImageStack loc_im;
+    private int filterSize;
     private boolean median_filt = true;
 
     static private final int default_wsize = 5;
@@ -883,7 +906,7 @@ public class PluginFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel_range;
     private javax.swing.JLabel jLabel_rangehyph;
     private javax.swing.JLabel jLabel_stepsize;
-    private javax.swing.JLabel jLabel_winsize;
+    private javax.swing.JLabel jLabel_filterSize;
     private javax.swing.JTextField jTextField_calfit;
     private javax.swing.JTextField jTextField_calfitcurves;
     private javax.swing.JTextField jTextField_calimname;
@@ -893,7 +916,7 @@ public class PluginFrame extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField_rangemin;
     private javax.swing.JTextField jTextField_roi;
     private javax.swing.JTextField jTextField_stepsize;
-    private javax.swing.JTextField jTextField_winsize;
+    private javax.swing.JTextField jTextField_filterSize;
     private javax.swing.JPanel jpanel_cal;
     private javax.swing.JPanel jpanel_default;
     private javax.swing.JPanel jpanel_loc;

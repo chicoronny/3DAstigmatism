@@ -21,7 +21,7 @@ public class StartLocalization {
 	        public void run() {
 	        	long startTime = System.nanoTime();
 
-	    		Pipeline p = new Pipeline(calib, 5, "centroid", loc_im.duplicate(), true);
+	    		Pipeline p = new Pipeline(calib, 5, "centroid", loc_im.getStack(), true);
 	    		p.run();
 	    		
 	    		long endTime = System.nanoTime();

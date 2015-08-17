@@ -40,6 +40,7 @@ import org.fitter.Gaussian1DFitter;
 //import org.fitter.Gaussian3DFitter;
 //import org.fitter.Gaussian2DFitter;
 import org.fitter.Gaussian3DFitter2;
+import org.fitter.WeightedCentroidFitter;
 
 public class Pipeline implements Runnable {
 	private ImageStack img;
@@ -70,6 +71,8 @@ public class Pipeline implements Runnable {
 	private int gridSize;
 	private int maxNumPeaks;
 	private int filterSize;
+	private double alpha;
+	private double beta;
 	
 	public Pipeline(String path) {
 		props = new Properties();
@@ -131,8 +134,7 @@ public class Pipeline implements Runnable {
         }
 		
 		stackSize = img.getSize();
-		getThresholds();
-		System.out.println("Images loaded and thresholded");
+		System.out.println("Images loaded");
 	}
 	
 	private ImagePlus medianFilter(int sFilter) {
@@ -323,6 +325,7 @@ public class Pipeline implements Runnable {
 	}
 	
 	
+	@SuppressWarnings("unused")
 	private void getThresholds(){
 		thresholds = new HashMap<Integer, Double>();
 		for (int i=1; i<=stackSize;i++ ){
@@ -398,8 +401,10 @@ public class Pipeline implements Runnable {
 
 		gridSize = Integer.parseInt(props.getProperty("gridSize", "10"));
 		maxNumPeaks = Integer.parseInt(props.getProperty("maxNumPeaks", "300"));
+		alpha = Double.parseDouble(props.getProperty("alpha", "0.2"));
+		beta = Double.parseDouble(props.getProperty("beta", "0.4"));
 
-		final List<FittedPeak> fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
+		fitted = Collections.synchronizedList(new ArrayList<FittedPeak>());
 
 		final Vector<Chunk> chunks = divideIntoChunks(stackSize, numThreads);
 		threads = ThreadUtil.createThreadArray(numThreads);
@@ -425,8 +430,10 @@ public class Pipeline implements Runnable {
 								fitted.addAll(gaussian1DFitter(peaks, ip, winsize));
 							} else if (fitmethod.equals("3DG")) {
 								fitted.addAll(gaussian3DFitter(peaks, ip, winsize));
-							} else {
+							} else if (fitmethod.equals("centroid")){
 								fitted.addAll(centroidFitter(peaks, ip, winsize, (int) cutoff));
+							} else if (fitmethod.equals("WC")){
+								fitted.addAll(WCFitter(peaks,ip, winsize, alpha, beta));
 							}
 						}
 					}
@@ -456,6 +463,40 @@ public class Pipeline implements Runnable {
 			System.out.println("Done");
 		}
 		System.out.println("Done");
+	}
+
+	protected List<FittedPeak> WCFitter(List<Peak> peaks, ImageProcessor ip, int roi_size, double alpha, double beta) {
+		final int width = img.getWidth();
+		final int height = img.getHeight();
+		final List<FittedPeak>fitted = new ArrayList<FittedPeak>();
+	
+		for (Peak p : peaks){			
+			int xstart = p.getX()-roi_size;
+			int ystart = p.getY()-roi_size;
+			int xend = p.getX()+roi_size;
+			int yend = p.getY()+roi_size;
+			double[] results = new double[4];
+			
+			// Boundaries
+			if(xstart<0)
+				xstart = 0;
+			if(ystart < 0)
+				ystart = 0;
+			if(xend >= width)
+				xend = width-1;
+			if(yend >= height)
+				yend = height-1;
+			
+			WeightedCentroidFitter wcf = new WeightedCentroidFitter(ip,new Roi(xstart, ystart, xend-xstart, yend-ystart),alpha,beta);
+			
+			results = wcf.fit();
+			
+			if (results!=null){
+				double SxSy = results[2]*results[2] - results[3]*results[3];			
+				fitted.add(new FittedPeak(p.getSlice(),p.getX(),p.getY(),p.getValue(),results[2], results[3], results[0],results[1], calculateZ(SxSy),(double) p.getValue(),0));
+			}
+		}
+		return fitted;
 	}
 
 }

@@ -26,7 +26,6 @@ public class Gaussian3DFitter2 {
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
-	private double[] initialGuess;
 	public static final int NUM_PARAMTER = 6;
 	public static final int MIN_ITER = 5;
 	Calibration cal;
@@ -60,6 +59,7 @@ public class Gaussian3DFitter2 {
 				costRelativeTolerance, parRelativeTolerance, orthoTolerance, threshold);
 	}
 	
+	@SuppressWarnings("unused")
 	private void createGrids(){
 		int rwidth = (int) roi.getFloatWidth();
 		int rheight = (int) roi.getFloatHeight();
@@ -82,7 +82,7 @@ public class Gaussian3DFitter2 {
 
 		createGrids(ip,roi);
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, cal);
-		initialGuess = eg.getInitialGuess(ip,roi);
+		eg.getInitialGuess(ip,roi);
 		
         LevenbergMarquardtOptimizer optimizer = getOptimizer();
         
@@ -120,7 +120,8 @@ public class Gaussian3DFitter2 {
         return results;
     }
 	
-    private boolean sanityCheck(Optimum optimum) {
+    @SuppressWarnings("unused")
+	private boolean sanityCheck(Optimum optimum) {
     	double[] point = optimum.getPoint().toArray();
 
     	if(optimum.getIterations()<MIN_ITER){
@@ -178,6 +179,7 @@ public class Gaussian3DFitter2 {
 	}
 	
 
+	@SuppressWarnings("unused")
 	private class ConvChecker3DGauss implements ConvergenceChecker<PointVectorValuePair> {
 	    
 		int iteration_ = 0;

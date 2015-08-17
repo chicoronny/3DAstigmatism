@@ -111,7 +111,8 @@ public class Gaussian3DFitter {
 	}
 
 
-    private boolean sanityCheck(Optimum optimum) {
+    @SuppressWarnings("unused")
+	private boolean sanityCheck(Optimum optimum) {
     	double[] point = optimum.getPoint().toArray();
 
     	if(point[INDEX_Bg]==0 || point[INDEX_I0]==0){

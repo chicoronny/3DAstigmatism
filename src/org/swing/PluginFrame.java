@@ -37,6 +37,7 @@ import org.main.Pipeline;
 public class PluginFrame extends javax.swing.JFrame {
 
 	private Thread pipethread;
+
 	/**
      * Creates new form Plugin
      */
@@ -401,7 +402,7 @@ public class PluginFrame extends javax.swing.JFrame {
         /// Fit method
         jLabel_fitmethod.setText("Fit method :");
 
-        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Centroid", "1D Gauss Projection", "3D Elliptical Gauss" }));
+        jComboBox_fitmethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Centroid", "1D Gauss Projection", "3D Elliptical Gauss", "Weighted Centroid" }));
         jComboBox_fitmethod.setEditable(true);
         jComboBox_fitmethod.addActionListener(new java.awt.event.ActionListener(){
 
@@ -792,6 +793,8 @@ public class PluginFrame extends javax.swing.JFrame {
         	fitmethod = "1DG";  
         else if (ind == 0)
         	fitmethod = "centroid";
+        else if (ind == 3)
+        	fitmethod = "WC";
     }    
     
     // median filter

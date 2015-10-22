@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse.ant.import?>
+<project>
+	<property name="InstallRoot" value="/Applications/Micro-Manager1.4"/>
+	<property name="MMPluginsDir-inst" value="${InstallRoot}/mmplugins"/>
+	<property name="JAR-inst" value="${InstallRoot}/plugins/Micro-Manager"/>
+	<target name="CreateJar" description="Create Jar file">
+	        <jar jarfile="Astig.jar" basedir="bin"/>
+			<copy file="Astig.jar" todir="${MMPluginsDir-inst}"/>
+			<copy todir="${JAR-inst}" flatten="true">
+			    <fileset dir="jars">
+			        <include name="**/*.jar"/>
+			    </fileset>
+			</copy>
+	</target>
+</project>

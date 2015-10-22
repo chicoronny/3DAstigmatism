@@ -6,6 +6,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.ImageWindow;
 import ij.gui.PointRoi;
+import ij.gui.Roi;
 import ij.gui.StackWindow;
 import ij.plugin.frame.ContrastAdjuster;
 import ij.process.FloatPolygon;
@@ -68,6 +69,8 @@ import org.micromanager.AstigPlugin.pipeline.ImgLib2Frame;
 import org.micromanager.AstigPlugin.pipeline.MMImageLoader;
 import org.micromanager.AstigPlugin.pipeline.Manager;
 import org.micromanager.AstigPlugin.pipeline.Renderer;
+import org.micromanager.AstigPlugin.pipeline.SaveFittedLocalizations;
+import org.micromanager.AstigPlugin.pipeline.StoreSaver;
 import org.micromanager.AstigPlugin.plugins.FastMedianFilterFactory;
 import org.micromanager.AstigPlugin.providers.DetectorProvider;
 import org.micromanager.AstigPlugin.providers.FitterProvider;
@@ -75,6 +78,7 @@ import org.micromanager.AstigPlugin.providers.RendererProvider;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 import org.micromanager.imagedisplay.MMImagePlus;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -515,13 +519,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		Object s = e.getSource();
 		
 		if (s == this.chckbxROI){
-			if (this.chckbxROI.isSelected()){
-				this.lblSkipFrames.setVisible(true);
-				this.spinnerSkipFrames.setVisible(true);
-			} else {
-				this.lblSkipFrames.setVisible(false);
-				this.spinnerSkipFrames.setVisible(false);
-			}
+			setRoi();
 		}
 		
 		if (s == this.comboBoxPeakDet){
@@ -571,21 +569,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		}
 		
 		if (s == this.btnSave){
-			if (!processed) {
-				// TODO
-			}
-			if (chkboxFilter.isSelected()){
-				
-			} else {
-				JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
-		    	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		    	fc.setDialogTitle("Save Data");
-		    	 
-		        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-		        	return;
-		        fc.getSelectedFile();
-				
-			}
+			saveLocalizations();
 		}
 	}
 
@@ -635,6 +619,25 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 
 	
 	//// Private Methods
+	
+	
+	private void setRoi() {
+		if (previewerWindow == null) return;
+		ImagePlus curImage = previewerWindow.getImagePlus();
+		if (chckbxROI.isSelected()){
+			Roi roi = curImage.getRoi();
+			if (roi==null){
+				Rectangle r = curImage.getProcessor().getRoi();
+				int iWidth = r.width / 2;
+	            int iHeight = r.height / 2;
+	            int iXROI = r.x + r.width / 4;
+	            int iYROI = r.y + r.height / 4;
+	            curImage.setRoi(iXROI, iYROI, iWidth, iHeight);
+			}
+		} else {
+			curImage.killRoi();
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	private void ppPreview(Map<String, Object> map) {
@@ -913,7 +916,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	}
 	
 	private void filterTable() {
-		// TODO
 		if (!processed){
 			if (IJ.showMessageWithCancel("Filter", "Pipeline not yet processed.\nDo you want to process it now?"))
 				process(false);
@@ -950,6 +952,30 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 				rendererShow(settings);
 			validate();
 		}		
+	}
+	
+	private void saveLocalizations() {
+		JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
+    	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    	fc.setDialogTitle("Save Data");
+    	 
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+        	return;
+        File file = fc.getSelectedFile();
+        if(this.chkboxFilter.isSelected()){ // TODO code check
+        	ExtendableTable tableToProcess = filteredTable == null ? table : filteredTable;	
+        	Store s = tableToProcess.getFIFO();
+        	StoreSaver tSaver = new StoreSaver(file);
+        	tSaver.putMetadata(settings);
+        	tSaver.setInput(s);
+        	tSaver.run();
+        } else {
+        	if (fitter != null){
+	        	SaveFittedLocalizations saver = new SaveFittedLocalizations(file);
+	        	manager.add(saver);
+	        	manager.linkModules(fitter,saver);
+        	}
+        }
 	}
 	
 	private void createDetectorProvider(){

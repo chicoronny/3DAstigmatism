@@ -29,6 +29,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	 * 
 	 */
 	private static final long serialVersionUID = -2042228716255813527L;
+	public static final String KEY = "FILTER";
 	
 	private JButton btnAdd;
 	private JButton btnRemove;
@@ -43,7 +44,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		setBorder(null);
 		setMinimumSize(new Dimension(295, 315));
 		setPreferredSize(new Dimension(300, 340));
-		setName("FILTER");
+		setName(KEY);
 		this.table = table;
 		
 		scrollPane = new JScrollPane();

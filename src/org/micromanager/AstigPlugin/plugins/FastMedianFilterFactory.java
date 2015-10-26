@@ -54,7 +54,7 @@ public class FastMedianFilterFactory {
 	}
 
 	public int processingFrames() {
-		int procFrames = (Integer) ((Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0); 
+		int procFrames = ((Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(FastMedianPanel.KEY_FRAMES)); 
 		return procFrames;
 	}
 

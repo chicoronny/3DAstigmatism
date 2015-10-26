@@ -3,6 +3,7 @@ package org.micromanager.AstigPlugin.gui;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.ImageWindow;
 import ij.gui.PointRoi;
@@ -549,7 +550,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		
 		if (s == this.chckbxPreprocessing){
 			preProcessingFactory = new FastMedianFilterFactory();
-			cardsFirst.show(panelLower, "FASTMEDIAN");
+			cardsFirst.show(panelLower, FastMedianFilterFactory.KEY);
 			ConfigurationPanel panelDown = preProcessingFactory.getConfigurationPanel();
 			
 			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
@@ -642,9 +643,11 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	@SuppressWarnings("unchecked")
 	private void ppPreview(Map<String, Object> map) {
 		preProcessingFactory.setAndCheckSettings(map);
-		AbstractModule preProcessor = detectorFactory.getDetector();
+		AbstractModule preProcessor = preProcessingFactory.getModule();
 		int frameNumber = previewerWindow.getImagePlus().getSlice();
 		List<Element> list = new ArrayList<Element>();
+		ImageStack stack = previewerWindow.getImagePlus().getImageStack();
+		int stackSize = stack.getSize();
 		
 		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
 			ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(i);
@@ -670,17 +673,19 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
-		}
-		rendererWindow.repaint();
-		
+		}		
 		if(ppResults.isEmpty()) return;
 		
 		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
 			Frame<T> resFrame = (Frame<T>) ppResults.get();
 			if (resFrame == null) continue;
 			ImageProcessor ip = ImageJFunctions.wrap(resFrame.getPixels(), "").getProcessor();
-			previewerWindow.getImagePlus().getStack().setProcessor(ip, i);
+			if (i < stackSize){
+				ImageProcessor stackip  = stack.getProcessor(i);
+				stackip.setPixels(ip.getPixels());
+			}
 		}
+		previewerWindow.repaint();
 	}
 	
 	private static ConfigurationPanel getConfigSettings(JPanel cardPanel){
@@ -870,7 +875,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		rendererWindow.getCanvas().fitToWindow();
 		ExtendableTable tableToRender = filteredTable == null ? table : filteredTable;	
 		
-		rendererWindow.getCanvas().addMouseListener(new MouseAdapter(){
+		rendererWindow.getCanvas().addMouseListener(new MouseAdapter(){   // calculate new settings for renderer
 			@Override
 		    public void mouseClicked(MouseEvent e){
 		        if(e.getClickCount()==2){
@@ -910,7 +915,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			Store previewStore = tableToRender.getFIFO();
 			System.out.println("Rendering " + tableToRender.getNumberOfRows() + " elements");
 			renderer.setInput(previewStore);
-			renderer.run();		
+			renderer.run();	
+			renderer.resetInputStore();
 			rendererWindow.repaint();
 		}
 	}
@@ -931,7 +937,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		}
 		if (table!=null || !table.columnNames().isEmpty()){
 			FilterPanel panelReconDown = new FilterPanel(table);
-			cardsSecond.addLayoutComponent(panelReconDown, "FILTER");
+			cardsSecond.addLayoutComponent(panelReconDown, FilterPanel.KEY);
 			panelReconDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -1029,7 +1035,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		String[] names = rendererNames.toArray(new String[] {});
 		comboBoxRenderer.setModel(new DefaultComboBoxModel(names));
 		comboBoxRenderer.setRenderer(new ToolTipRenderer(infoTexts));
-		panelFilter.add(new FilterPanel(table),"FILTER");
+		panelFilter.add(new FilterPanel(table), FilterPanel.KEY);
 	}
 	
 	

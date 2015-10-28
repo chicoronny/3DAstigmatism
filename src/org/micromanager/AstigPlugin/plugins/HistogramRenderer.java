@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.micromanager.AstigPlugin.factories.RendererFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
-import org.micromanager.AstigPlugin.gui.RendererPanel;
+import org.micromanager.AstigPlugin.gui.HistogramRendererPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.pipeline.ElementMap;
 import org.micromanager.AstigPlugin.pipeline.Localization;
@@ -127,7 +127,7 @@ public class HistogramRenderer extends Renderer {
 	@Plugin( type = RendererFactory.class, visible = true )
 	public static class Factory implements RendererFactory{
 
-		private RendererPanel configPanel = new RendererPanel();
+		private HistogramRendererPanel configPanel = new HistogramRendererPanel();
 		private Map<String, Object> settings;
 
 		@Override
@@ -167,6 +167,11 @@ public class HistogramRenderer extends Renderer {
 			this.settings = settings;
 			configPanel.setSettings(settings);
 			return settings != null;
+		}
+
+		@Override
+		public Map<String, Object> getInitialSettings() {
+			return configPanel.getInitialSettings();
 		}
 		
 	}

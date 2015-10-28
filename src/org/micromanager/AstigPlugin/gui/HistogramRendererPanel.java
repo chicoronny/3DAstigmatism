@@ -15,7 +15,7 @@ import javax.swing.SwingConstants;
 import org.micromanager.AstigPlugin.factories.RendererFactory;
 import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
-public class RendererPanel extends ConfigurationPanel {
+public class HistogramRendererPanel extends ConfigurationPanel {
 
 	/**
 	 * 
@@ -30,7 +30,7 @@ public class RendererPanel extends ConfigurationPanel {
 	private Map<String, Object> settings = new HashMap<String, Object>();
 	private Map<String, Object> initialSettings;;
 
-	public RendererPanel() {
+	public HistogramRendererPanel() {
 		setBorder(null);
 		
 		lblX = new JLabel("0");
@@ -149,7 +149,7 @@ public class RendererPanel extends ConfigurationPanel {
 	{
 		
 		// Create GUI
-		final RendererPanel tp = new RendererPanel( );
+		final HistogramRendererPanel tp = new HistogramRendererPanel( );
 		final JFrame frame = new JFrame();
 		frame.getContentPane().add( tp );
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );

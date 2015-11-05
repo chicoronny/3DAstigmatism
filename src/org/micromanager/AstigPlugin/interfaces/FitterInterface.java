@@ -1,4 +1,4 @@
-package org.micromanager.AstigPlugin.math;
+package org.micromanager.AstigPlugin.interfaces;
 
 public interface FitterInterface {
 	

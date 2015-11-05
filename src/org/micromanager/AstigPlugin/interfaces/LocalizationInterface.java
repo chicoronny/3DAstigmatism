@@ -3,11 +3,6 @@ package org.micromanager.AstigPlugin.interfaces;
 
 public interface LocalizationInterface extends Element {
 	/**
-	 * @return ID
-	 */
-	public long getID();
-	
-	/**
 	 * @return x
 	 */
 	public double getX();
@@ -15,7 +10,12 @@ public interface LocalizationInterface extends Element {
 	/**
 	 * @return y
 	 */
-	public double getY();	
+	public double getY();
+	
+	/**
+	 * @return intensity
+	 */
+	public double getIntensity();
 	
 	/**
 	 * @return frame

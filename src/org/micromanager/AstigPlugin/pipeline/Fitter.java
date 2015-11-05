@@ -51,20 +51,21 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 	}
 
 	private void process1(FrameElements<T> data) {
-		List<Element> res = fit( data.getList(), data.getFrame().getPixels(), size, data.getFrame().getFrameNumber());
+		List<Element> res = fit( data.getList(), data.getFrame().getPixels(), size, data.getFrame().getFrameNumber(), data.getFrame().getPixelDepth());
 		counterList.add(res.size());
 		for (Element el : res)
 			newOutput(el);
 	}
 	
-	public abstract List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber);
+	public abstract List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, 
+			long frameNumber, final double pixelDepth);
 
 	@Override
 	protected void afterRun() {
 		Integer cc=0;
 		for (Integer i : counterList)
 			cc+=i;
-		FittedLocalization lastLoc = new FittedLocalization(0, -1, -1, 0, -1, -1) ;
+		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 1, 1) ;
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
 		System.out.println("Fitting of "+ cc +" elements done in " + (System.currentTimeMillis() - start)+"ms");

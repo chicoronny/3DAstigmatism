@@ -74,7 +74,7 @@ public class Calibrator {
 	// 1D and 2D fits
 	public void fitStack() {
 
-		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors());
+		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors()-1);
 		final AtomicInteger ai = new AtomicInteger(0);
 
 		for (int ithread = 0; ithread < threads.length; ithread++) {

@@ -8,6 +8,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
+import org.micromanager.AstigPlugin.interfaces.FitterInterface;
 
 import ij.gui.Roi;
 import ij.process.ImageProcessor;

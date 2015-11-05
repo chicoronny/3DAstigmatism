@@ -12,7 +12,7 @@ import javax.swing.WindowConstants;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.micromanager.AstigPlugin.factories.RendererFactory;
+import org.micromanager.AstigPlugin.factories.HistogramRendererFactory;
 import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
 public class HistogramRendererPanel extends ConfigurationPanel {
@@ -112,23 +112,25 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 					.addContainerGap(182, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
-		settings.put(RendererFactory.KEY_xmin, new Double(0));
-		settings.put(RendererFactory.KEY_ymin, new Double(0));
-		settings.put(RendererFactory.KEY_xmax, new Double(100));
-		settings.put(RendererFactory.KEY_ymax, new Double(100));
-		settings.put(RendererFactory.KEY_xBins,new Integer(500));
-		settings.put(RendererFactory.KEY_yBins,new Integer(500));
+		settings.put(HistogramRendererFactory.KEY_xmin, new Double(0));
+		settings.put(HistogramRendererFactory.KEY_ymin, new Double(0));
+		settings.put(HistogramRendererFactory.KEY_xmax, new Double(100));
+		settings.put(HistogramRendererFactory.KEY_ymax, new Double(100));
+		settings.put(HistogramRendererFactory.KEY_xBins,new Integer(500));
+		settings.put(HistogramRendererFactory.KEY_yBins,new Integer(500));
+		settings.put(HistogramRendererFactory.KEY_zmin,new Double(0));
+		settings.put(HistogramRendererFactory.KEY_zmax,new Double(255));
 		initialSettings = new HashMap<String, Object>(settings);
 	}
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		lblX.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmin)));
-		lblY.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymin)));
-		labelX2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmax)));
-		labelY2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymax)));
-		textXBins.setText(String.valueOf(settings.get(RendererFactory.KEY_xBins)));
-		textYBins.setText(String.valueOf(settings.get(RendererFactory.KEY_yBins)));
+		lblX.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_xmin)));
+		lblY.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_ymin)));
+		labelX2.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_xmax)));
+		labelY2.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_ymax)));
+		textXBins.setText(String.valueOf(settings.get(HistogramRendererFactory.KEY_xBins)));
+		textYBins.setText(String.valueOf(settings.get(HistogramRendererFactory.KEY_yBins)));
 		for (String key : settings.keySet())
 			this.settings.put(key, settings.get(key));
 		revalidate();

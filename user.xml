@@ -3,7 +3,7 @@
 <project>
 	<property name="InstallRoot" value="/Applications/Micro-Manager1.4"/>
 	<property name="MMPluginsDir-inst" value="${InstallRoot}/mmplugins"/>
-	<property name="JAR-inst" value="${InstallRoot}/plugins/Micro-Manager"/>
+	<property name="JAR-inst" value="${InstallRoot}/plugins/AstigPlugin"/>
 	<target name="CreateJar" description="Create Jar file">
 	        <jar jarfile="Astig.jar" basedir="bin"/>
 			<copy file="Astig.jar" todir="${MMPluginsDir-inst}"/>

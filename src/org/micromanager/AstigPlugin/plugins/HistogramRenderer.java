@@ -2,26 +2,15 @@ package org.micromanager.AstigPlugin.plugins;
 
 import ij.process.ShortProcessor;
 
-import java.awt.image.IndexColorModel;
 import java.util.List;
-import java.util.Map;
 
-import org.micromanager.AstigPlugin.factories.RendererFactory;
-import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
-import org.micromanager.AstigPlugin.gui.HistogramRendererPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.pipeline.ElementMap;
-import org.micromanager.AstigPlugin.pipeline.Localization;
+import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
 import org.micromanager.AstigPlugin.pipeline.Renderer;
-import org.scijava.plugin.Plugin;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class HistogramRenderer extends Renderer {
-	
-	public static final String NAME = "Histogram Renderer";
-	public static final String KEY = "HISTOGRAMRENDERER";
-	public static final String INFO_TEXT = "<html>"
-											+ "Histogram Renderer Plugin"
-											+ "</html>";
 	
 	private int xBins;
 	private double xmin;
@@ -31,18 +20,22 @@ public class HistogramRenderer extends Renderer {
 	private double ywidth;
 	private double x;
 	private double y;
+	private double z;
 	private int index;
 	private long xindex;
 	private long yindex;
 	private volatile short[] values; // volatile keyword keeps the array on the heap available
 	private double xmax;
 	private double ymax;
+	private double zmin;
+	private double zmax;
 
 	public HistogramRenderer(){
-		this(256,256,0,256,0,256);
+		this(256,256,0,256,0,256,0,255);
 	}
 
-	public HistogramRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax) {
+	public HistogramRenderer(final int xBins, final int yBins, final double xmin, final double xmax, 
+			final double ymin, final double ymax, final double zmin, final double zmax) {
 		this.xBins = xBins;
 		this.xmin = xmin;
 		this.ymin = ymin;
@@ -50,11 +43,13 @@ public class HistogramRenderer extends Renderer {
 		this.ymax = ymax;
 		this.xwidth = (xmax - xmin) / xBins;
     	this.ywidth = (ymax - ymin) / yBins;
+    	this.zmin = zmin;
+    	this.zmax = zmax;
     	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
     		cancel(); return;
     	}
     	values = new short[xBins*yBins];
-		ShortProcessor sp = new ShortProcessor(xBins, yBins,values,getDefaultColorModel());
+		ShortProcessor sp = new ShortProcessor(xBins, yBins,values, LemmingUtils.Fire());
 		ip.setProcessor(sp);
 		ip.updateAndRepaintWindow();
 	}
@@ -69,27 +64,33 @@ public class HistogramRenderer extends Renderer {
 		if(data == null) return null;
 		if(data.isLast())
 				cancel();
-		if (data instanceof Localization){
-			Localization loc = (Localization) data;
+		if (data instanceof LocalizationPrecision3D){
+			LocalizationPrecision3D loc = (LocalizationPrecision3D) data;
 			x = (float) loc.getX();
 			y = (float) loc.getY();
+			z = (float) loc.getZ();
 		}
 		if (data instanceof ElementMap){
 			ElementMap map = (ElementMap) data;
 			try{
-				x = map.get("x").floatValue();
-				y = map.get("y").floatValue();
-			} catch (NullPointerException ne) { return null;}
+				x = map.get("x").doubleValue();
+				y = map.get("y").doubleValue();
+				z = map.get("z").doubleValue();
+			} catch (NullPointerException ne) {return null;}
 		}
+		long rz = StrictMath.round((z - zmin) / (zmax-zmin) * 256) + 1;
 		
-		synchronized(this){
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-	    	xindex = Math.round((x - xmin) / xwidth);
-	    	yindex = Math.round((y - ymin) / ywidth);
-	    	index = (int) (xindex+yindex*xBins);
-	    	if (index>=0 && index<values.length)
-	    		values[index]++;
-		
+        	synchronized(this){
+		    	xindex = StrictMath.round((x - xmin) / xwidth);
+		    	yindex = StrictMath.round((y - ymin) / ywidth);
+		    	index = (int) (xindex+yindex*xBins);
+		    	if (index>=0 && index<values.length){
+		    		if (values[index] > 0)
+		    			values[index] = (short)((values[index]+rz+1)/2);
+		    		else
+		    			values[index] = (short) rz;
+		    	}
 			} 
         }   
 		return null;
@@ -97,23 +98,11 @@ public class HistogramRenderer extends Renderer {
 	
 	@Override
 	public void afterRun(){
-		ip.getProcessor().setMinAndMax(0, 3);
+		double max = ip.getStatistics().histMax;
+		ip.getProcessor().setMinAndMax(0, max);
 		ip.updateAndDraw();
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
-		//while(ip.isVisible()) pause(10);
-	}
-	
-	private static IndexColorModel getDefaultColorModel() {
-		byte[] r = new byte[256];
-		byte[] g = new byte[256];
-		byte[] b = new byte[256];
-		for(int i=0; i<256; i++) {
-			r[i]=(byte)i;
-			g[i]=(byte)i;
-			b[i]=(byte)i;
-		}
-		return new IndexColorModel(8, 256, r, g, b);
 	}
 
 	@Override
@@ -123,56 +112,4 @@ public class HistogramRenderer extends Renderer {
 		ip.updateAndDraw();
 	}
 	
-	
-	@Plugin( type = RendererFactory.class, visible = true )
-	public static class Factory implements RendererFactory{
-
-		private HistogramRendererPanel configPanel = new HistogramRendererPanel();
-		private Map<String, Object> settings;
-
-		@Override
-		public String getInfoText() {
-			return INFO_TEXT;
-		}
-
-		@Override
-		public String getKey() {
-			return KEY;
-		}
-
-		@Override
-		public String getName() {
-			return NAME;
-		}
-
-		@Override
-		public Renderer getRenderer() {
-			final int xBins = (Integer) settings.get(RendererFactory.KEY_xBins);
-			final int yBins = (Integer) settings.get(RendererFactory.KEY_yBins);
-			final double xmin = (Double) settings.get(RendererFactory.KEY_xmin);
-			final double xmax = (Double) settings.get(RendererFactory.KEY_xmax);
-			final double ymin = (Double) settings.get(RendererFactory.KEY_ymin);
-			final double ymax = (Double) settings.get(RendererFactory.KEY_ymax);
-			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax);
-		}
-
-		@Override
-		public ConfigurationPanel getConfigurationPanel() {
-			configPanel.setName(KEY);
-			return configPanel;
-		}
-
-		@Override
-		public boolean setAndCheckSettings(Map<String, Object> settings) {
-			this.settings = settings;
-			configPanel.setSettings(settings);
-			return settings != null;
-		}
-
-		@Override
-		public Map<String, Object> getInitialSettings() {
-			return configPanel.getInitialSettings();
-		}
-		
-	}
 }

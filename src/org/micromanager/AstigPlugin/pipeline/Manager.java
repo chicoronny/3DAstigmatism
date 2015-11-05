@@ -29,26 +29,26 @@ public class Manager extends SwingWorker<Void,Void> {
 		modules.put(module.hashCode(),module);		
 	}
 	
-	public void linkModules(AbstractModule current, AbstractModule fromOrTo , boolean noInputs ){
+	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs ){
 		if (noInputs){
 			Store s = new FastStore();
-			AbstractModule cur = modules.get(current.hashCode());
-			if (cur==null) throw new NullPointerException("Wrong linkage!");
-			cur.setOutput(s);
-			AbstractModule well = modules.get(fromOrTo.hashCode());
+			AbstractModule source = modules.get(from.hashCode());
+			if (source==null) throw new NullPointerException("Wrong linkage!");
+			source.setOutput(s);
+			AbstractModule well = modules.get(to.hashCode());
 			if (well==null) throw new NullPointerException("Wrong linkage!");
 			well.setInput(s);
 			storeMap.put(s.hashCode(), s);
 			return;
 		}
 		
-		AbstractModule well = modules.get(fromOrTo.hashCode());
+		AbstractModule well = modules.get(to.hashCode());
 		if (well==null) throw new NullPointerException("Wrong linkage!");
 		Store s = new FastStore();
 		well.setInput(s);
-		AbstractModule cur = modules.get(current.hashCode());
-		if (cur==null) throw new NullPointerException("Wrong linkage!");
-		cur.setOutput(s);
+		AbstractModule source = modules.get(from.hashCode());
+		if (source==null) throw new NullPointerException("Wrong linkage!");
+		source.setOutput(s);
 		storeMap.put(s.hashCode(), s);
 	}
 	
@@ -57,9 +57,9 @@ public class Manager extends SwingWorker<Void,Void> {
 		if (source==null) throw new NullPointerException("Wrong linkage!");
 		Store s = new FastStore();
 		source.setOutput(s);
-		AbstractModule current = modules.get(to.hashCode());
-		if (current==null) throw new NullPointerException("Wrong linkage!");
-		current.setInput(s);
+		AbstractModule well = modules.get(to.hashCode());
+		if (well==null) throw new NullPointerException("Wrong linkage!");
+		well.setInput(s);
 		storeMap.put(s.hashCode(), s);
 	}
 	
@@ -99,7 +99,6 @@ public class Manager extends SwingWorker<Void,Void> {
 				IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
 				break;
 			}	
-//			starter.setService(service);
 
 			Thread t = new Thread(starter, starter.getClass().getSimpleName());
 			t.start();
@@ -114,7 +113,6 @@ public class Manager extends SwingWorker<Void,Void> {
 		try {
 			for(Thread joiner:threads)
 				joiner.join();
-
 		} catch (InterruptedException e) {
 			System.err.println(e.getMessage());
 		}
@@ -153,8 +151,5 @@ public class Manager extends SwingWorker<Void,Void> {
 				}
 			return null;
 		}
-
 	}
-
-
 }

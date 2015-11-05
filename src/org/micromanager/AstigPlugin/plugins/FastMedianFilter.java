@@ -118,7 +118,8 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 			if (median != null)
 				cursor.get().setInteger(median);
 		}
-		Frame<T> newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), firstFrame.getHeight(), out);
+		Frame<T> newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
+				firstFrame.getHeight(), firstFrame.getPixelDepth(), out);
 		if (isLast)
 			newFrame.setLast(true);
 		return newFrame;
@@ -179,7 +180,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 
 					newOutput(new ImgLib2Frame<T>(
 							frameA.getFrameNumber() + i, frameA.getWidth(),
-							frameA.getHeight(), outFrame));
+							frameA.getHeight(), frameA.getPixelDepth(), outFrame));
 				}
 				frameA = frameB;
 			}
@@ -187,14 +188,14 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
 				newOutput(new ImgLib2Frame<T>(frameB.getFrameNumber() + i,
-						frameB.getWidth(), frameB.getHeight(), frameB
-								.getPixels()));
+						frameB.getWidth(), frameB.getHeight(), 
+						frameB.getPixelDepth(), frameB.getPixels()));
 			}
 
 			// create last frame
 			ImgLib2Frame<T> lastFrame = new ImgLib2Frame<T>(
 					frameB.getFrameNumber() + lastListSize, frameB.getWidth(),
-					frameB.getHeight(), frameB.getPixels());
+					frameB.getHeight(), frameB.getPixelDepth(), frameB.getPixels());
 			lastFrame.setLast(true);
 			newOutput(lastFrame);
 		} else {
@@ -202,19 +203,19 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 			for (Frame<T> element : results) {
 				for (int i = 0; i < nFrames; i++)
 					newOutput(new ImgLib2Frame<T>(element.getFrameNumber()
-							+ i, element.getWidth(), element.getWidth(),
+							+ i, element.getWidth(), element.getWidth(), element.getPixelDepth(), 
 							element.getPixels()));
 			}
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
 				newOutput(new ImgLib2Frame<T>(lastElements.getFrameNumber() + i,
-						lastElements.getWidth(), lastElements.getHeight(), lastElements
-								.getPixels()));
+						lastElements.getWidth(), lastElements.getHeight(), 
+						lastElements.getPixelDepth(), lastElements.getPixels()));
 			}
 			// create last frame
 			ImgLib2Frame<T> lastFrame = new ImgLib2Frame<T>(
 					lastElements.getFrameNumber() + lastListSize, lastElements.getWidth(),
-					lastElements.getHeight(), lastElements.getPixels());
+					lastElements.getHeight(), lastElements.getPixelDepth(), lastElements.getPixels());
 			lastFrame.setLast(true);
 			newOutput(lastFrame);
 		}

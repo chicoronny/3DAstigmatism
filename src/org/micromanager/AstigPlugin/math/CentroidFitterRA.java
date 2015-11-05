@@ -1,16 +1,19 @@
 package org.micromanager.AstigPlugin.math;
 
+import org.micromanager.AstigPlugin.interfaces.FitterInterface;
+
 import net.imglib2.Cursor;
-import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface  {
 	
-	private IterableInterval<T> op;
+	private IntervalView<T> op;
 	private double thresh;
 	double[] center;
 
-	public CentroidFitterRA(IterableInterval<T> op_, double threshold_){
+	public CentroidFitterRA(IntervalView<T> op_, double threshold_){
 		op = op_;
 		thresh = threshold_;
 		center = new double[op.numDimensions()];
@@ -24,7 +27,7 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 		Cursor<T> c = op.cursor();
 		int n = op.numDimensions();
 		
-		double [] r = new double[n*2];
+		double [] r = new double[n*2+1];
 		double sum = 0;
 		
 		while (c.hasNext()){
@@ -58,6 +61,12 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 		
 		for (int i = 0; i < n; i++) 
 			r[i+n] = Math.sqrt(dev[i]/sum);
+		
+		RandomAccess<T> ra = op.randomAccess();
+		for (int i = 0; i < n; i++){
+			ra.setPosition(StrictMath.round(r[i]), i);
+		}
+		r[n*2] = ra.get().getRealDouble();
 		
 		return r;		
 	}

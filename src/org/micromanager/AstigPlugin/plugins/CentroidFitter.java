@@ -1,71 +1,77 @@
 package org.micromanager.AstigPlugin.plugins;
 
-import ij.IJ;
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.FitterPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
-import org.micromanager.AstigPlugin.math.GaussianFitterZ;
+import org.micromanager.AstigPlugin.math.CentroidFitterRA;
 import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.Localization;
-import org.micromanager.AstigPlugin.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
-public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
+public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
 	
-	public static final String NAME = "Astigmatism Fitter";
+	public static final String NAME = "Centroid Fitter";
 
-	public static final String KEY = "ASTIGFITTER";
+	public static final String KEY = "CENTROIDFITTER";
 
 	public static final String INFO_TEXT = "<html>"
-			+ "Astigmatism Fitter Plugin"
+			+ "Centroid Fitter Plugin"
 			+ "</html>";
-	
-	private final double[] params;
-	
-	public AstigFitter(final int windowSize, final List<Double> list) {
+
+	private double thresh;
+
+	public CentroidFitter(int windowSize, double threshold_) {
 		super(windowSize);
-		this.params = new double[list.size()];
-		for (int i =0 ; i<list.size(); i++)
-			params[i]=list.get(i);
-	}
-	
-	@Override
-	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth) {
-		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
-		List<Element> found = new ArrayList<Element>();
-		int halfKernel = size / 2;
-		for (Element el : sliceLocs) {
-			final Localization loc = (Localization) el;
-			double x = loc.getX()/pixelDepth;
-			double y = loc.getY()/pixelDepth;
-			final Roi origroi = new Roi(x - halfKernel, y - halfKernel, size, size);
-			final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
-			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 3000, 1000, params);
-			double[] result = null;
-			result = gf.fit();
-			if (result != null){
-				for (int i = 0; i < 3; i++)
-					result[i] *= pixelDepth;
-				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[5], result[5], result[3], loc.getFrame()));
-			}			
-		}
-		return found;
+		thresh = threshold_;
 	}
 
+	@Override
+	public List<Element> fit(List<Element> sliceLocs,
+			RandomAccessibleInterval<T> pixels, long windowSize,
+			long frameNumber, final double pixelDepth) {
+		
+		final RandomAccessible<T> source = Views.extendZero(pixels);
+		List<Element> found = new ArrayList<Element>();
+		int halfKernel = size / 2;
+		
+		for (Element el : sliceLocs) {
+			final Localization loc = (Localization) el;
+			
+			double x = loc.getX()/pixelDepth;
+			double y = loc.getY()/pixelDepth;
+
+			final Interval roi = new FinalInterval(new long[] { (long) StrictMath.floor(x - halfKernel),
+					(long) StrictMath.floor(y - halfKernel) }, new long[] { (long) StrictMath.ceil(x + halfKernel),
+					(long) StrictMath.ceil(y + halfKernel) });
+			IntervalView<T> interval = Views.interval(source, roi);
+
+			CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, thresh);
+			double[] result = cf.fit();
+			if (result != null){
+				for (int i = 0; i < 4; i++)
+					result[i] *= pixelDepth;
+				found.add(new LocalizationPrecision3D(result[0], result[1], 0, result[2], result[3], 0, result[4], loc.getFrame()));
+			}
+		}
+		
+		return found;
+	}
+	
 	@Plugin( type = FitterFactory.class, visible = true )
 	public static class Factory implements FitterFactory{
 
@@ -92,22 +98,15 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			configPanel.setSettings(settings);
-			if(settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null)
-				return true;
-			return false;
+			return settings!=null;
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
 			final int windowSize = (Integer) settings.get( FitterPanel.KEY_WINDOW_SIZE );
-			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILENAME );
-			if (calibFileName == null){ 
-				IJ.error("No Calibration File!");
-				return null;
-			}
-			return new AstigFitter(windowSize, Settings.readCSV(calibFileName).get("param"));
+			final double threshold = (Double) settings.get( FitterPanel.KEY_CENTROID_THRESHOLD );
+			return new CentroidFitter(windowSize, threshold);
 		}
 
 		@Override
@@ -117,6 +116,5 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		}
 		
 	}
-
 
 }

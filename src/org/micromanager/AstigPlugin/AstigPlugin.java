@@ -55,6 +55,7 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 	public void setApp(ScriptInterface app) {
 		 app_ =  app;
 	     core_ = app.getMMCore();
+	     
 	}
 
 	@Override

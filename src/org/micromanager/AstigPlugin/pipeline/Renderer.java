@@ -11,7 +11,7 @@ public abstract class Renderer extends MultiRunModule {
 	
 	
 	protected ImagePlus ip;
-	final protected String title = "LemMING!"; // title of the image
+	final protected String title = "Histogram Renderer"; // title of the image
 
 	public Renderer() {
 		ip = new ImagePlus();

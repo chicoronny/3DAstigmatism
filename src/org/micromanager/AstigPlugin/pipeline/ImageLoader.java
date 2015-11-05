@@ -2,23 +2,25 @@ package org.micromanager.AstigPlugin.pipeline;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
-import org.micromanager.imagedisplay.MMImagePlus;
 
-import ij.process.ImageProcessor;
+import ij.ImagePlus;
+import ij.ImageStack;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
-public class MMImageLoader<T extends NumericType<T> & NativeType<T>> extends SingleRunModule{
+public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice = 0;
-	private MMImagePlus img;
+	private ImageStack img;
 	private int stackSize;
 	private long start;
+	private double pixelDepth;
 	
-	public MMImageLoader(MMImagePlus img) {
-		this.img = img;
-		stackSize = img.getImageStackSize();
+	public ImageLoader(ImagePlus loc_im) {
+		this.img = loc_im.getStack();
+		stackSize = loc_im.getNSlices()*loc_im.getNFrames()*loc_im.getNChannels();
+		pixelDepth = loc_im.getCalibration().pixelDepth == 0 ? 1 : loc_im.getCalibration().pixelDepth;
 	}
 	
 	@Override
@@ -28,12 +30,15 @@ public class MMImageLoader<T extends NumericType<T> & NativeType<T>> extends Sin
 	}
 
 	@Override
-	public Element processData(Element data) {	
-		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
+	public Element processData(Element data) {
+		Object ip = img.getPixels(++curSlice);
 		
-		Img<T> theImage = LemmingUtils.wrap(ip);
+		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
+		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
 		
-		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
+		//if (curSlice % 100 == 0)
+		//	System.out.println("Images: " + curSlice);
+		
 		if (curSlice >= stackSize){
 			frame.setLast(true);
 			cancel(); 
@@ -48,7 +53,7 @@ public class MMImageLoader<T extends NumericType<T> & NativeType<T>> extends Sin
 	}
 	
 	public void show(){
-		img.show();
+		new ImagePlus("",img).show();
 	}
 
 	@Override

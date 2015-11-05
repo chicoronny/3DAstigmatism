@@ -2,32 +2,17 @@ package org.micromanager.AstigPlugin.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
-import org.micromanager.AstigPlugin.factories.DetectorFactory;
-import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
-import org.micromanager.AstigPlugin.gui.NMSDetectorPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
-import org.micromanager.AstigPlugin.pipeline.AbstractModule;
 import org.micromanager.AstigPlugin.pipeline.Detector;
 import org.micromanager.AstigPlugin.pipeline.FrameElements;
 import org.micromanager.AstigPlugin.pipeline.Localization;
-import org.scijava.plugin.Plugin;
 
 public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
-	
-	public static final String NAME = "NMS Detector";
-
-	public static final String KEY = "NMSDETECTOR";
-
-	public static final String INFO_TEXT = "<html>"
-			+ "NMS Detector Plugin"
-			+ "</html>";
 	
 	private double threshold;
 	
@@ -90,8 +75,8 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 				if(!failed){
 					ra.setPosition(new int[]{mi,mj});
 					T value = ra.get().copy();
-					if(value.getRealDouble() > threshold){
-						found.add(new Localization(frame.getFrameNumber(), mi, mj));
+					if (value.getRealDouble() > threshold) {
+						found.add(new Localization(mi * frame.getPixelDepth(), mj * frame.getPixelDepth(), value.getRealDouble(), frame.getFrameNumber()));
 						counter++;
 					}
 				}
@@ -101,51 +86,4 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 		if (found.isEmpty()) return null;
 		return new FrameElements<T>(found, frame);
 	}
-	
-
-	@Plugin( type = DetectorFactory.class, visible = true )
-	public static class Factory implements DetectorFactory{
-
-		
-		private Map<String, Object> settings;
-		private NMSDetectorPanel configPanel = new NMSDetectorPanel();
-
-		@Override
-		public String getInfoText() {
-			return INFO_TEXT;
-		}
-
-		@Override
-		public String getKey() {
-			return KEY;
-		}
-
-		@Override
-		public String getName() {
-			return NAME;
-		}
-
-
-		@Override
-		public boolean setAndCheckSettings(Map<String, Object> settings) {
-			this.settings = settings;
-			return true;
-		}
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public AbstractModule getDetector() {
-			final double threshold = ( Double ) settings.get( NMSDetectorPanel.KEY_NMS_THRESHOLD );
-			final int stepSize = ( Integer ) settings.get( NMSDetectorPanel.KEY_NMS_STEPSIZE );
-			return new NMSDetector(threshold, stepSize);
-		}
-
-		@Override
-		public ConfigurationPanel getConfigurationPanel() {
-			configPanel.setName(KEY);
-			return configPanel;
-		}
-		
-	}
-
 }

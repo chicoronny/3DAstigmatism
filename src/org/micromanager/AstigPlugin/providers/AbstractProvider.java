@@ -56,7 +56,6 @@ public class AbstractProvider< K extends PluginInterface > {
 		try{
 			context = new Context(LogService.class, PluginService.class);
 		} catch (Exception e){
-			System.err.println("Astig: automatic registering failed. Add classes manually");
 			return;
 		}
 		final LogService log = context.getService(LogService.class);

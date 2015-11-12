@@ -9,7 +9,6 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-import org.micromanager.AstigPlugin.math.Calibrator;
 import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
 import javax.swing.SpinnerNumberModel;
@@ -40,13 +39,11 @@ public class FitterPanel extends ConfigurationPanel {
 	private JButton btnCalibration;
 	private JLabel lblCamera;
 	private JLabel lblCalibration;
-	protected File calibFile;
-	protected File camFile;
-	protected boolean doubleClicked = false;
-	protected int default_step = 10;
-	protected Calibrator calibrator;
+	private File calibFile;
+	private File camFile;
 	private JLabel lblCentroidThreshold;
 	private JTextField textFieldThreshold;
+	private ChangeEvent CHANGE_EVENT = new ChangeEvent(this);
 
 	public FitterPanel() {
 		setBorder(null);
@@ -56,7 +53,7 @@ public class FitterPanel extends ConfigurationPanel {
 		spinnerWindowSize = new JSpinner();
 		spinnerWindowSize.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
-				fireChanged();
+				stateChanged( CHANGE_EVENT );
 			}
 		});
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
@@ -76,7 +73,7 @@ public class FitterPanel extends ConfigurationPanel {
 		        	return;
 		        calibFile = fc.getSelectedFile();
 		        lblCalibration.setText(calibFile.getName());
-		        fireChanged();
+				fireChanged( CHANGE_EVENT );
 			}
 		});
 		
@@ -104,7 +101,7 @@ public class FitterPanel extends ConfigurationPanel {
 		textFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
-				fireChanged();
+				fireChanged( CHANGE_EVENT );
 			}
 		}));
 		textFieldThreshold.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -169,7 +166,6 @@ public class FitterPanel extends ConfigurationPanel {
 			lblCalibration.setText(calibFile.getName());
 			camFile = (File) settings.get(KEY_CAMERA_FILENAME);
 		} catch (Exception e){}
-		repaint();
 	}
 
 	@Override

@@ -1,6 +1,10 @@
 package org.micromanager.AstigPlugin.factories;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.IntegerType;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.FastMedianPanel;
@@ -8,7 +12,7 @@ import org.micromanager.AstigPlugin.pipeline.AbstractModule;
 import org.micromanager.AstigPlugin.pipeline.ImageMath.operators;
 import org.micromanager.AstigPlugin.plugins.FastMedianFilter;
 
-public class FastMedianFilterFactory {
+public class FastMedianFilterFactory<T extends IntegerType<T> & NativeType<T>> {
 	
 	public static final String NAME = "Fast Median Filter";
 
@@ -18,7 +22,7 @@ public class FastMedianFilterFactory {
 			+ "Fast Median Filter with the option to interpolate between blocks"
 			+ "</html>";
 	
-	private Map<String, Object> settings;
+	private Map<String, Object> settings = new HashMap<String, Object>();
 	private FastMedianPanel configPanel = new FastMedianPanel();
 
 	public String getInfoText() {
@@ -34,14 +38,13 @@ public class FastMedianFilterFactory {
 	}
 
 	public boolean setAndCheckSettings(Map<String, Object> settings) {
-		this.settings = settings;
-		return true;
+		this.settings.putAll(settings);
+		return settings!=null;
 	}
 
-	@SuppressWarnings("rawtypes")
 	public AbstractModule getModule() {
 		int frames  = (Integer) settings.get(FastMedianPanel.KEY_FRAMES);
-		return new FastMedianFilter(frames, true);
+		return new FastMedianFilter<T>(frames, true);
 	}
 
 	public ConfigurationPanel getConfigurationPanel() {

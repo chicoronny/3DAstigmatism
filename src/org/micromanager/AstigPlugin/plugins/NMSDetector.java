@@ -83,7 +83,6 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 			}			
 		}
 				
-		if (found.isEmpty()) return null;
 		return new FrameElements<T>(found, frame);
 	}
 }

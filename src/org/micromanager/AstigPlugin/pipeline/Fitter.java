@@ -8,13 +8,11 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
-import org.micromanager.AstigPlugin.interfaces.Frame;
 
 import ij.gui.Roi;
 
-public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 
-	private long start;
 	protected int size;
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
 
@@ -24,13 +22,7 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 	public int getWindowSize(){
 		return size;
-	}
-
-	@Override
-	protected void beforeRun() {
-		start = System.currentTimeMillis();
-	}
-	
+	}	
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -38,12 +30,9 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 		FrameElements<T> fe = (FrameElements<T>) data;
 
 		if (fe.isLast()) {
-			if (!inputs.get(iterator).isEmpty()){
-				inputs.get(iterator).put(fe);
-				return null;
-			}
-			process1(fe);
 			cancel();
+			process1(fe);	
+			return null;
 		}
 		
 		process1(fe);
@@ -68,7 +57,7 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 1, 1) ;
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
-		System.out.println("Fitting of "+ cc +" elements done in " + (System.currentTimeMillis() - start)+"ms");
+		System.out.println("Fitting of "+ cc +" elements done in " + (System.currentTimeMillis() - start)+"ms.");
 	}
 
 	@Override

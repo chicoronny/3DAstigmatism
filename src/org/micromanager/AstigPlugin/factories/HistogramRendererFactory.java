@@ -22,8 +22,13 @@ public class HistogramRendererFactory {
 	public static final String KEY_zmin = "zmin";
 	public static final String KEY_zmax = "zmax";
 	
-	private HistogramRendererPanel configPanel = new HistogramRendererPanel();
+	private HistogramRendererPanel configPanel;
 	private Map<String, Object> settings;
+	
+	public HistogramRendererFactory(){
+		configPanel = new HistogramRendererPanel();
+		settings = configPanel.getInitialSettings();
+	}
 
 	public String getInfoText() {
 		return INFO_TEXT;
@@ -55,13 +60,17 @@ public class HistogramRendererFactory {
 	}
 
 	public boolean setAndCheckSettings(Map<String, Object> settings) {
-		this.settings = settings;
 		configPanel.setSettings(settings);
+		this.settings.putAll(settings);
 		return settings != null;
 	}
 
 	public Map<String, Object> getInitialSettings() {
 		return configPanel.getInitialSettings();
+	}
+	
+	public Map<String, Object> getSettings() {
+		return settings;
 	}
 	
 }

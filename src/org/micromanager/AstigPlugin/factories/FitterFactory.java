@@ -4,7 +4,6 @@ import java.util.Map;
 
 import net.imglib2.type.numeric.RealType;
 
-import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.interfaces.PluginInterface;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
@@ -23,7 +22,7 @@ public interface FitterFactory extends PluginInterface{
 	/**
 	 *  @return  Module to process
 	 */
-	public <T extends RealType<T>, F extends Frame<T>> Fitter<T,F> getFitter();
+	public <T extends RealType<T>> Fitter<T> getFitter();
 	
 	/**
 	 * Returns a new GUI panel able to configure the settings suitable for this

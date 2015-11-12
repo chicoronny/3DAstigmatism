@@ -1,6 +1,7 @@
 package org.micromanager.AstigPlugin.gui;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.GroupLayout;
@@ -11,7 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-
+import javax.swing.event.ChangeEvent;
 import org.micromanager.AstigPlugin.factories.HistogramRendererFactory;
 import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
@@ -21,21 +22,22 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -3031663211936690561L;
+	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 	private JTextField textXBins;
 	private JTextField textYBins;
 	private JLabel lblX;
 	private JLabel lblY;
 	private JLabel labelX2;
 	private JLabel labelY2;
-	private Map<String, Object> settings = new HashMap<String, Object>();
-	private Map<String, Object> initialSettings;;
+	private double zmin,zmax;
 
 	public HistogramRendererPanel() {
+		
 		setBorder(null);
 		
-		lblX = new JLabel("0");
+		lblX = new JLabel(String.format("%.4f",0d));
 		
-		lblY = new JLabel("0");
+		lblY = new JLabel(String.format("%.4f",0d));
 		
 		JLabel lblXBins = new JLabel("X Bins");
 		
@@ -47,7 +49,7 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		textXBins.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
-				fireChanged();
+				fireChanged( CHANGE_EVENT );
 			}
 		}));
 		
@@ -57,13 +59,13 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		textYBins.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
-				fireChanged();
+				fireChanged( CHANGE_EVENT );
 			}
 		}));
 		
-		labelX2 = new JLabel("100");
+		labelX2 = new JLabel(String.format("%.4f",100d));
 		
-		labelY2 = new JLabel("100");
+		labelY2 = new JLabel(String.format("%.4f",100d));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.TRAILING)
@@ -80,14 +82,18 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 							.addComponent(textXBins, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE)))
 					.addContainerGap(330, Short.MAX_VALUE))
 				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(53)
+					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblX, GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE)
-						.addComponent(lblY, GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(lblX, GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+							.addGap(29))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(lblY, GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED)))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
 						.addComponent(labelY2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(labelX2, GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE))
+						.addComponent(labelX2, GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE))
 					.addGap(314))
 		);
 		groupLayout.setVerticalGroup(
@@ -95,12 +101,12 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblX)
-						.addComponent(labelX2))
+						.addComponent(labelX2)
+						.addComponent(lblX))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblY)
-						.addComponent(labelY2))
+						.addComponent(labelY2)
+						.addComponent(lblY))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblXBins)
@@ -112,6 +118,38 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 					.addContainerGap(182, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
+		zmin=0;
+		zmax=255;
+	}
+
+	@Override
+	public void setSettings(Map<String, Object> settings_) {
+		lblX.setText(String.format("%.4f",settings_.get(HistogramRendererFactory.KEY_xmin)));
+		lblY.setText(String.format("%.4f",settings_.get(HistogramRendererFactory.KEY_ymin)));
+		labelX2.setText(String.format("%.4f",settings_.get(HistogramRendererFactory.KEY_xmax)));
+		labelY2.setText(String.format("%.4f",settings_.get(HistogramRendererFactory.KEY_ymax)));
+		textXBins.setText(String.valueOf(settings_.get(HistogramRendererFactory.KEY_xBins)));
+		textYBins.setText(String.valueOf(settings_.get(HistogramRendererFactory.KEY_yBins)));
+		zmin = (Double) settings_.get(HistogramRendererFactory.KEY_zmin);
+		zmax = (Double) settings_.get(HistogramRendererFactory.KEY_zmax);
+	}
+
+	@Override
+	public Map<String, Object> getSettings() {
+		final Map<String, Object> settings = new HashMap<String, Object>(8);
+		settings.put(HistogramRendererFactory.KEY_xmin, Double.parseDouble(lblX.getText()));
+		settings.put(HistogramRendererFactory.KEY_ymin, Double.parseDouble(lblY.getText()));
+		settings.put(HistogramRendererFactory.KEY_xmax, Double.parseDouble(labelX2.getText()));
+		settings.put(HistogramRendererFactory.KEY_ymax, Double.parseDouble(labelY2.getText()));
+		settings.put(HistogramRendererFactory.KEY_xBins, Integer.parseInt(textXBins.getText()));
+		settings.put(HistogramRendererFactory.KEY_yBins, Integer.parseInt(textYBins.getText()));
+		settings.put(HistogramRendererFactory.KEY_zmin, zmin);
+		settings.put(HistogramRendererFactory.KEY_zmax, zmax);
+		return settings;
+	}
+	
+	public Map<String, Object> getInitialSettings(){
+		final Map<String, Object> settings = new HashMap<String, Object>(8);
 		settings.put(HistogramRendererFactory.KEY_xmin, new Double(0));
 		settings.put(HistogramRendererFactory.KEY_ymin, new Double(0));
 		settings.put(HistogramRendererFactory.KEY_xmax, new Double(100));
@@ -120,42 +158,25 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		settings.put(HistogramRendererFactory.KEY_yBins,new Integer(500));
 		settings.put(HistogramRendererFactory.KEY_zmin,new Double(0));
 		settings.put(HistogramRendererFactory.KEY_zmax,new Double(255));
-		initialSettings = new HashMap<String, Object>(settings);
-	}
-
-	@Override
-	public void setSettings(Map<String, Object> settings) {
-		lblX.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_xmin)));
-		lblY.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_ymin)));
-		labelX2.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_xmax)));
-		labelY2.setText(String.format("%.4f",settings.get(HistogramRendererFactory.KEY_ymax)));
-		textXBins.setText(String.valueOf(settings.get(HistogramRendererFactory.KEY_xBins)));
-		textYBins.setText(String.valueOf(settings.get(HistogramRendererFactory.KEY_yBins)));
-		for (String key : settings.keySet())
-			this.settings.put(key, settings.get(key));
-		revalidate();
-	}
-
-	@Override
-	public Map<String, Object> getSettings() {
 		return settings;
-	}
-	
-	public Map<String, Object> getInitialSettings(){
-		return initialSettings;
 	}
 	/**
 	 * Display this JPanel inside a new JFrame.
 	 */
 	public static void main( final String[] args )
 	{
-		
 		// Create GUI
-		final HistogramRendererPanel tp = new HistogramRendererPanel( );
+		final Locale usLocale = new Locale("en", "US"); // setting us locale
+		Locale.setDefault(usLocale);
+		final ConfigurationPanel tp = new HistogramRendererPanel( );
 		final JFrame frame = new JFrame();
 		frame.getContentPane().add( tp );
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
 		frame.pack();
 		frame.setVisible( true );
+		Map<String, Object> cur = tp.getSettings();
+		cur.put(HistogramRendererFactory.KEY_xmax, 200d);
+		tp.setSettings(cur);
 	}
+
 }

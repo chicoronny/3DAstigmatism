@@ -5,6 +5,7 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,7 @@ import org.micromanager.AstigPlugin.pipeline.Localization;
 import org.micromanager.AstigPlugin.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
-public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
+public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T> {
 	
 	public static final String NAME = "Astigmatism Fitter";
 
@@ -70,7 +71,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 	public static class Factory implements FitterFactory{
 
 		
-		private Map<String, Object> settings;
+		private Map<String, Object> settings = new HashMap<String, Object>();
 		private FitterPanel configPanel = new FitterPanel();
 
 		@Override
@@ -91,7 +92,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
-			this.settings = settings;
+			this.settings.putAll(settings);
 			configPanel.setSettings(settings);
 			if(settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null)
 				return true;

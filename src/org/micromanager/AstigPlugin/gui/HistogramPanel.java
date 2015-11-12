@@ -241,7 +241,7 @@ public class HistogramPanel extends JPanel
 		Number rowD = col.get(0);
 		if (rowD != null)
 			histogram.add(rowD.doubleValue());
-		rowD = col.get(nRows-1);
+		rowD = col.get(nRows-2);
 		if (rowD != null)							// set first and last to get the whole range
 			histogram.add(rowD.doubleValue());		// in sequential data
 		

@@ -13,7 +13,7 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
-public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
+public class ImageMath<T extends NumericType<T>> extends SingleRunModule {
 	
 	public enum operators {
 		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION, NONE
@@ -63,11 +63,11 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frameB = (F) data;
+		Frame<T> frameB = (Frame<T>) data;
 		if (frameB==null){ 
 			return null;
 		}
-		F frameA = (F) inputA.get();
+		Frame<T> frameA = (Frame<T>) inputA.get();
 		if (frameA==null){ 
 			inputB.put(frameB);
 			return null;
@@ -80,7 +80,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 			return null;
 		}		
 		
-		Pair<F,F> framePair= new ValuePair<F, F>(frameA,frameB);
+		Pair<Frame<T>,Frame<T>> framePair= new ValuePair<Frame<T>, Frame<T>>(frameA,frameB);
 		
 		if (frameA.isLast()){ // make the poison pill
 			ImgLib2Frame<T> lastFrame = process1(framePair);
@@ -99,7 +99,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		return null;
 	}
 
-	private ImgLib2Frame<T> process1(Pair<F, F> framePair) {
+	private ImgLib2Frame<T> process1(Pair<Frame<T>, Frame<T>> framePair) {
 		
 		RandomAccessibleInterval<T> intervalA = framePair.getA().getPixels();
 		RandomAccessibleInterval<T> intervalB = framePair.getB().getPixels();

@@ -1,80 +1,63 @@
 package org.micromanager.AstigPlugin.pipeline;
 
+import ij.IJ;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.swing.SwingWorker;
 
 import org.micromanager.AstigPlugin.interfaces.Store;
 
-import ij.IJ;
-
 public class Manager extends SwingWorker<Void,Void> {
 	
 	private Map<Integer,Store> storeMap = new LinkedHashMap<Integer, Store>();
 	private Map<Integer,AbstractModule> modules = new LinkedHashMap<Integer, AbstractModule>();
-	private int counter;
-	private boolean done = false;
+	private final ExecutorService service = Executors.newCachedThreadPool();
+	private volatile boolean done = false;
 	private int maximum = 1;
 
 	public Manager() {
-		counter = 0;
 	}
 	
 	public void add(AbstractModule module){		
 		modules.put(module.hashCode(),module);		
 	}
 	
-	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs ){
+	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs, int maxElements){
+		Store s = null;
 		if (noInputs){
-			Store s = new FastStore();
-			AbstractModule source = modules.get(from.hashCode());
-			if (source==null) throw new NullPointerException("Wrong linkage!");
-			source.setOutput(s);
-			AbstractModule well = modules.get(to.hashCode());
-			if (well==null) throw new NullPointerException("Wrong linkage!");
-			well.setInput(s);
-			storeMap.put(s.hashCode(), s);
-			return;
+			int n = (int) Math.min(Runtime.getRuntime().freeMemory()/Math.pow(2,17), maxElements*0.5); // performance tweak
+			System.out.println("Manager starts with maximal "+n+" elements" );
+			s = new ArrayListStore(n);
+		} else {
+			s = new ArrayListStore();
 		}
-		
-		AbstractModule well = modules.get(to.hashCode());
-		if (well==null) throw new NullPointerException("Wrong linkage!");
-		Store s = new FastStore();
-		well.setInput(s);
 		AbstractModule source = modules.get(from.hashCode());
 		if (source==null) throw new NullPointerException("Wrong linkage!");
 		source.setOutput(s);
+		AbstractModule well = modules.get(to.hashCode());
+		if (well==null) throw new NullPointerException("Wrong linkage!");
+		well.setInput(s);
 		storeMap.put(s.hashCode(), s);
 	}
 	
 	public void linkModules(AbstractModule from , AbstractModule to ){
 		AbstractModule source = modules.get(from.hashCode());
 		if (source==null) throw new NullPointerException("Wrong linkage!");
-		Store s = new FastStore();
+		Store s = new ArrayListStore();
 		source.setOutput(s);
 		AbstractModule well = modules.get(to.hashCode());
 		if (well==null) throw new NullPointerException("Wrong linkage!");
 		well.setInput(s);
 		storeMap.put(s.hashCode(), s);
-	}
-	
-	public void step(){
-		if (counter >= modules.values().toArray().length) return;
-		AbstractModule m = (AbstractModule) modules.values().toArray()[counter];
-		if (!m.check()) return;
-		Thread t = new Thread(m, m.getClass().getSimpleName());
-		t.start();
-		try {
-			t.join();
-		} catch (InterruptedException e) {
-			System.err.println(e.getMessage());
-		}
-		counter++;
 	}
 	
 	public Map<Integer, Store> getMap(){
@@ -91,43 +74,47 @@ public class Manager extends SwingWorker<Void,Void> {
 				if (evt.getPropertyName().equals("progress")) 
 					setProgress((Integer) evt.getNewValue());
 			}});
-		sm.execute();
-		final List<Thread> threads= new ArrayList<Thread>();
+		service.execute(sm);
+		final List<Future<?>> threads= new ArrayList<Future<?>>();
 		
 		for(AbstractModule starter:modules.values()){
 			if (!starter.check()) {
 				IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
 				break;
-			}	
-
-			Thread t = new Thread(starter, starter.getClass().getSimpleName());
-			t.start();
-			threads.add(t);	
+			}		
+			starter.setService(service);
+			threads.add(service.submit(starter));
 			
 			try {
-				Thread.sleep(100); 						// HACK : give the module some time to start working
+				Thread.sleep(10); 						// HACK : give the module some time to start working
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		try {
-			for(Thread joiner:threads)
-				joiner.join();
+			for(Future<?> joiner:threads)
+				joiner.get();
 		} catch (InterruptedException e) {
 			System.err.println(e.getMessage());
 		}
 		done = true;
+		sm.cancel(true);
 		return null;
+	}
+	
+	@Override
+	public void done(){
+		setProgress(0);
+		service.shutdown();
 	}
 
 	public void reset() {
 		modules.clear();
 		storeMap.clear();
-		counter=0;
 	}
 	
 	
-	class StoreMonitor extends SwingWorker<Void,Integer> {
+	class StoreMonitor extends SwingWorker<Void,Void> {
 
 		public StoreMonitor() {
 		}
@@ -137,7 +124,7 @@ public class Manager extends SwingWorker<Void,Void> {
 			while(!done){
 				try {
 	                Thread.sleep(200);
-	            } catch (InterruptedException ignore) {}
+	            } catch (InterruptedException ignore) {break;}
 				int max = 0;
 				int n = 0;
 				for(Integer key : storeMap.keySet()){

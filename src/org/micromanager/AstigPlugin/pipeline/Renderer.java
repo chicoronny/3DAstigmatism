@@ -9,7 +9,6 @@ import ij.ImagePlus;
 
 public abstract class Renderer extends MultiRunModule {
 	
-	
 	protected ImagePlus ip;
 	final protected String title = "Histogram Renderer"; // title of the image
 
@@ -32,6 +31,20 @@ public abstract class Renderer extends MultiRunModule {
 		return inputs.size()==1;
 	}
 	
-	public abstract void preview(List<Element> previewList);
-
+	@Override
+	public void afterRun(){
+		double max = ip.getStatistics().histMax;
+		ip.getProcessor().setMinAndMax(0, max);
+		ip.updateAndRepaintWindow();;
+		System.out.println("Rendering done in "
+				+ (System.currentTimeMillis() - start) + "ms.");
+	}
+	
+	public void preview(List<Element> previewList) {
+		for (Element el : previewList)
+			processData(el);
+		double max = ip.getStatistics().histMax;
+		ip.getProcessor().setMinAndMax(0, max);
+		ip.updateAndRepaintWindow();
+	}
 }

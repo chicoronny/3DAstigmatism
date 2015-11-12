@@ -59,6 +59,7 @@ public abstract class SingleRunModule extends AbstractModule {
 	}
 
 	protected void beforeRun() {
+		start = System.currentTimeMillis();
 	}
 	
 }

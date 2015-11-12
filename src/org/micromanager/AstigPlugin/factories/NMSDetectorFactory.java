@@ -1,5 +1,6 @@
 package org.micromanager.AstigPlugin.factories;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
@@ -16,7 +17,7 @@ public class NMSDetectorFactory {
 			+ "NMS Detector Plugin"
 			+ "</html>";
 	
-	private Map<String, Object> settings;
+	private Map<String, Object> settings = new HashMap<String, Object>();
 	private NMSDetectorPanel configPanel = new NMSDetectorPanel();
 
 	public String getInfoText() {
@@ -33,8 +34,8 @@ public class NMSDetectorFactory {
 
 
 	public boolean setAndCheckSettings(Map<String, Object> settings) {
-		this.settings = settings;
-		return true;
+		this.settings.putAll(settings);
+		return settings!=null;
 	}
 
 	@SuppressWarnings("rawtypes")

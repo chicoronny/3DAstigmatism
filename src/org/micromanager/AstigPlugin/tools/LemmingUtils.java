@@ -57,7 +57,22 @@ public class LemmingUtils {
 		return new IndexColorModel(8, 256, reds, greens, blues);
 	}
 	
-	public static IndexColorModel getDefaultColorModel() {
+	public static IndexColorModel Ice() {
+		byte[] reds = new byte[256]; 
+		byte[] greens = new byte[256]; 
+		byte[] blues = new byte[256];
+        int[] r = {0,0,0,0,0,0,0,19,29,50,48,79,112,134,158,186,201,217,229,242,250,250,250,250,251,250,250,250,250,251,251,243,230};
+        int[] g = {0,156,165,176,184,190,196,193,184,171,162,146,125,107,93,81,87,92,97,95,93,93,90,85,69,64,54,47,35,19,0,4,0};
+        int[] b = {0,140,147,158,166,170,176,209,220,234,225,236,246,250,251,250,250,245,230,230,222,202,180,163,142,123,114,106,94,84,64,26,27};
+		for (int i=0; i<r.length; i++) {
+			reds[i] = (byte)r[i];
+			greens[i] = (byte)g[i];
+			blues[i] = (byte)b[i];
+		}
+		return new IndexColorModel(8, 256, reds, greens, blues);
+	}
+	
+	public static IndexColorModel Grays() {
 		byte[] r = new byte[256];
 		byte[] g = new byte[256];
 		byte[] b = new byte[256];

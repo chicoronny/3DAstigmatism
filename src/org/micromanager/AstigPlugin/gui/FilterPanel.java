@@ -112,7 +112,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		for ( final HistogramPanel hp : panelStack ){
 			table.addFilterMinMax(hp.getKey(), hp.getThreshold(), hp.getUpperThreshold());
 		}		
-		fireChanged();
+		fireChanged(e);
 	}
 	
 

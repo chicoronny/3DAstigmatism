@@ -7,6 +7,8 @@ import java.util.concurrent.Future;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 
+import com.google.common.collect.Lists;
+
 public abstract class MultiRunModule extends AbstractModule{
 	
 	public MultiRunModule(){
@@ -15,39 +17,41 @@ public abstract class MultiRunModule extends AbstractModule{
 	@Override
 	public void run() {
 		if (!inputs.isEmpty() && !outputs.isEmpty()) { // first check for existing inputs
-			if (inputs.keySet().iterator().hasNext() && iterator==null)
+			if (iterator==null)
 				iterator = inputs.keySet().iterator().next();
 			while (inputs.get(iterator).isEmpty())
 				pause(10);
 			beforeRun();
 			
-			final ArrayList<Future<Void>> futures = new ArrayList<Future<Void>>();
+			final ArrayList<Future<Boolean>> futures = Lists.newArrayList();
 
 			for (int taskNum = 0; taskNum < numThreads; ++taskNum) {
 
-				final Callable<Void> r = new Callable<Void>() {
+				final Callable<Boolean> r = new Callable<Boolean>() {
 
 					@Override
-					public Void call() {
+					public Boolean call() {
 						while (running) {
 							if (Thread.currentThread().isInterrupted())
 								break;
 							Element data = nextInput();
 							if (data != null) 
 								newOutput(processData(data));
+							else
+								pause(10);
 						}
-						return null;
+						return running;
 					}
 
 				};
-				if (!service.isShutdown() || !service.isTerminated())
+				//if (!service.isShutdown() || !service.isTerminated())
 					futures.add(service.submit(r));
 			}
 
-			for (final Future<Void> f : futures) {
+			for (final Future<Boolean> f : futures) {
 				try {
 					f.get();
-				} catch (final InterruptedException  e) {
+				} catch (final InterruptedException e) {
 					System.err.println(getClass().getSimpleName()+e.getMessage());
 					e.printStackTrace();
 				} catch (final ExecutionException e){
@@ -59,36 +63,37 @@ public abstract class MultiRunModule extends AbstractModule{
 			return;
 		}
 		if (!inputs.isEmpty()) { // first check for existing inputs
-			if (inputs.keySet().iterator().hasNext() && iterator==null)
+			if (iterator==null)
 				iterator = inputs.keySet().iterator().next();
 			while (inputs.get(iterator).isEmpty())
 				pause(10);
 			beforeRun();
 			
-			final ArrayList<Future<Void>> futures = new ArrayList<Future<Void>>();
+			final ArrayList<Future<Boolean>> futures = Lists.newArrayList();
 
 			for (int taskNum = 0; taskNum < numThreads; ++taskNum) {
 
-				final Callable<Void> r = new Callable<Void>() {
+				final Callable<Boolean> r = new Callable<Boolean>() {
 
 					@Override
-					public Void call() {
+					public Boolean call() {
 						while (running) {
 							if (Thread.currentThread().isInterrupted())
 								break;
 							Element data = nextInput();
 							if (data != null) 
 								processData(data);
+							else pause(10);
 						}
-						return null;
+						return running;
 					}
 
 				};
-				if (!service.isShutdown() || !service.isTerminated())
+				//if (!service.isShutdown() || !service.isTerminated())
 					futures.add(service.submit(r));
 			}
 
-			for (final Future<Void> f : futures) {
+			for (final Future<Boolean> f : futures) {
 				try {
 					f.get();
 				} catch (final InterruptedException  e) {
@@ -119,6 +124,7 @@ public abstract class MultiRunModule extends AbstractModule{
 	protected void afterRun() {		
 	}
 
-	protected void beforeRun() {		
+	protected void beforeRun() {
+		start = System.currentTimeMillis();
 	}
 }

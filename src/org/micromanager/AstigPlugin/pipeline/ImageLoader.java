@@ -14,7 +14,6 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	private int curSlice = 0;
 	private ImageStack img;
 	private int stackSize;
-	private long start;
 	private double pixelDepth;
 	
 	public ImageLoader(ImagePlus loc_im) {
@@ -25,8 +24,8 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	
 	@Override
 	public void beforeRun() {
-		start = System.currentTimeMillis();
 		iterator = outputs.keySet().iterator().next();
+		start = System.currentTimeMillis();
 	}
 
 	@Override
@@ -35,9 +34,6 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 		
 		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
 		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
-		
-		//if (curSlice % 100 == 0)
-		//	System.out.println("Images: " + curSlice);
 		
 		if (curSlice >= stackSize){
 			frame.setLast(true);
@@ -49,7 +45,7 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	
 	@Override
 	public void afterRun(){
-		System.out.println("Loading done in " + (System.currentTimeMillis()-start) + "ms.");
+		System.out.println("Loading of " + stackSize +" done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 	
 	public void show(){

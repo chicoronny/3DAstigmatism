@@ -1,6 +1,7 @@
 package org.micromanager.AstigPlugin.plugins;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,14 +17,13 @@ import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.FitterPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
-import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.math.CentroidFitterRA;
 import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
-public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
+public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 	
 	public static final String NAME = "Centroid Fitter";
 
@@ -43,7 +43,7 @@ public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends F
 	@Override
 	public List<Element> fit(List<Element> sliceLocs,
 			RandomAccessibleInterval<T> pixels, long windowSize,
-			long frameNumber, final double pixelDepth) {
+			long frameNumber, double pixelDepth) {
 		
 		final RandomAccessible<T> source = Views.extendZero(pixels);
 		List<Element> found = new ArrayList<Element>();
@@ -73,10 +73,9 @@ public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends F
 	}
 	
 	@Plugin( type = FitterFactory.class, visible = true )
-	public static class Factory implements FitterFactory{
+	public static class Factory<T extends RealType<T>> implements FitterFactory{
 
-		
-		private Map<String, Object> settings;
+		private Map<String, Object> settings = new HashMap<String, Object>();
 		private FitterPanel configPanel = new FitterPanel();
 
 		@Override
@@ -97,16 +96,16 @@ public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends F
 
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
-			this.settings = settings;
+			this.settings.putAll(settings);
 			return settings!=null;
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@SuppressWarnings("unchecked")
 		@Override
-		public Fitter getFitter() {
+		public Fitter<T> getFitter() {
 			final int windowSize = (Integer) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			final double threshold = (Double) settings.get( FitterPanel.KEY_CENTROID_THRESHOLD );
-			return new CentroidFitter(windowSize, threshold);
+			return new CentroidFitter<T>(windowSize, threshold);
 		}
 
 		@Override

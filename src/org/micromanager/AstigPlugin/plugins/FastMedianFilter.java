@@ -1,5 +1,6 @@
 package org.micromanager.AstigPlugin.plugins;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -7,15 +8,13 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import javolution.util.FastTable;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.math.QuickSelect;
 import org.micromanager.AstigPlugin.pipeline.ImgLib2Frame;
 import org.micromanager.AstigPlugin.pipeline.SingleRunModule;
+
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -27,9 +26,9 @@ import net.imglib2.view.Views;
 public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends SingleRunModule {
 
 	private int nFrames, counter = 0;
-	private FastTable<Frame<T>> frameList = new FastTable<Frame<T>>();
+	private Queue<Frame<T>> frameList = new ArrayDeque<Frame<T>>();
 	private long start;
-	private FastTable<Callable<Frame<T>>> callables = new FastTable<Callable<Frame<T>>>();
+	private List<Callable<Frame<T>>> callables = new ArrayList<Callable<Frame<T>>>();
 	private int lastListSize = 0;
 	private boolean interpolating;
 
@@ -48,8 +47,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 	@Override
 	public Element processData(Element data) {
 		final Frame<T> frame = (Frame<T>) data;
-		if (frame == null)
-			return null;
 
 		frameList.add(frame);
 		counter++;
@@ -62,7 +59,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 		}
 
 		if (counter % nFrames == 0) {// make a new list for each callable
-			FastTable<Frame<T>> transferList = new FastTable<Frame<T>>();
+			Queue<Frame<T>> transferList = new ArrayDeque<Frame<T>>();
 			transferList.addAll(frameList);
 			callables.add(new FrameCallable(transferList, false));
 			frameList.clear();
@@ -72,10 +69,10 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 
 	private class FrameCallable implements Callable<Frame<T>> {
 
-		private FastTable<Frame<T>> list;
+		private Queue<Frame<T>> list;
 		private boolean isLast;
 
-		public FrameCallable(final FastTable<Frame<T>> list, final boolean isLast) {
+		public FrameCallable(final Queue<Frame<T>> list, final boolean isLast) {
 			this.list = list;
 			this.isLast = isLast;
 		}
@@ -88,38 +85,39 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 	}
 
 	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
-		if (list.isEmpty())
-			return null;
-		
-		final Frame<T> firstFrame = list.peek();
-		final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
-
-		Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views
-				.iterable(firstInterval).firstElement());
-		Cursor<T> cursor = Views.iterable(out).cursor();
-
-		List<Cursor<T>> cursorList = new ArrayList<Cursor<T>>();
-
-		for (Frame<T> currentFrame : list)
-			cursorList.add(Views.iterable(currentFrame.getPixels()).cursor());
-
-		while (cursor.hasNext()) {
-			FastTable<Integer> values = new FastTable<Integer>();
-
-			cursor.fwd();
-			for (Cursor<T> currentCursor : cursorList) {
-				currentCursor.fwd();
-				values.add(currentCursor.get().getInteger());
+		Frame<T> newFrame = null;
+		if (!list.isEmpty()){
+			final Frame<T> firstFrame = list.peek();
+			final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
+	
+			Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views
+					.iterable(firstInterval).firstElement());
+			Cursor<T> cursor = Views.iterable(out).cursor();
+	
+			List<Cursor<T>> cursorList = new ArrayList<Cursor<T>>();
+	
+			for (Frame<T> currentFrame : list)
+				cursorList.add(Views.iterable(currentFrame.getPixels()).cursor());
+	
+			while (cursor.hasNext()) {
+				List<Integer> values = new ArrayList<Integer>();
+	
+				cursor.fwd();
+				for (Cursor<T> currentCursor : cursorList) {
+					currentCursor.fwd();
+					values.add(currentCursor.get().getInteger());
+				}
+				
+				Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
+				//Integer median = QuickSelect.select(values, middle); 
+				if (median != null)
+					cursor.get().setInteger(median);
 			}
-			// find the median
-
-			Integer median = QuickSelect.fastmedian(values, values.size());
-			//Integer median = QuickSelect.select(values, middle); 
-			if (median != null)
-				cursor.get().setInteger(median);
-		}
-		Frame<T> newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
+				newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
 				firstFrame.getHeight(), firstFrame.getPixelDepth(), out);
+		} else {
+			newFrame = new ImgLib2Frame<T>(0, 0, 0, 0, null);
+		}
 		if (isLast)
 			newFrame.setLast(true);
 		return newFrame;
@@ -132,8 +130,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 
 		try {
 			List<Future<Frame<T>>> futures = service.invokeAll(callables);
-
-			service.shutdown();
 
 			for (final Future<Frame<T>> f : futures) {
 				Frame<T> val = f.get();
@@ -220,17 +216,12 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>>	extends 
 			newOutput(lastFrame);
 		}
 
-		try {
-			service.awaitTermination(1, TimeUnit.MINUTES);
-		} catch (InterruptedException e) {
-			System.err.println(e.getMessage());
-		}
 		System.out.println("Filtering of " + counter + " images done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
 	}
-
+	
 	@Override
-	public boolean check() {
+	protected boolean check() {
 		return inputs.size()==1 && outputs.size()>=1;
 	}
 

@@ -8,44 +8,31 @@ import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;;
 
 public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
-	
-	private long start;
-
-	//private volatile int counter= 0;
-	
+		
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
 
 	public Detector() {
-	}
-	
-	@Override
-	protected void beforeRun() {
-		start = System.currentTimeMillis();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frame = (F) data;
-		if (frame == null)
-			return null;
+		F fe = (F) data;
 
-		if (frame.isLast()) { // make the poison pill
+		if (fe.isLast()) {
 			cancel();
-			FrameElements<T> res = detect(frame);
-			res.setLast(true);
-			//counter += res.getList().size();
+			final FrameElements<T> res = detect(fe);
 			counterList.add(res.getList().size());
+			res.setLast(true);
 			return res;
 		}
-		FrameElements<T> res = detect(frame);
-		//counter += res.getList().size();
-		try{
-		counterList.add(res.getList().size());
-		} catch (NullPointerException e){}
+		
+		final FrameElements<T> res = detect(fe);
+		if (res != null)
+			counterList.add(res.getList().size());
 		return res;
 	}
-	
+
 	public abstract FrameElements<T> detect(F frame);
 		
 	

@@ -50,7 +50,6 @@ public class FastMedianPanel extends ConfigurationPanel {
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		spinnerFrames.setValue(settings.get(KEY_FRAMES));
-
 	}
 
 	@Override

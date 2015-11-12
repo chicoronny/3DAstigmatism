@@ -7,16 +7,17 @@ import org.micromanager.api.ScriptInterface;
 
 import mmcorej.CMMCore;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 
 @SuppressWarnings("unused")
-public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>  , F extends Frame<T>> implements MMPlugin{
+public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> implements MMPlugin{
 	
 	public static String menuName = "3DAstigmatism";
 	public static String tooltipDescription = "3DAstigmatism calibration and fit";
 	
-	private Controller<T,F> frame;
+	private Controller<T> frame;
 	
 	private ScriptInterface app_;
 	private CMMCore core_;
@@ -33,7 +34,6 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 
 	@Override
 	public String getInfo() {
-		// TODO Auto-generated method stub
 		return "";
 	}
 
@@ -61,7 +61,7 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 	@Override
 	public void show() {
 		if (frame==null){
-			frame = new Controller<T, F>();
+			frame = new Controller<T>();
 			frame.setVisible(true);
 		}
 		else{

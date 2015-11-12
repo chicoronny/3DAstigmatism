@@ -1,5 +1,6 @@
 package org.micromanager.AstigPlugin.pipeline;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -11,8 +12,9 @@ import java.util.Set;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Store;
 
-import javolution.util.FastTable;
-import javolution.util.function.Predicate;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+
 
 /**
  * @author Ronny Sczech
@@ -20,7 +22,6 @@ import javolution.util.function.Predicate;
  */
 public class ExtendableTable {
 	
-	private int nRows = 0;
 	private Map<String, List<Number>> table = new LinkedHashMap<String, List<Number>>();
 	public Map<String, Predicate<Number>> filtersCollection = new HashMap<String, Predicate<Number>>();
 	private Map<String, String> names = new LinkedHashMap<String, String>();
@@ -42,7 +43,7 @@ public class ExtendableTable {
 	 * @param member - member
 	 */
 	public void addNewMember(String member) {
-		table.put(member,new FastTable<Number>());
+		table.put(member,new ArrayList<Number>());
 		names.put(member,member);
 	}
 	
@@ -75,7 +76,7 @@ public class ExtendableTable {
 			for (String key : filtersCollection.keySet()){
 				Number value = row.get(key);
 				if (value!=null)
-					filtered = filtered && (filtered == filtersCollection.get(key).test(value));
+					filtered = filtered && (filtered == filtersCollection.get(key).apply(value));
 				else
 					filtered = false;
 			}
@@ -89,7 +90,7 @@ public class ExtendableTable {
 		Predicate<Number> p = new Predicate<Number>(){
 
 			@Override
-			public boolean test(Number t) {				
+			public boolean apply(Number t) {				
 				return (t.doubleValue()>=min) && (t.doubleValue()<=max);
 			}
 			
@@ -98,15 +99,7 @@ public class ExtendableTable {
 	}
 	
 	public void addFilterExact(final String col, final Number o){
-		Predicate<Number> p = new Predicate<Number>(){
-
-			@Override
-			public boolean test(Number t) {	
-				return t.equals(o);
-			}
-			
-		};
-		filtersCollection.put(col, p);
+		filtersCollection.put(col, Predicates.equalTo(o));
 	}
 	
 	/**
@@ -116,7 +109,6 @@ public class ExtendableTable {
 		for (Entry<String,Number> e : row.entrySet()){
 			add(e.getKey(),e.getValue());
 		}
-		nRows++;
 	}
 	
 	/**
@@ -144,7 +136,7 @@ public class ExtendableTable {
 	 */
 	public Object getData(String col, int row){
 		List<Number> c = table.get(col);
-		if(c != null && row < nRows)
+		if(c != null && row < getNumberOfRows())
 			return c.get(row);
 		
 		System.err.println("unknown column or row");
@@ -158,8 +150,6 @@ public class ExtendableTable {
 	public void add(String member, Number o){
 		List<Number> t = table.get(member);
 		if (t!=null){
-			if (t.size() == nRows) 
-				nRows++;
 			t.add(o);
 			return;
 		}
@@ -171,9 +161,7 @@ public class ExtendableTable {
 	 * @return number of rows
 	 */
 	public int getNumberOfRows() {
-		if (nRows < table.values().iterator().next().size())
-			nRows = table.values().iterator().next().size();
-		return nRows;
+		return table.values().iterator().next().size();
 	}
 	
 	/**
@@ -202,29 +190,31 @@ public class ExtendableTable {
 						
 			@Override
 			public boolean isEmpty() {
-				return lastRow >= getNumberOfRows();
+				return lastRow >= getNumberOfRows()-1;
 			}
 			
-			@SuppressWarnings("unchecked")
 			@Override
-			public void put(Element el) {
-				if (el instanceof Map){
-					Map<String,Number> em = (Map<String,Number>) el;
+			public synchronized void put(Element el) {
+				if (el instanceof ElementMap){
+					final ElementMap em = (ElementMap) el;
 					addRow(em);
-					nRows++;
 				}
 			}
 
 			@Override
-			public Element get() {
-				ElementMap em = new ElementMap(getRow(lastRow++).entrySet());
-				if (isEmpty())	
+			public synchronized Element get() {
+				ElementMap em = null;
+				if (!isEmpty())	
+					em = new ElementMap(getRow(lastRow++).entrySet());
+				else{
+					em = new ElementMap(getRow(lastRow-1).entrySet());
 					em.setLast(true);
+				}
 				return em;
 			}
 
 			@Override
-			public Element peek() {
+			public synchronized Element peek() {
 				return new ElementMap(getRow(lastRow).entrySet());
 			}
 

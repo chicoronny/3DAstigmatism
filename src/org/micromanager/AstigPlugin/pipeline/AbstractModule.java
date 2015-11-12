@@ -9,25 +9,26 @@ import java.util.concurrent.Executors;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
-import org.micromanager.AstigPlugin.interfaces.ModuleInterface;
 import org.micromanager.AstigPlugin.interfaces.Store;
 
-public abstract class AbstractModule implements ModuleInterface,Runnable {
+public abstract class AbstractModule implements Runnable {
 	
 	protected int numTasks;
 	protected int numThreads = Runtime.getRuntime().availableProcessors()-1;
-	protected ExecutorService service= Executors.newCachedThreadPool();
+	protected ExecutorService service;
 	protected Map<Integer, Store> inputs = new LinkedHashMap<Integer, Store>();
 	protected Map<Integer, Store> outputs = new LinkedHashMap<Integer, Store>();
-	
+	protected long start;
 	protected volatile boolean running = true;
 	protected Integer iterator;
 	
 	
 	public AbstractModule(){
+		if(service == null)
+			service = Executors.newCachedThreadPool();
 	}
 	
-	public void setService(ExecutorService service){
+	protected void setService(ExecutorService service){
 		this.service = service;
 	}
 	
@@ -46,20 +47,16 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	}
 
 
-	@Override
-	public void cancel() {
+	protected void cancel() {
 		running = false;
-		service.shutdown();
 	}
 
-	@Override
-	public Element getInput(Integer key) {
+	protected Element getInput(Integer key) {
 		Element el = inputs.get(key).get();
 		return el;
 	}
 
-	@Override
-	public Map<Integer, Element> getInputs() {
+	protected Map<Integer, Element> getInputs() {
 		Map<Integer, Element> outMap = new HashMap<Integer, Element>();
 		Iterator<Integer> it = inputs.keySet().iterator();
 		while(it.hasNext()){
@@ -69,13 +66,11 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		return outMap;
 	}
 
-	@Override
-	public Element getOutput(Integer key) {
+	protected Element getOutput(Integer key) {
 		return outputs.get(key).get();
 	}
 
-	@Override
-	public Map<Integer, Element> getOutputs() {
+	protected Map<Integer, Element> getOutputs() {
 		Map<Integer, Element> outMap = new HashMap<Integer, Element>();
 		Iterator<Integer> it = outputs.keySet().iterator();
 		while(it.hasNext()){
@@ -85,8 +80,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		return outMap;
 	}
 
-	@Override
-	public void setInput(Integer key, Store store) {
+	protected void setInput(Integer key, Store store) {
 		inputs.put(key, store);		
 	}
 	
@@ -94,13 +88,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		inputs.put(store.hashCode(), store);		
 	}
 
-	@Override
-	public void setInputs(Map<Integer, Store> storeMap) {
-		inputs = storeMap;		
-	}
-
-	@Override
-	public void setOutput(Integer key, Store store) {
+	protected void setOutput(Integer key, Store store) {
 		outputs.put(key, store);		
 	}
 	
@@ -108,12 +96,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		outputs.put(store.hashCode(), store);		
 	}
 
-	@Override
-	public void setOutputs(Map<Integer, Store> storeMap) {
-		outputs = storeMap;
-	}
-
-	public boolean isRunning() {
+	protected boolean isRunning() {
 		return running;
 	}
 	
@@ -139,5 +122,9 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	 * @param data - data to process
 	 * @return Element
 	 */
-	public abstract Element processData(Element data);
+	protected abstract Element processData(Element data);
+
+	protected boolean check() {
+		return false;
+	}
 }

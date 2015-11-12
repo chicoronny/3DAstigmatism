@@ -18,7 +18,6 @@ public class StoreSaver extends SingleRunModule {
 	
 	private File file;
 	private BufferedWriter br;
-	private long start;
 	private Locale curLocale;
 	private Map<String,Object> metaData;
 
@@ -56,7 +55,7 @@ public class StoreSaver extends SingleRunModule {
 		if (data instanceof ElementMap){
 			ElementMap me = (ElementMap) data;
 			for (Entry<String, Number> entry : me.entrySet()){
-				converted += entry.getValue() + ",";
+				converted += entry.getValue() + "\t";
 			converted = converted.substring(0, converted.length()-2);
 			}
 		} else

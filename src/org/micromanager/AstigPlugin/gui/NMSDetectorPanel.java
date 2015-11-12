@@ -20,6 +20,8 @@ import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 public class NMSDetectorPanel extends ConfigurationPanel {
 	private JTextField jTextFieldThreshold;
 	private JSpinner spinnerStepSize;
+	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
+
 
 	public NMSDetectorPanel() {
 		setBorder(null);
@@ -30,7 +32,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
-				fireChanged();
+				fireChanged( CHANGE_EVENT );
 			}
 		}));
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -41,7 +43,8 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		spinnerStepSize = new JSpinner();
 		spinnerStepSize.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				fireChanged();			}
+				stateChanged( CHANGE_EVENT );
+			}
 		});
 		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);

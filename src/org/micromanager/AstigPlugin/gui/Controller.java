@@ -103,8 +103,8 @@ import org.micromanager.AstigPlugin.providers.FitterProvider;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
-public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> extends JFrame implements 
-	ActionListener {
+public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> extends JFrame
+		implements ActionListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;
 	private JTabbedPane tabbedPane;
@@ -129,7 +129,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblFile;
 	private Manager manager;
 	private ExtendableTable table;
-	private Map<String,Object> settings;
+	private Map<String, Object> settings;
 	private StackWindow previewerWindow;
 	private AbstractModule detector;
 	private Fitter<T> fitter;
@@ -176,7 +176,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			public void windowClosing(WindowEvent e) {
 				if (previewerWindow != null)
 					previewerWindow.close();
-				if (contrastAdjuster !=null)
+				if (contrastAdjuster != null)
 					contrastAdjuster.close();
 				if (rendererWindow != null)
 					rendererWindow.close();
@@ -196,12 +196,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		setContentPane(contentPane);
 
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] {315, 0};
-		gbl_contentPane.rowHeights = new int[] {400, 0, 30, 0};
-		gbl_contentPane.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPane.columnWidths = new int[] { 315, 0 };
+		gbl_contentPane.rowHeights = new int[] { 400, 0, 30, 0 };
+		gbl_contentPane.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_contentPane.rowWeights = new double[] { 1.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
-		
+
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -210,31 +210,31 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			}
 		});
 		tabbedPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-		
+
 		panelCalibration = new JPanel();
 		tabbedPane.addTab("Calibration", null, panelCalibration, null);
-		
+
 		labelStepSize = new JLabel("Step Size");
 		labelStepSize.setEnabled(false);
-		
+
 		buttonFitBeads = new JButton("Fit beads");
 		buttonFitBeads.setToolTipText("Gaussian fitting of beads");
 		buttonFitBeads.setEnabled(false);
 		buttonFitBeads.addActionListener(this);
-		
+
 		labelRange = new JLabel("Range");
 		labelRange.setEnabled(false);
-		
+
 		buttonFitCurve = new JButton("Fit curve");
 		buttonFitCurve.setToolTipText("Fit the two sigmas to obtain the calibration curve");
 		buttonFitCurve.addActionListener(this);
 		buttonFitCurve.setEnabled(false);
-		
+
 		buttonSaveCal = new JButton("Save Calibration");
 		buttonSaveCal.setToolTipText("Save Calibration for later use");
 		buttonSaveCal.addActionListener(this);
 		buttonSaveCal.setEnabled(false);
-		
+
 		rangeSlider = new RangeSlider();
 		rangeSlider.setToolTipText("Adjust slider to constraint the data range");
 		rangeSlider.setValue(0);
@@ -245,75 +245,80 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		rangeSlider.setMaximum(400);
 		rangeSlider.setMajorTickSpacing(200);
 		rangeSlider.setEnabled(false);
-		
+
 		spinnerStepSize = new JSpinner();
 		spinnerStepSize.setToolTipText("Step size for calibration data");
 		spinnerStepSize.setEnabled(false);
 		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
-		
+
 		btnImagesCalibration = new JButton("Calibration Images");
 		btnImagesCalibration.setToolTipText("Load Images for 3D calibration");
 		btnImagesCalibration.addActionListener(this);
 		GroupLayout gl_panelCalibration = new GroupLayout(panelCalibration);
-		gl_panelCalibration.setHorizontalGroup(
-			gl_panelCalibration.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCalibration.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING)
-						.addComponent(buttonSaveCal)
-						.addComponent(buttonFitCurve)
-						.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, 289, GroupLayout.PREFERRED_SIZE)
-						.addGroup(gl_panelCalibration.createSequentialGroup()
-							.addGap(9)
-							.addComponent(labelRange))
-						.addGroup(gl_panelCalibration.createSequentialGroup()
-							.addGap(8)
-							.addComponent(labelStepSize, GroupLayout.PREFERRED_SIZE, 68, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))
+		gl_panelCalibration.setHorizontalGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelCalibration
+						.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(
+								gl_panelCalibration
+										.createParallelGroup(Alignment.LEADING)
+										.addComponent(buttonSaveCal)
+										.addComponent(buttonFitCurve)
+										.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, 289,
+												GroupLayout.PREFERRED_SIZE)
+										.addGroup(
+												gl_panelCalibration.createSequentialGroup().addGap(9)
+														.addComponent(labelRange))
+										.addGroup(
+												gl_panelCalibration
+														.createSequentialGroup()
+														.addGap(8)
+														.addComponent(labelStepSize, GroupLayout.PREFERRED_SIZE, 68,
+																GroupLayout.PREFERRED_SIZE)
+														.addPreferredGap(ComponentPlacement.RELATED)
+														.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 57,
+																GroupLayout.PREFERRED_SIZE))
+										.addComponent(buttonFitBeads).addComponent(btnImagesCalibration))
+						.addContainerGap(14, Short.MAX_VALUE)));
+		gl_panelCalibration.setVerticalGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelCalibration
+						.createSequentialGroup()
+						.addGap(7)
+						.addComponent(btnImagesCalibration)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(
+								gl_panelCalibration
+										.createParallelGroup(Alignment.BASELINE)
+										.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE,
+												GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(labelStepSize))
+						.addPreferredGap(ComponentPlacement.RELATED)
 						.addComponent(buttonFitBeads)
-						.addComponent(btnImagesCalibration))
-					.addContainerGap(14, Short.MAX_VALUE))
-		);
-		gl_panelCalibration.setVerticalGroup(
-			gl_panelCalibration.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCalibration.createSequentialGroup()
-					.addGap(7)
-					.addComponent(btnImagesCalibration)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_panelCalibration.createParallelGroup(Alignment.BASELINE)
-						.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(labelStepSize))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(buttonFitBeads)
-					.addGap(4)
-					.addComponent(labelRange)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(buttonFitCurve)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(buttonSaveCal)
-					.addContainerGap(122, Short.MAX_VALUE))
-		);
+						.addGap(4)
+						.addComponent(labelRange)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(buttonFitCurve).addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(buttonSaveCal).addContainerGap(122, Short.MAX_VALUE)));
 		panelCalibration.setLayout(gl_panelCalibration);
-		
+
 		panelLoc = new JPanel();
 		panelLoc.setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
 		tabbedPane.addTab("Localize", null, panelLoc, null);
 		GridBagLayout gbl_panelLoc = new GridBagLayout();
-		gbl_panelLoc.columnWidths = new int[] {250};
-		gbl_panelLoc.rowHeights = new int[] {135, 22, 205};
-		gbl_panelLoc.columnWeights = new double[]{1.0};
-		gbl_panelLoc.rowWeights = new double[]{1.0, 0.0, 0.0};
+		gbl_panelLoc.columnWidths = new int[] { 250 };
+		gbl_panelLoc.rowHeights = new int[] { 135, 22, 205 };
+		gbl_panelLoc.columnWeights = new double[] { 1.0 };
+		gbl_panelLoc.rowWeights = new double[] { 1.0, 0.0, 0.0 };
 		panelLoc.setLayout(gbl_panelLoc);
-		
+
 		JPanel panelUpper = new JPanel();
-		
+
 		chckbxPreprocessing = new JCheckBox("Background Substraction");
 		chckbxPreprocessing.setToolTipText("Temporal median filter for noise removal");
 		chckbxPreprocessing.addActionListener(this);
-		
+
 		checkBoxPeakDet = new JCheckBox("Peak Detection");
 		checkBoxPeakDet.setToolTipText("Detection of localizations for fitting");
 		checkBoxPeakDet.addActionListener(this);
@@ -323,54 +328,61 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_panelUpper.gridx = 0;
 		gbc_panelUpper.gridy = 0;
 		panelLoc.add(panelUpper, gbc_panelUpper);
-		
+
 		lblFitter = new JLabel("Fitter");
-		
+
 		comboBoxFitter = new JComboBox();
 		comboBoxFitter.setPreferredSize(new Dimension(32, 26));
 		comboBoxFitter.addActionListener(this);
-		
+
 		lblFile = new JLabel("File");
-		
+
 		JLabel lblDataSource = new JLabel("Data source");
 		GroupLayout gl_panelUpper = new GroupLayout(panelUpper);
-		gl_panelUpper.setHorizontalGroup(
-			gl_panelUpper.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelUpper.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
-						.addComponent(chckbxPreprocessing)
-						.addGroup(gl_panelUpper.createSequentialGroup()
-							.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
-								.addComponent(checkBoxPeakDet)
-								.addComponent(lblFitter))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxFitter, 0, 199, Short.MAX_VALUE))
-						.addGroup(gl_panelUpper.createSequentialGroup()
-							.addComponent(lblDataSource)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(lblFile, GroupLayout.PREFERRED_SIZE, 187, GroupLayout.PREFERRED_SIZE)))
-					.addContainerGap())
-		);
-		gl_panelUpper.setVerticalGroup(
-			gl_panelUpper.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelUpper.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelUpper.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblDataSource)
-						.addComponent(lblFile))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(chckbxPreprocessing, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(checkBoxPeakDet, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panelUpper.createParallelGroup(Alignment.BASELINE)
-						.addComponent(comboBoxFitter, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblFitter))
-					.addGap(21))
-		);
+		gl_panelUpper.setHorizontalGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelUpper
+						.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(
+								gl_panelUpper
+										.createParallelGroup(Alignment.LEADING)
+										.addComponent(chckbxPreprocessing)
+										.addGroup(
+												gl_panelUpper
+														.createSequentialGroup()
+														.addGroup(
+																gl_panelUpper.createParallelGroup(Alignment.LEADING)
+																		.addComponent(checkBoxPeakDet)
+																		.addComponent(lblFitter))
+														.addPreferredGap(ComponentPlacement.RELATED)
+														.addComponent(comboBoxFitter, 0, 199, Short.MAX_VALUE))
+										.addGroup(
+												gl_panelUpper
+														.createSequentialGroup()
+														.addComponent(lblDataSource)
+														.addPreferredGap(ComponentPlacement.UNRELATED)
+														.addComponent(lblFile, GroupLayout.PREFERRED_SIZE, 187,
+																GroupLayout.PREFERRED_SIZE))).addContainerGap()));
+		gl_panelUpper.setVerticalGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelUpper
+						.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(
+								gl_panelUpper.createParallelGroup(Alignment.BASELINE).addComponent(lblDataSource)
+										.addComponent(lblFile))
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(chckbxPreprocessing, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(checkBoxPeakDet, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addGroup(
+								gl_panelUpper
+										.createParallelGroup(Alignment.BASELINE)
+										.addComponent(comboBoxFitter, GroupLayout.PREFERRED_SIZE,
+												GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(lblFitter)).addGap(21)));
 		panelUpper.setLayout(gl_panelUpper);
-		
+
 		panelMiddle = new JPanel();
 		GridBagConstraints gbc_panelMiddle = new GridBagConstraints();
 		gbc_panelMiddle.fill = GridBagConstraints.VERTICAL;
@@ -378,40 +390,33 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_panelMiddle.gridx = 0;
 		gbc_panelMiddle.gridy = 1;
 		panelLoc.add(panelMiddle, gbc_panelMiddle);
-		
+
 		chckbxROI = new JCheckBox("use ROI");
 		chckbxROI.setToolTipText("use only that region for further processing");
 		chckbxROI.addActionListener(this);
-		
+
 		lblSkipFrames = new JLabel("Skip frames");
-		
+
 		spinnerSkipFrames = new JSpinner();
 		spinnerSkipFrames.setToolTipText("skip frames at the beginning of the image stack");
 		spinnerSkipFrames.setPreferredSize(new Dimension(40, 28));
 		spinnerSkipFrames.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
 		GroupLayout gl_panelMiddle = new GroupLayout(panelMiddle);
-		gl_panelMiddle.setHorizontalGroup(
-			gl_panelMiddle.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelMiddle.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(chckbxROI)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(lblSkipFrames)
-					.addGap(18)
-					.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap())
-		);
-		gl_panelMiddle.setVerticalGroup(
-			gl_panelMiddle.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelMiddle.createParallelGroup(Alignment.BASELINE)
-					.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addComponent(lblSkipFrames)
-					.addComponent(chckbxROI))
-		);
+		gl_panelMiddle.setHorizontalGroup(gl_panelMiddle.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelMiddle.createSequentialGroup().addContainerGap().addComponent(chckbxROI)
+						.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(lblSkipFrames).addGap(18)
+						.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+						.addContainerGap()));
+		gl_panelMiddle.setVerticalGroup(gl_panelMiddle.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelMiddle
+						.createParallelGroup(Alignment.BASELINE)
+						.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.PREFERRED_SIZE).addComponent(lblSkipFrames).addComponent(chckbxROI)));
 		panelMiddle.setLayout(gl_panelMiddle);
-		
+
 		panelLower = new JPanel();
-		borderFirst = new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205));
+		borderFirst = new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", TitledBorder.LEADING,
+				TitledBorder.TOP, null, new Color(0, 0, 205));
 		panelLower.setBorder(borderFirst);
 		GridBagConstraints gbc_panelLower = new GridBagConstraints();
 		gbc_panelLower.fill = GridBagConstraints.BOTH;
@@ -419,62 +424,68 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_panelLower.gridy = 2;
 		panelLoc.add(panelLower, gbc_panelLower);
 		panelLower.setLayout(new CardLayout(0, 0));
-		
+
 		panelRecon = new JPanel();
 		panelRecon.setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
 		tabbedPane.addTab("Reconstruct", null, panelRecon, null);
 		GridBagLayout gbl_panelRecon = new GridBagLayout();
-		gbl_panelRecon.columnWidths = new int[] {300};
-		gbl_panelRecon.rowHeights = new int[] {65, 280};
-		gbl_panelRecon.columnWeights = new double[]{1.0};
-		gbl_panelRecon.rowWeights = new double[]{0.0, 1.0};
+		gbl_panelRecon.columnWidths = new int[] { 300 };
+		gbl_panelRecon.rowHeights = new int[] { 65, 280 };
+		gbl_panelRecon.columnWeights = new double[] { 1.0 };
+		gbl_panelRecon.rowWeights = new double[] { 0.0, 1.0 };
 		panelRecon.setLayout(gbl_panelRecon);
-		
+
 		JPanel panelRenderer = new JPanel();
 		GridBagConstraints gbc_panelRenderer = new GridBagConstraints();
 		gbc_panelRenderer.fill = GridBagConstraints.BOTH;
 		gbc_panelRenderer.gridx = 0;
 		gbc_panelRenderer.gridy = 0;
 		panelRecon.add(panelRenderer, gbc_panelRenderer);
-		
+
 		chkboxRenderer = new JCheckBox("HistogramRenderer");
 		chkboxRenderer.setToolTipText("Zoomable Renderer with color code");
 		chkboxRenderer.addActionListener(this);
-		
+
 		chkboxFilter = new JCheckBox("Filter");
 		chkboxFilter.setToolTipText("filter results");
 		chkboxFilter.addActionListener(this);
-		
+
 		btnReset = new JButton("Reset");
+		btnReset.setToolTipText("Zoom out to see all data");
 		btnReset.addActionListener(this);
 		GroupLayout gl_panelRenderer = new GroupLayout(panelRenderer);
-		gl_panelRenderer.setHorizontalGroup(
-			gl_panelRenderer.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelRenderer.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelRenderer.createParallelGroup(Alignment.TRAILING)
-						.addComponent(chkboxRenderer, Alignment.LEADING)
-						.addGroup(Alignment.LEADING, gl_panelRenderer.createSequentialGroup()
-							.addComponent(chkboxFilter)
-							.addPreferredGap(ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
-							.addComponent(btnReset))))
-		);
-		gl_panelRenderer.setVerticalGroup(
-			gl_panelRenderer.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelRenderer.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelRenderer.createParallelGroup(Alignment.TRAILING)
-						.addComponent(btnReset)
-						.addGroup(gl_panelRenderer.createSequentialGroup()
-							.addComponent(chkboxRenderer)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(chkboxFilter)))
-					.addContainerGap(6, Short.MAX_VALUE))
-		);
+		gl_panelRenderer.setHorizontalGroup(gl_panelRenderer.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelRenderer
+						.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(
+								gl_panelRenderer
+										.createParallelGroup(Alignment.LEADING)
+										.addComponent(chkboxRenderer)
+										.addGroup(
+												gl_panelRenderer
+														.createSequentialGroup()
+														.addComponent(chkboxFilter)
+														.addPreferredGap(ComponentPlacement.RELATED, 159,
+																Short.MAX_VALUE).addComponent(btnReset)))));
+		gl_panelRenderer.setVerticalGroup(gl_panelRenderer.createParallelGroup(Alignment.LEADING).addGroup(
+				gl_panelRenderer
+						.createSequentialGroup()
+						.addContainerGap()
+						.addGroup(
+								gl_panelRenderer
+										.createParallelGroup(Alignment.TRAILING)
+										.addComponent(btnReset)
+										.addGroup(
+												gl_panelRenderer.createSequentialGroup().addComponent(chkboxRenderer)
+														.addPreferredGap(ComponentPlacement.RELATED)
+														.addComponent(chkboxFilter)))
+						.addContainerGap(7, Short.MAX_VALUE)));
 		panelRenderer.setLayout(gl_panelRenderer);
-		
+
 		panelFilter = new JPanel();
-		borderSecond = new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205));
+		borderSecond = new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", TitledBorder.LEADING,
+				TitledBorder.TOP, null, new Color(0, 0, 205));
 		panelFilter.setBorder(borderSecond);
 		GridBagConstraints gbc_panelFilter = new GridBagConstraints();
 		gbc_panelFilter.fill = GridBagConstraints.BOTH;
@@ -482,26 +493,26 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_panelFilter.gridy = 1;
 		panelRecon.add(panelFilter, gbc_panelFilter);
 		panelFilter.setLayout(new CardLayout(0, 0));
-		
+
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.anchor = GridBagConstraints.NORTHWEST;
 		gbc_tabbedPane.fill = GridBagConstraints.VERTICAL;
 		gbc_tabbedPane.gridx = 0;
 		gbc_tabbedPane.gridy = 0;
 		contentPane.add(tabbedPane, gbc_tabbedPane);
-		
+
 		JPanel panelButtons = new JPanel();
 		panelButtons.setBorder(null);
 		panelButtons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
+
 		btnProcess = new JButton("Process");
 		btnProcess.setToolTipText("Process all images");
-		btnProcess.addActionListener(this);		
-		
+		btnProcess.addActionListener(this);
+
 		btnSave = new JButton("Save");
 		btnSave.setToolTipText("Save localizations in ViSP format");
 		btnSave.addActionListener(this);
-		
+
 		JPanel panelProgress = new JPanel();
 		GridBagConstraints gbc_panelProgress = new GridBagConstraints();
 		gbc_panelProgress.fill = GridBagConstraints.BOTH;
@@ -509,12 +520,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_panelProgress.gridy = 1;
 		contentPane.add(panelProgress, gbc_panelProgress);
 		GridBagLayout gbl_panelProgress = new GridBagLayout();
-		gbl_panelProgress.columnWidths = new int[]{315, 0, 0};
-		gbl_panelProgress.rowHeights = new int[]{0, 0};
-		gbl_panelProgress.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
-		gbl_panelProgress.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panelProgress.columnWidths = new int[] { 315, 0, 0 };
+		gbl_panelProgress.rowHeights = new int[] { 0, 0 };
+		gbl_panelProgress.columnWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
+		gbl_panelProgress.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panelProgress.setLayout(gbl_panelProgress);
-		
+
 		progressBar = new JProgressBar();
 		progressBar.setMinimumSize(new Dimension(255, 20));
 		GridBagConstraints gbc_progressBar = new GridBagConstraints();
@@ -523,7 +534,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_progressBar.gridy = 0;
 		panelProgress.add(progressBar, gbc_progressBar);
 		progressBar.setStringPainted(true);
-		
+
 		lblEta = new JLabel("  0 sec");
 		lblEta.setMinimumSize(new Dimension(50, 16));
 		lblEta.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -542,47 +553,48 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		contentPane.add(panelButtons, gbc_panelButtons);
 		init();
 	}
-	
-	private void init(){
+
+	private void init() {
 		this.curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
 		settings = new HashMap<String, Object>();
 		manager = new Manager();
-		manager.addPropertyChangeListener(new PropertyChangeListener(){
+		manager.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("progress")){
+				if (evt.getPropertyName().equals("progress")) {
 					int value = (Integer) evt.getNewValue();
 					progressBar.setValue(value);
 					long current = System.currentTimeMillis();
 					long eta = 0;
 					if (value > 0)
-						eta = Math.round((current-start)*value/1000);
-					lblEta.setText(String.valueOf(eta)+"sec");
+						eta = Math.round((current - start) * value / 1000);
+					lblEta.setText(String.valueOf(eta) + "sec");
 					start = current;
 				}
-				if (evt.getPropertyName().equals("state")){
+				if (evt.getPropertyName().equals("state")) {
 					StateValue value = (StateValue) evt.getNewValue();
-					if (value == StateValue.DONE){ 
-						processed=true;
-						if (rendererWindow != null) 
+					if (value == StateValue.DONE) {
+						processed = true;
+						if (rendererWindow != null)
 							rendererWindow.repaint();
 					}
 				}
-			}});
+			}
+		});
 		createProvider();
-		
+
 		ImagePlus loc_im = null;
-		try{
+		try {
 			previewerWindow = (StackWindow) WindowManager.getCurrentWindow();
 			loc_im = previewerWindow.getImagePlus();
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
-		if(loc_im == null){ 
+		if (loc_im == null) {
 			loc_im = loadImages();
-			if (loc_im == null){
+			if (loc_im == null) {
 				setVisible(false);
 				return;
 			}
@@ -590,21 +602,21 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		}
 
 		tif = new ImageLoader<T>(loc_im);
-	    manager.add(tif);
-	    
-	    previewerWindow.addKeyListener(new KeyAdapter(){	
+		manager.add(tif);
+
+		previewerWindow.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyChar() == 'C'){
-				contrastAdjuster = new ContrastAdjuster();
-				contrastAdjuster.run("B&C");
+				if (e.getKeyChar() == 'C') {
+					contrastAdjuster = new ContrastAdjuster();
+					contrastAdjuster.run("B&C");
 				}
 			}
-	    });
-	    
+		});
+
 		lblFile.setText(previewerWindow.getTitle());
 		validate();
-		
+
 		ImagePlus.addImageListener(new ImageListener() {
 
 			@Override
@@ -625,95 +637,95 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		});
 	}
 
-////Overrides
+	// //Overrides
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object s = e.getSource();
-		
-		if (s == this.btnImagesCalibration){
-			if(importImages()){
+
+		if (s == this.btnImagesCalibration) {
+			if (importImages()) {
 				this.labelStepSize.setEnabled(true);
 				this.spinnerStepSize.setEnabled(true);
 				this.buttonFitBeads.setEnabled(true);
 			}
 		}
-		
-		if (s == this.buttonFitBeads){
-			if(fitbeads()){
+
+		if (s == this.buttonFitBeads) {
+			if (fitbeads()) {
 				this.labelRange.setEnabled(true);
 				this.rangeSlider.setEnabled(true);
 				this.buttonFitCurve.setEnabled(true);
 			}
 		}
-		
-		if (s == this.buttonFitCurve){
-			if(fitCurve()){
+
+		if (s == this.buttonFitCurve) {
+			if (fitCurve()) {
 				this.buttonSaveCal.setEnabled(true);
 			}
 		}
-		
-		if (s == this.buttonSaveCal){
+
+		if (s == this.buttonSaveCal) {
 			saveCalibration();
 		}
-		
-		if (s == this.chckbxROI){
+
+		if (s == this.chckbxROI) {
 			setRoi();
 		}
-		
+
 		if (s == this.checkBoxPeakDet)
-			if(checkBoxPeakDet.isSelected())
+			if (checkBoxPeakDet.isSelected())
 				chooseDetector();
 			else
-				((CardLayout)panelLower.getLayout()).first(panelLower);
-		
-		if (s == this.comboBoxFitter){
+				((CardLayout) panelLower.getLayout()).first(panelLower);
+
+		if (s == this.comboBoxFitter) {
 			chooseFitter();
 		}
-		
-		if (s == this.chkboxFilter){
+
+		if (s == this.chkboxFilter) {
 			if (this.chkboxFilter.isSelected())
 				filterTable();
 			else
-				((CardLayout)panelFilter.getLayout()).first(panelLower);
+				((CardLayout) panelFilter.getLayout()).first(panelFilter);
 		}
-		
-		if (s == this.btnReset){ 
-			if (rendererFactory!=null){
+
+		if (s == this.btnReset) {
+			if (rendererFactory != null) {
 				Map<String, Object> initialMap = rendererFactory.getInitialSettings();
-				if (previewerWindow != null){
-					initialMap.put(HistogramRendererFactory.KEY_xmax, previewerWindow.getImagePlus().getWidth()
-							*previewerWindow.getImagePlus().getCalibration().pixelDepth);
-					initialMap.put(HistogramRendererFactory.KEY_ymax, previewerWindow.getImagePlus().getHeight()
-							*previewerWindow.getImagePlus().getCalibration().pixelDepth);
+				if (previewerWindow != null) {
+					initialMap.put(HistogramRendererPanel.KEY_xmax, previewerWindow.getImagePlus().getWidth()
+							* previewerWindow.getImagePlus().getCalibration().pixelDepth);
+					initialMap.put(HistogramRendererPanel.KEY_ymax, previewerWindow.getImagePlus().getHeight()
+							* previewerWindow.getImagePlus().getCalibration().pixelDepth);
 				}
 				rendererShow(initialMap);
 			}
 		}
-		
-		if (s== this.chkboxRenderer ){
-			if (chkboxRenderer.isSelected()){
+
+		if (s == this.chkboxRenderer) {
+			if (chkboxRenderer.isSelected()) {
 				chooseRenderer();
 			} else {
-				((CardLayout)panelFilter.getLayout()).first(panelFilter);
-				if (rendererWindow != null){ 
+				((CardLayout) panelFilter.getLayout()).first(panelFilter);
+				if (rendererWindow != null) {
 					rendererWindow.close();
 					rendererWindow = null;
 				}
 			}
 		}
-		
-		if (s == this.chckbxPreprocessing){
+
+		if (s == this.chckbxPreprocessing) {
 			if (chckbxPreprocessing.isSelected())
 				choosePP();
 			else
-				((CardLayout)panelLower.getLayout()).first(panelLower);
+				((CardLayout) panelLower.getLayout()).first(panelLower);
 		}
-		
-		if (s == this.btnProcess){ 			
-			process(true);		
+
+		if (s == this.btnProcess) {
+			process(true);
 		}
-		
-		if (s == this.btnSave){
+
+		if (s == this.btnSave) {
 			saveLocalizations();
 		}
 	}
@@ -767,8 +779,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		manager.execute();
 	}
 
-	
-	//// Private Methods
+	// // Private Methods
 	private ImagePlus loadImages() {
 		manager.reset();
 
@@ -781,14 +792,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (returnVal != JFileChooser.APPROVE_OPTION)
 			return null;
 
-		File file = fc.getSelectedFile();
+		final File file = fc.getSelectedFile();
 
 		ImagePlus loc_im = null;
 		if (file.isDirectory()) {
 			final FolderOpener fo = new FolderOpener();
 			fo.openAsVirtualStack(true);
 			loc_im = fo.openFolder(file.getAbsolutePath());
-			
 		}
 
 		if (file.isFile()) {
@@ -804,104 +814,105 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		}
 		return loc_im;
 	}
-	
+
 	private void setRoi() {
-		if (previewerWindow == null) return;
+		if (previewerWindow == null)
+			return;
 		final ImagePlus curImage = previewerWindow.getImagePlus();
-		if (chckbxROI.isSelected()){
+		if (chckbxROI.isSelected()) {
 			Roi roi = curImage.getRoi();
-			if (roi==null){
+			if (roi == null) {
 				final Rectangle r = curImage.getProcessor().getRoi();
 				final int iWidth = r.width / 2;
 				final int iHeight = r.height / 2;
 				final int iXROI = r.x + r.width / 4;
 				final int iYROI = r.y + r.height / 4;
-	            curImage.setRoi(iXROI, iYROI, iWidth, iHeight);
+				curImage.setRoi(iXROI, iYROI, iWidth, iHeight);
 			}
 		} else {
 			curImage.killRoi();
 		}
 	}
-	
+
 	private boolean importImages() {
 		final JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
 		fc.setLocation(getLocation());
-    	fc.setDialogTitle("Import Calibration Images");
-    	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-    	
-    	final int returnVal = fc.showOpenDialog(this);
-    	 
-        if (returnVal != JFileChooser.APPROVE_OPTION)
-        	return false;
-        
-        final File file = fc.getSelectedFile();
-        
-        ImagePlus calibImage = new ImagePlus();
-		if (file.isDirectory()){
-        	calibImage = FolderOpener.open(file.getAbsolutePath());
-        }
-        
-        if (file.isFile()){
-        	calibImage = new ImagePlus(file.getAbsolutePath());
-        }
-        
-        calibWindow = new StackWindow(calibImage);
-        calibImage.setRoi(calibImage.getWidth()/2 - 10, calibImage.getHeight()/2 - 10, 20, 20);	
-        return calibWindow!=null;
+		fc.setDialogTitle("Import Calibration Images");
+		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+		final int returnVal = fc.showOpenDialog(this);
+
+		if (returnVal != JFileChooser.APPROVE_OPTION)
+			return false;
+
+		final File file = fc.getSelectedFile();
+
+		ImagePlus calibImage = new ImagePlus();
+		if (file.isDirectory()) {
+			calibImage = FolderOpener.open(file.getAbsolutePath());
+		}
+
+		if (file.isFile()) {
+			calibImage = new ImagePlus(file.getAbsolutePath());
+		}
+
+		calibWindow = new StackWindow(calibImage);
+		calibImage.setRoi(calibImage.getWidth() / 2 - 10, calibImage.getHeight() / 2 - 10, 20, 20);
+		return calibWindow != null;
 	}
-	
+
 	private boolean fitbeads() {
 		final Roi roitemp = calibWindow.getImagePlus().getRoi();
 		Roi calibRoi = null;
-		try{																				
+		try {
 			final double w = roitemp.getFloatWidth();
 			final double h = roitemp.getFloatHeight();
-			if (w!=h) {
+			if (w != h) {
 				IJ.showMessage("Needs a quadratic ROI /n(hint: press Shift).");
 				return false;
 			}
 			calibRoi = roitemp;
 		} catch (NullPointerException e) {
 			calibRoi = new Roi(0, 0, calibWindow.getImagePlus().getWidth(), calibWindow.getImagePlus().getHeight());
-		} 
-		
+		}
+
 		final int zstep = (Integer) this.spinnerStepSize.getValue();
-		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);	
+		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);
 		calibrator.fitStack();
 		final double[] zgrid = calibrator.getCalibration().getZgrid();
 		Arrays.sort(zgrid);
 		this.rangeSlider.setMinimum((int) zgrid[0]);
-		this.rangeSlider.setMaximum((int) zgrid[zgrid.length-1]);
+		this.rangeSlider.setMaximum((int) zgrid[zgrid.length - 1]);
 		this.rangeSlider.setValue((int) zgrid[0]);
-		this.rangeSlider.setUpperValue((int) zgrid[zgrid.length-1]);
+		this.rangeSlider.setUpperValue((int) zgrid[zgrid.length - 1]);
 
 		calibWindow.close();
 		return true;
 	}
-	
+
 	private boolean fitCurve() {
 		final int rangeMin = rangeSlider.getValue();
 		final int rangeMax = rangeSlider.getUpperValue();
 		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
 		return true;
 	}
-	
+
 	private void saveCalibration() {
 		final JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
 		fc.setLocation(getLocation());
-    	fc.setDialogTitle("Save calibration");   
-    	final FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
-        fc.setFileFilter(filter);
-    	 
-    	if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-    	    File calibFile = fc.getSelectedFile();
-    	    calibrator.saveCalib(calibFile.getAbsolutePath());
-    	    settings.put(FitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
-    	}		
-    	calibrator.getCalibration().closePlotWindows();
-    	setVisible(false);
+		fc.setDialogTitle("Save calibration");
+		final FileNameExtensionFilter filter = new FileNameExtensionFilter("Csv files", "csv");
+		fc.setFileFilter(filter);
+
+		if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+			File calibFile = fc.getSelectedFile();
+			calibrator.saveCalib(calibFile.getAbsolutePath());
+			settings.put(AstigFitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
+		}
+		calibrator.getCalibration().closePlotWindows();
+		setVisible(false);
 	}
-	
+
 	private void choosePP() {
 		if (tif == null) {
 			if (previewerWindow != null)
@@ -910,181 +921,194 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		}
 		preProcessingFactory = new FastMedianFilterFactory<T>();
 		borderFirst.setTitle(preProcessingFactory.getName());
-		((CardLayout)panelLower.getLayout()).show(panelLower, FastMedianFilterFactory.KEY);
+		((CardLayout) panelLower.getLayout()).show(panelLower, FastMedianFilterFactory.KEY);
 		ConfigurationPanel panelDown = preProcessingFactory.getConfigurationPanel();
 		ppPreview(panelDown.getSettings());
 	}
 
-	
 	@SuppressWarnings("unchecked")
 	private void ppPreview(Map<String, Object> map) {
 		preProcessingFactory.setAndCheckSettings(map);
 		final AbstractModule preProcessor = preProcessingFactory.getModule();
-		int frameNumber = previewerWindow.getImagePlus().getFrame();
+		final int frameNumber = previewerWindow.getImagePlus().getFrame();
 		final List<Element> list = new ArrayList<Element>();
 		final ImageStack stack = previewerWindow.getImagePlus().getImageStack();
 		final int stackSize = stack.getSize();
 		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		
-		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
+
+		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++) {
 			final Object ip = stack.getPixels(i);
-			final Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
-			final Frame<T> curFrame = new ImgLib2Frame<T>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), pixelSize, curImage);
+			final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { stack.getWidth(), stack.getHeight() });
+			final Frame<T> curFrame = new ImgLib2Frame<T>(frameNumber, (int) curImage.dimension(0),
+					(int) curImage.dimension(1), pixelSize, curImage);
 			list.add(curFrame);
 		}
-		
+
 		Store ppResults = new ArrayListStore();
-		if (!list.isEmpty()){
+		if (!list.isEmpty()) {
 			final Store previewStore = new ArrayListStore();
-			final Element last = list.remove(list.size()-1);
-			for (Element entry : list)	
+			final Element last = list.remove(list.size() - 1);
+			for (Element entry : list)
 				previewStore.put(entry);
 			last.setLast(true);
 			previewStore.put(last);
 			preProcessor.setInput(previewStore);
 			preProcessor.setOutput(ppResults);
-			final Thread preProcessingThread = new Thread(preProcessor,preProcessor.getClass().getSimpleName());
+			final Thread preProcessingThread = new Thread(preProcessor, preProcessor.getClass().getSimpleName());
 			preProcessingThread.start();
 			try {
 				preProcessingThread.join();
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
-		}		
-		if(ppResults.isEmpty()) return;
-		
-		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
-			Frame<T> resFrame = (Frame<T>) ppResults.get();
-			if (resFrame == null) continue;
+		}
+		if (ppResults.isEmpty())
+			return;
+
+		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++) {
+			final Frame<T> resFrame = (Frame<T>) ppResults.get();
+			if (resFrame == null)
+				continue;
 			final ImageProcessor ip = ImageJFunctions.wrap(resFrame.getPixels(), "").getProcessor();
-			if (i < stackSize){
-				final ImageProcessor stackip  = stack.getProcessor(i);
+			if (i < stackSize) {
+				final ImageProcessor stackip = stack.getProcessor(i);
 				stackip.setPixels(ip.getPixels());
 			}
 		}
 		previewerWindow.repaint();
 	}
-	
-	private static ConfigurationPanel getConfigSettings(JPanel cardPanel){
+
+	private static ConfigurationPanel getConfigSettings(JPanel cardPanel) {
 		ConfigurationPanel s = null;
 		for (Component comp : cardPanel.getComponents()) {
-	           if (comp.isVisible()) 
-	                s = ((ConfigurationPanel) comp);
+			if (comp.isVisible())
+				s = ((ConfigurationPanel) comp);
 		}
 		return s;
 	}
 
-	private void saveSettings(JPanel cardPanel){
-	if (cardPanel == null) return;
-	for (Component comp : cardPanel.getComponents()) {
-		final Map<String, Object> s = ((ConfigurationPanel) comp).getSettings();
-		if (s!=null)
-			for (String key : s.keySet())
-				settings.put(key, s.get(key));
-			}	
+	private void saveSettings(JPanel cardPanel) {
+		if (cardPanel == null)
+			return;
+		for (Component comp : cardPanel.getComponents()) {
+			final Map<String, Object> s = ((ConfigurationPanel) comp).getSettings();
+			if (s != null)
+				for (String key : s.keySet())
+					settings.put(key, s.get(key));
+		}
 	}
-	
+
 	private void chooseDetector() {
 		borderFirst.setTitle(detectorFactory.getName());
-		((CardLayout)panelLower.getLayout()).show(panelLower, detectorFactory.getKey());
+		((CardLayout) panelLower.getLayout()).show(panelLower, detectorFactory.getKey());
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
-		
+
 		detectorPreview(panelDown.getSettings());
 		widgetSelection = DETECTOR;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private void detectorPreview(Map<String, Object> map){
+	private void detectorPreview(Map<String, Object> map) {
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
 		final int frameNumber = previewerWindow.getImagePlus().getFrame();
 		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
 		final ImageStack stack = previewerWindow.getImagePlus().getStack();
 		final Object ip = stack.getPixels(frameNumber);
-		final Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
-		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), pixelSize, curImage);
-		
+		final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { stack.getWidth(), stack.getHeight() });
+		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(frameNumber, (int) curImage.dimension(0),
+				(int) curImage.dimension(1), pixelSize, curImage);
+
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
-	
+
 	private void chooseFitter() {
 		final int index = comboBoxFitter.getSelectedIndex() - 1;
-		if (index<0 || tif == null || detector == null){ 
+		if (index < 0 || tif == null || detector == null) {
 			fitter = null;
 			return;
 		}
-		
-		final String key = fitterProvider.getVisibleKeys().get( index );
+
+		final String key = fitterProvider.getVisibleKeys().get(index);
 		fitterFactory = fitterProvider.getFactory(key);
 		borderFirst.setTitle(fitterFactory.getName());
-		((CardLayout)panelLower.getLayout()).show(panelLower, key);
-		System.out.println("AstigPlugin: Fitter_"+index+" : "+key);
+		((CardLayout) panelLower.getLayout()).show(panelLower, key);
+		System.out.println("AstigPlugin: Fitter_" + index + " : " + key);
 		final ConfigurationPanel panelDown = getConfigSettings(panelLower);
-		panelDown.addChangeListener(new ChangeListener(){
+		panelDown.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				Map<String, Object> value = panelDown.getSettings();
 				fitterPreview(value);
 			}
 		});
-		
+
 		final Map<String, Object> fitterSettings = panelDown.getSettings();
-		
-		if (fitterSettings != null){ 
-			final Object calibFile = settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
+
+		if (fitterSettings != null) {
+			final Object calibFile = settings.get(AstigFitterPanel.KEY_CALIBRATION_FILENAME);
 			if (calibFile != null)
-				fitterSettings.put(FitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
+				fitterSettings.put(AstigFitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
 			fitterPreview(fitterSettings);
 		}
 		widgetSelection = FITTER;
 		repaint();
 	}
-	
-	private void fitterPreview(Map<String, Object> map){
+
+	private void fitterPreview(Map<String, Object> map) {
 		if (!fitterFactory.setAndCheckSettings(map))
 			return;
 		fitter = fitterFactory.getFitter();
-		
+
 		previewerWindow.getImagePlus().killRoi();
-		int frameNumber = previewerWindow.getImagePlus().getFrame();
-		double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
+		final int frameNumber = previewerWindow.getImagePlus().getFrame();
+		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
 		final ImageStack stack = previewerWindow.getImagePlus().getStack();
 		final Object ip = stack.getPixels(frameNumber);
-		final Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});	
-		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), pixelSize, curImage);
-		
-		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber, pixelSize);
+		final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { stack.getWidth(), stack.getHeight() });
+		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(frameNumber, (int) curImage.dimension(0),
+				(int) curImage.dimension(1), pixelSize, curImage);
+
+		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber,
+				pixelSize);
 		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
-	
-	private void chooseRenderer() { 
+
+	private void chooseRenderer() {
 		borderSecond.setTitle(rendererFactory.getName());
-		((CardLayout)panelFilter.getLayout()).show(panelFilter, rendererFactory.getKey());
-	
+		((CardLayout) panelFilter.getLayout()).show(panelFilter, rendererFactory.getKey());
+
 		Map<String, Object> rendererSettings = rendererFactory.getSettings();
-		if (previewerWindow != null){
-			rendererSettings.put(HistogramRendererFactory.KEY_xmax, previewerWindow.getImagePlus().getWidth()*previewerWindow.getImagePlus().getCalibration().pixelDepth); // sets the previewer size as initials
-			rendererSettings.put(HistogramRendererFactory.KEY_ymax, previewerWindow.getImagePlus().getHeight()*previewerWindow.getImagePlus().getCalibration().pixelDepth);
+		if (previewerWindow != null) {
+			rendererSettings.put(HistogramRendererPanel.KEY_xmax, previewerWindow.getImagePlus().getWidth()
+					* previewerWindow.getImagePlus().getCalibration().pixelDepth); // sets
+																					// the
+																					// previewer
+																					// size
+																					// as
+																					// initials
+			rendererSettings.put(HistogramRendererPanel.KEY_ymax, previewerWindow.getImagePlus().getHeight()
+					* previewerWindow.getImagePlus().getCalibration().pixelDepth);
 		}
 		settings.putAll(rendererSettings);
 		rendererFactory.setAndCheckSettings(rendererSettings);
 		renderer = rendererFactory.getRenderer();
-		
+
 		initRenderer();
-		
+
 		if (processed)
 			rendererShow(rendererSettings);
 		else
 			rendererPreview(rendererSettings);
 	}
-	
+
+	// set a new Renderer
 	private void initRenderer() {
-		// set a new Renderer
 		rendererWindow = new ImageWindow(renderer.getImage());
 		rendererWindow.addKeyListener(new KeyAdapter() {
 			@Override
@@ -1106,12 +1130,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					try {
 						Rectangle rect = renderer.getImage().getRoi().getBounds();
 
-						final double xmin = (Double) settings.get(HistogramRendererFactory.KEY_xmin);
-						final double xmax = (Double) settings.get(HistogramRendererFactory.KEY_xmax);
-						final double ymin = (Double) settings.get(HistogramRendererFactory.KEY_ymin);
-						final double ymax = (Double) settings.get(HistogramRendererFactory.KEY_ymax);
-						final int xbins = (Integer) settings.get(HistogramRendererFactory.KEY_xBins);
-						final int ybins = (Integer) settings.get(HistogramRendererFactory.KEY_yBins);
+						final double xmin = (Double) settings.get(HistogramRendererPanel.KEY_xmin);
+						final double xmax = (Double) settings.get(HistogramRendererPanel.KEY_xmax);
+						final double ymin = (Double) settings.get(HistogramRendererPanel.KEY_ymin);
+						final double ymax = (Double) settings.get(HistogramRendererPanel.KEY_ymax);
+						final int xbins = (Integer) settings.get(HistogramRendererPanel.KEY_xBins);
+						final int ybins = (Integer) settings.get(HistogramRendererPanel.KEY_yBins);
 
 						final double new_xmin = (xmax - xmin) * rect.getMinX() / xbins + xmin;
 						final double new_ymin = (ymax - ymin) * rect.getMinY() / ybins + ymin;
@@ -1123,44 +1147,45 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 						final int new_xbins = (int) (Math.round(xbins * ar));
 						final int new_ybins = (int) (Math.round(ybins * ar));
 
-						settings.put(HistogramRendererFactory.KEY_xmin, new_xmin);
-						settings.put(HistogramRendererFactory.KEY_ymin, new_ymin);
-						settings.put(HistogramRendererFactory.KEY_xmax, new_xmax);
-						settings.put(HistogramRendererFactory.KEY_ymax, new_ymax);
-						settings.put(HistogramRendererFactory.KEY_xBins, new_xbins);
-						settings.put(HistogramRendererFactory.KEY_yBins, new_ybins);
+						settings.put(HistogramRendererPanel.KEY_xmin, new_xmin);
+						settings.put(HistogramRendererPanel.KEY_ymin, new_ymin);
+						settings.put(HistogramRendererPanel.KEY_xmax, new_xmax);
+						settings.put(HistogramRendererPanel.KEY_ymax, new_ymax);
+						settings.put(HistogramRendererPanel.KEY_xBins, new_xbins);
+						settings.put(HistogramRendererPanel.KEY_yBins, new_ybins);
 						rendererShow(settings);
-					} catch (NullPointerException ne) {}
+					} catch (NullPointerException ne) {
+					}
 				}
 			}
 		});
 	}
-	
-	private void rendererPreview(Map<String, Object> map){
+
+	private void rendererPreview(Map<String, Object> map) {
 		rendererFactory.setAndCheckSettings(map);
 		final List<Element> list = fitResults;
-		if (list != null && !list.isEmpty()){
+		if (list != null && !list.isEmpty()) {
 			renderer.preview(list);
 		}
 	}
-	
-	private void rendererShow(Map<String, Object> map){	
+
+	private void rendererShow(Map<String, Object> map) {
 		rendererFactory.setAndCheckSettings(map);
 		renderer = rendererFactory.getRenderer();
 		rendererWindow.setImage(renderer.getImage());
 		rendererWindow.getCanvas().fitToWindow();
-		final ExtendableTable tableToRender = filteredTable == null ? table : filteredTable;	
-		
-		if (tableToRender != null && tableToRender.columnNames().size()>0){
+		final ExtendableTable tableToRender = filteredTable == null ? table : filteredTable;
+
+		if (tableToRender != null && tableToRender.columnNames().size() > 0) {
 			Store previewStore = tableToRender.getFIFO();
 			System.out.println("AstigPlugin: Rendering " + tableToRender.getNumberOfRows() + " elements");
 			renderer.setInput(previewStore);
-			renderer.run();	
+			renderer.run();
 			renderer.resetInputStore();
 			rendererWindow.repaint();
 		}
 	}
-	
+
 	private void filterTable() {
 		if (!processed) {
 			if (IJ.showMessageWithCancel("Filter", "Pipeline not yet processed.\nDo you want to process it now?"))
@@ -1179,7 +1204,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			return;
 		panelFilter.add(new FilterPanel(table), FilterPanel.KEY);
 		borderSecond.setTitle("Filter");
-		((CardLayout)panelFilter.getLayout()).show(panelFilter, FilterPanel.KEY);
+		((CardLayout) panelFilter.getLayout()).show(panelFilter, FilterPanel.KEY);
 		final ConfigurationPanel panelReconDown = getConfigSettings(panelFilter);
 		panelReconDown.addChangeListener(new ChangeListener() {
 			@Override
@@ -1198,19 +1223,18 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			rendererShow(settings);
 		else
 			IJ.showMessage(getTitle(), "No renderer chosen!\n No data will be displayed.");
-
 	}
-	
+
 	private void saveLocalizations() {
-		JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
+		final JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setDialogTitle("Save Data");
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", new String[]{"csv","CSV"});
-        fc.setFileFilter(filter);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", "csv", "CSV");
+		fc.setFileFilter(filter);
 
 		if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
 			return;
-		File file = fc.getSelectedFile();
+		final File file = fc.getSelectedFile();
 		if (this.chkboxFilter.isSelected()) {
 			ExtendableTable tableToProcess = filteredTable == null ? table : filteredTable;
 			Store s = tableToProcess.getFIFO();
@@ -1228,31 +1252,36 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			}
 		}
 	}
-	
-	private void createProvider(){
+
+	private void createProvider() {
 		preProcessingFactory = new FastMedianFilterFactory<T>();
 		detectorFactory = new NMSDetectorFactory();
 		rendererFactory = new HistogramRendererFactory();
-		final ConfigurationPanel panelFirst = new ConfigurationPanel(){
+		final ConfigurationPanel panelFirst = new ConfigurationPanel() {
 			private static final long serialVersionUID = -614688452106890922L;
+
 			@Override
-			public void setSettings(Map<String, Object> settings) {}
+			public void setSettings(Map<String, Object> settings) {
+			}
+
 			@Override
-			public Map<String, Object> getSettings() {return null;}
+			public Map<String, Object> getSettings() {
+				return null;
+			}
 		};
 		panelLower.add(panelFirst, "FIRST");
-		final ConfigurationPanel fmp = new FastMedianPanel();
+		final ConfigurationPanel fmp = preProcessingFactory.getConfigurationPanel();
 		panelLower.add(fmp, FastMedianFilterFactory.KEY);
-		fmp.addChangeListener( new ChangeListener(){
+		fmp.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				final Map<String, Object> value =fmp.getSettings();
-				ppPreview(value);	
+				final Map<String, Object> value = fmp.getSettings();
+				ppPreview(value);
 			}
 		});
-		
-		final ConfigurationPanel ndp = new NMSDetectorPanel();
-		ndp.addChangeListener( new ChangeListener() {
+
+		final ConfigurationPanel ndp = detectorFactory.getConfigurationPanel();
+		ndp.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				Map<String, Object> value = ndp.getSettings();
@@ -1261,17 +1290,22 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		});
 		panelLower.add(ndp, NMSDetectorFactory.KEY);
 		createFitterProvider();
-		
-		final ConfigurationPanel panelSecond = new ConfigurationPanel(){
+
+		final ConfigurationPanel panelSecond = new ConfigurationPanel() {
 			private static final long serialVersionUID = -614688452106890922L;
+
 			@Override
-			public void setSettings(Map<String, Object> settings) {}
+			public void setSettings(Map<String, Object> settings) {
+			}
+
 			@Override
-			public Map<String, Object> getSettings() {return null;}
+			public Map<String, Object> getSettings() {
+				return null;
+			}
 		};
 		panelFilter.add(panelSecond, "SECOND");
-		final ConfigurationPanel hrp = new HistogramRendererPanel();
-		hrp.addChangeListener( new ChangeListener(){
+		final ConfigurationPanel hrp = rendererFactory.getConfigurationPanel();
+		hrp.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent evt) {
 				final Map<String, Object> map = hrp.getSettings();
@@ -1283,40 +1317,42 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		});
 		panelFilter.add(hrp, HistogramRendererFactory.KEY);
 	}
-	
+
 	private void createFitterProvider() {
 		fitterProvider = new FitterProvider();
-		final List< String > visibleKeys = fitterProvider.getVisibleKeys();
-		final List< String > fitterNames = new ArrayList<String>();
-		final List< String > infoTexts = new ArrayList<String>();
+		final List<String> visibleKeys = fitterProvider.getVisibleKeys();
+		final List<String> fitterNames = new ArrayList<String>();
+		final List<String> infoTexts = new ArrayList<String>();
 		fitterNames.add("none");
-		for ( final String key : visibleKeys ){
-			FitterFactory factory = fitterProvider.getFactory( key );
-			fitterNames.add( factory.getName() );
-			infoTexts.add( factory.getInfoText() );
-			panelLower.add(factory.getConfigurationPanel(),key);
+		for (final String key : visibleKeys) {
+			FitterFactory factory = fitterProvider.getFactory(key);
+			fitterNames.add(factory.getName());
+			infoTexts.add(factory.getInfoText());
+			panelLower.add(factory.getConfigurationPanel(), key);
 		}
 		String[] names = fitterNames.toArray(new String[] {});
 		comboBoxFitter.setModel(new DefaultComboBoxModel(names));
 		comboBoxFitter.setRenderer(new ToolTipRenderer(infoTexts));
 	}
-	
+
 	private class ToolTipRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 1L;
 		List<String> tooltips;
-		
-		public ToolTipRenderer(List<String> tooltips){
-			 this.tooltips = tooltips;
+
+		public ToolTipRenderer(List<String> tooltips) {
+			this.tooltips = tooltips;
 		}
 
-	    @Override
-	    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-	        JComponent comp = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
+			JComponent comp = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected,
+					cellHasFocus);
 
-	        if (0 < index && null != value && null != tooltips) 
-	                    list.setToolTipText(tooltips.get(index-1));
-	        return comp;
-	    }
-		
+			if (0 < index && null != value && null != tooltips)
+				list.setToolTipText(tooltips.get(index - 1));
+			return comp;
+		}
+
 	}
 }

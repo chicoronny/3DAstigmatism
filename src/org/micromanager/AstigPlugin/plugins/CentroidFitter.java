@@ -15,12 +15,13 @@ import net.imglib2.view.Views;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
-import org.micromanager.AstigPlugin.gui.AstigFitterPanel;
+import org.micromanager.AstigPlugin.gui.CommonFitterPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.math.CentroidFitterRA;
 import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.Localization;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
 
 public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
@@ -33,11 +34,11 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 			+ "Centroid Fitter Plugin"
 			+ "</html>";
 
-	private double thresh;
+	private double threshold;
 
 	public CentroidFitter(int windowSize, double threshold_) {
 		super(windowSize);
-		thresh = threshold_;
+		threshold = threshold_;
 	}
 
 	@Override
@@ -46,6 +47,14 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 			long frameNumber, double pixelDepth) {
 		
 		final RandomAccessible<T> source = Views.extendZero(pixels);
+		
+		T min = pixels.randomAccess().get().createVariable();
+        T max = pixels.randomAccess().get().createVariable();
+        
+        // compute min and max of the Image
+        LemmingUtils.computeMinMax( Views.iterable(pixels), min, max );
+        double threshold_ = max.getRealDouble() / 100 * threshold;
+		
 		List<Element> found = new ArrayList<Element>();
 		int halfKernel = size / 2;
 		
@@ -60,7 +69,7 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 					(long) StrictMath.ceil(y + halfKernel) });
 			IntervalView<T> interval = Views.interval(source, roi);
 
-			CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, thresh);
+			CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, threshold_);
 			double[] result = cf.fit();
 			if (result != null){
 				for (int i = 0; i < 4; i++)
@@ -76,7 +85,7 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 	public static class Factory<T extends RealType<T>> implements FitterFactory{
 
 		private Map<String, Object> settings = new HashMap<String, Object>();
-		private AstigFitterPanel configPanel = new AstigFitterPanel();
+		private ConfigurationPanel configPanel;
 
 		@Override
 		public String getInfoText() {
@@ -103,8 +112,8 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Fitter<T> getFitter() {
-			final int windowSize = (Integer) settings.get( AstigFitterPanel.KEY_WINDOW_SIZE );
-			final double threshold = (Double) settings.get( AstigFitterPanel.KEY_CENTROID_THRESHOLD );
+			final int windowSize = (Integer) settings.get( CommonFitterPanel.KEY_WINDOW_SIZE );
+			final double threshold = (Double) settings.get( CommonFitterPanel.KEY_CENTROID_THRESHOLD );
 			return new CentroidFitter<T>(windowSize, threshold);
 		}
 
@@ -112,6 +121,11 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+		
+		@Override
+		public void setConfigurationPanel(ConfigurationPanel panel) {
+			this.configPanel = panel;
 		}
 		
 	}

@@ -1,13 +1,18 @@
 package org.micromanager.AstigPlugin.gui;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 
 public class FastMedianPanel extends ConfigurationPanel {
 
@@ -19,30 +24,31 @@ public class FastMedianPanel extends ConfigurationPanel {
 	private JSpinner spinnerFrames;
 
 	public FastMedianPanel() {
-		setBorder(null);
+		setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 205)), "Background Substraction", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205)));
 		
-		JLabel lblFrames = new JLabel("Frames");
+		JLabel labelFrames = new JLabel("Frames");
+		labelFrames.setHorizontalAlignment(SwingConstants.LEFT);
 		
 		spinnerFrames = new JSpinner();
+		spinnerFrames.setToolTipText("frames used for background substraction");
 		spinnerFrames.setModel(new SpinnerNumberModel(new Integer(50), null, null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(lblFrames)
+					.addComponent(labelFrames)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(spinnerFrames, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(326, Short.MAX_VALUE))
+					.addContainerGap(316, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblFrames)
-						.addComponent(spinnerFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(266, Short.MAX_VALUE))
+						.addComponent(spinnerFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(labelFrames))
+					.addContainerGap(243, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
 	}

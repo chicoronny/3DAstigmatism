@@ -1,5 +1,8 @@
 package org.micromanager.AstigPlugin.gui;
 
+import ij.IJ;
+
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +14,8 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
@@ -18,63 +23,62 @@ import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
 
 public class NMSDetectorPanel extends ConfigurationPanel {
-	private JTextField jTextFieldThreshold;
-	private JSpinner spinnerStepSize;
+	private JTextField textFieldThreshold;
+	private JSpinner spinnerWindowSize;
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 
 
 	public NMSDetectorPanel() {
-		setBorder(null);
+		setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 205)), "Peak Detection & Fitter", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205)));
 		
-		JLabel lblWindowSize = new JLabel("Threshold");
+		JLabel labelThreshold = new JLabel("Threshold [%]");
 		
-		jTextFieldThreshold = new JTextField();
-		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+		textFieldThreshold = new JTextField();
+		textFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
 				fireChanged( CHANGE_EVENT );
 			}
 		}));
-		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
-		jTextFieldThreshold.setText("100");
+		textFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
+		textFieldThreshold.setText("1");
 		
-		JLabel lblStepsize = new JLabel("StepSize");
+		JLabel labelWindowSize = new JLabel("WindowSize");
 		
-		spinnerStepSize = new JSpinner();
-		spinnerStepSize.addChangeListener(new ChangeListener() {
+		spinnerWindowSize = new JSpinner();
+		spinnerWindowSize.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				stateChanged( CHANGE_EVENT );
 			}
 		});
-		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
-		GroupLayout groupLayout = new GroupLayout(this);
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(26)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblWindowSize, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblStepsize))
+		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
+		GroupLayout gl_panelPeakDet = new GroupLayout(this);
+		gl_panelPeakDet.setHorizontalGroup(
+			gl_panelPeakDet.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelPeakDet.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(labelThreshold, GroupLayout.PREFERRED_SIZE, 84, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(spinnerStepSize)
-						.addComponent(jTextFieldThreshold, GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE))
-					.addGap(63))
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.TRAILING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(11)
-					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(jTextFieldThreshold, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblWindowSize, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE))
+					.addComponent(textFieldThreshold, GroupLayout.PREFERRED_SIZE, 44, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblStepsize))
-					.addContainerGap(72, Short.MAX_VALUE))
+					.addComponent(labelWindowSize, GroupLayout.PREFERRED_SIZE, 76, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(156, Short.MAX_VALUE))
 		);
-		setLayout(groupLayout);
+		gl_panelPeakDet.setVerticalGroup(
+			gl_panelPeakDet.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelPeakDet.createSequentialGroup()
+					.addGroup(gl_panelPeakDet.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelPeakDet.createParallelGroup(Alignment.BASELINE)
+							.addComponent(labelThreshold, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
+							.addComponent(textFieldThreshold, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panelPeakDet.createParallelGroup(Alignment.BASELINE)
+							.addComponent(labelWindowSize)
+							.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)))
+					.addContainerGap(241, Short.MAX_VALUE))
+		);
+		setLayout(gl_panelPeakDet);
 	}
 
 	/**
@@ -86,18 +90,21 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		spinnerStepSize.setValue(settings.get(KEY_NMS_STEPSIZE));
-		jTextFieldThreshold.setText(""+settings.get(KEY_NMS_THRESHOLD));
+		spinnerWindowSize.setValue(settings.get(KEY_NMS_STEPSIZE));
+		textFieldThreshold.setText(""+settings.get(KEY_NMS_THRESHOLD));
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
-		final Map< String, Object > settings = new HashMap<String, Object>( 2 );
-		final int stepsize = (Integer) spinnerStepSize.getValue();
-		final double threshold = Double.parseDouble( jTextFieldThreshold.getText() );
-		settings.put( KEY_NMS_STEPSIZE, stepsize );
-		settings.put( KEY_NMS_THRESHOLD, threshold );
-		
+		final Map<String, Object> settings = new HashMap<String, Object>(2);
+		try {
+			final int stepsize = (Integer) spinnerWindowSize.getValue();
+			final double threshold = Double.parseDouble(textFieldThreshold.getText());
+			settings.put(KEY_NMS_STEPSIZE, stepsize);
+			settings.put(KEY_NMS_THRESHOLD, threshold);
+		} catch (Exception ex) {
+			IJ.showMessage(getClass().getSimpleName(), "Parse error!\n"+ex.getMessage());
+		}
 		return settings;
 	}
 }

@@ -15,8 +15,7 @@ public class HistogramRenderer extends Renderer {
 	private double ymin;
 	private double xwidth;
 	private double ywidth;
-	private volatile byte[] values; // volatile keyword keeps the array on the
-										// heap available
+	private volatile byte[] values; // volatile keyword keeps the array on the heap available
 	private double xmax;
 	private double ymax;
 	private double zmin;

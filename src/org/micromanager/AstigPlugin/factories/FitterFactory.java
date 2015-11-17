@@ -28,7 +28,12 @@ public interface FitterFactory extends PluginInterface{
 	 * Returns a new GUI panel able to configure the settings suitable for this
 	 * specific detector factory.
 	 */
-
 	public ConfigurationPanel getConfigurationPanel();
+	
+	/**
+	 * sets a new GUI panel able to configure the settings suitable for this
+	 * specific detector factory.
+	 */
+	public void setConfigurationPanel(ConfigurationPanel panel);
 
 }

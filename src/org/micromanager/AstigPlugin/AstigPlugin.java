@@ -1,5 +1,7 @@
 package org.micromanager.AstigPlugin;
 
+import java.util.Locale;
+
 import org.micromanager.AstigPlugin.gui.Controller;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.api.MMPlugin;
@@ -21,6 +23,8 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 	
 	private ScriptInterface app_;
 	private CMMCore core_;
+	private Locale curLocale;
+
 
 	@Override
 	public String getCopyright() {
@@ -44,6 +48,7 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 
 	@Override
 	public void dispose() {
+		Locale.setDefault(curLocale);
 		if (frame!=null){
 			frame.setVisible(false);
 			frame.dispose();
@@ -55,7 +60,9 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 	public void setApp(ScriptInterface app) {
 		 app_ =  app;
 	     core_ = app.getMMCore();
-	     
+	     this.curLocale = Locale.getDefault();
+		 final Locale usLocale = new Locale("en", "US"); // setting us locale
+		 Locale.setDefault(usLocale);
 	}
 
 	@Override
@@ -65,6 +72,7 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 			frame.setVisible(true);
 		}
 		else{
+			frame.setVisible(true);
 			frame.toFront();
 		}
 	}

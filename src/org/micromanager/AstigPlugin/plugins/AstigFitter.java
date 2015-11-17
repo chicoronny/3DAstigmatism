@@ -15,7 +15,7 @@ import net.imglib2.type.numeric.RealType;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
-import org.micromanager.AstigPlugin.gui.AstigFitterPanel;
+import org.micromanager.AstigPlugin.gui.CommonFitterPanel;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.math.GaussianFitterZ;
@@ -72,7 +72,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 
 		
 		private Map<String, Object> settings = new HashMap<String, Object>();
-		private AstigFitterPanel configPanel = new AstigFitterPanel();
+		private ConfigurationPanel configPanel;
 
 		@Override
 		public String getInfoText() {
@@ -94,7 +94,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings.putAll(settings);
 			configPanel.setSettings(settings);
-			if(settings.get(AstigFitterPanel.KEY_CALIBRATION_FILENAME) != null)
+			if(settings.get(CommonFitterPanel.KEY_CALIBRATION_FILENAME) != null)
 				return true;
 			return false;
 		}
@@ -102,8 +102,8 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
-			final int windowSize = (Integer) settings.get( AstigFitterPanel.KEY_WINDOW_SIZE );
-			final String calibFileName = (String) settings.get( AstigFitterPanel.KEY_CALIBRATION_FILENAME );
+			final int windowSize = (Integer) settings.get( CommonFitterPanel.KEY_WINDOW_SIZE );
+			final String calibFileName = (String) settings.get( CommonFitterPanel.KEY_CALIBRATION_FILENAME );
 			if (calibFileName == null){ 
 				IJ.error("No Calibration File!");
 				return null;
@@ -115,6 +115,11 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+
+		@Override
+		public void setConfigurationPanel(ConfigurationPanel panel) {
+			this.configPanel = panel;
 		}
 		
 	}

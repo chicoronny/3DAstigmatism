@@ -2,15 +2,18 @@ package org.micromanager.AstigPlugin.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.pipeline.Detector;
 import org.micromanager.AstigPlugin.pipeline.FrameElements;
 import org.micromanager.AstigPlugin.pipeline.Localization;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
 	
@@ -29,6 +32,13 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 	public FrameElements<T> detect(F frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		RandomAccess<T> ra = interval.randomAccess();
+
+		T min = ra.get().createVariable();
+        T max = ra.get().createVariable();
+        
+        // compute min and max of the Image
+        LemmingUtils.computeMinMax( Views.iterable(interval), min, max );
+        double threshold_ = max.getRealDouble() / 100 * threshold;
 		
 		int i,j,ii,jj,ll,kk;
 		int mi,mj;
@@ -75,7 +85,7 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 				if(!failed){
 					ra.setPosition(new int[]{mi,mj});
 					T value = ra.get().copy();
-					if (value.getRealDouble() > threshold) {
+					if (value.getRealDouble() > threshold_) {
 						found.add(new Localization(mi * frame.getPixelDepth(), mj * frame.getPixelDepth(), value.getRealDouble(), frame.getFrameNumber()));
 						counter++;
 					}

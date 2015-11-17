@@ -85,13 +85,11 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -4601480448696314069L;
-	public static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
-	public static final String KEY_NMS_THRESHOLD = "NMS_THRESHOLD";
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		spinnerWindowSize.setValue(settings.get(KEY_NMS_STEPSIZE));
-		textFieldThreshold.setText(""+settings.get(KEY_NMS_THRESHOLD));
+		spinnerWindowSize.setValue(settings.get(PanelKeys.KEY_WINDOWSIZE));
+		textFieldThreshold.setText("" + settings.get(PanelKeys.KEY_THRESHOLD));
 	}
 
 	@Override
@@ -100,10 +98,10 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		try {
 			final int stepsize = (Integer) spinnerWindowSize.getValue();
 			final double threshold = Double.parseDouble(textFieldThreshold.getText());
-			settings.put(KEY_NMS_STEPSIZE, stepsize);
-			settings.put(KEY_NMS_THRESHOLD, threshold);
+			settings.put(PanelKeys.KEY_WINDOWSIZE, stepsize);
+			settings.put(PanelKeys.KEY_THRESHOLD, threshold);
 		} catch (Exception ex) {
-			IJ.showMessage(getClass().getSimpleName(), "Parse error!\n"+ex.getMessage());
+			IJ.showMessage(getClass().getSimpleName(), "Parse error!\n" + ex.getMessage());
 		}
 		return settings;
 	}

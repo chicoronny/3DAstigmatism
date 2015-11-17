@@ -20,6 +20,7 @@ import javax.swing.event.ChangeListener;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.HistogramRendererPanel;
+import org.micromanager.AstigPlugin.gui.PanelKeys;
 
 import java.awt.CardLayout;
 import java.awt.event.ActionListener;
@@ -155,8 +156,8 @@ public class CardLayoutTest extends JFrame implements ActionListener {
 				comp.setSettings(settings);
 			}
 			if (comp.getName() == "hrp"){
-				settings.put(HistogramRendererPanel.KEY_xmax, 200d);
-				settings.put(HistogramRendererPanel.KEY_ymax, 200d);
+				settings.put(PanelKeys.KEY_xmax, 200d);
+				settings.put(PanelKeys.KEY_ymax, 200d);
 				comp.setSettings(settings);
 			}
 		}

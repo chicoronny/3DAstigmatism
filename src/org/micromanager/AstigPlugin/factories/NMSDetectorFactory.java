@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.NMSDetectorPanel;
+import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.pipeline.AbstractModule;
 import org.micromanager.AstigPlugin.plugins.NMSDetector;
 
@@ -40,8 +41,8 @@ public class NMSDetectorFactory {
 
 	@SuppressWarnings("rawtypes")
 	public AbstractModule getDetector() {
-		final double threshold = ( Double ) settings.get( NMSDetectorPanel.KEY_NMS_THRESHOLD );
-		final int stepSize = ( Integer ) settings.get( NMSDetectorPanel.KEY_NMS_STEPSIZE );
+		final double threshold = ( Double ) settings.get( PanelKeys.KEY_THRESHOLD );
+		final int stepSize = ( Integer ) settings.get( PanelKeys.KEY_WINDOWSIZE );
 		return new NMSDetector(threshold, stepSize);
 	}
 

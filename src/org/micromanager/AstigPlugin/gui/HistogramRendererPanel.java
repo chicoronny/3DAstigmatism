@@ -21,14 +21,6 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -3031663211936690561L;
-	public static final String KEY_xmin = "xmin";
-	public static final String KEY_xmax = "xmax";
-	public static final String KEY_ymin = "ymin";
-	public static final String KEY_ymax = "ymax";
-	public static final String KEY_xBins = "xbins";
-	public static final String KEY_yBins = "ybins";
-	public static final String KEY_zmin = "zmin";
-	public static final String KEY_zmax = "zmax";
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 	private JTextField textXBins;
 	private JTextField textYBins;
@@ -131,40 +123,40 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 
 	@Override
 	public void setSettings(Map<String, Object> settings_) {
-		lblX.setText(String.format("%.4f",settings_.get(KEY_xmin)));
-		lblY.setText(String.format("%.4f",settings_.get(KEY_ymin)));
-		labelX2.setText(String.format("%.4f",settings_.get(KEY_xmax)));
-		labelY2.setText(String.format("%.4f",settings_.get(KEY_ymax)));
-		textXBins.setText(String.valueOf(settings_.get(KEY_xBins)));
-		textYBins.setText(String.valueOf(settings_.get(KEY_yBins)));
-		zmin = (Double) settings_.get(KEY_zmin);
-		zmax = (Double) settings_.get(KEY_zmax);
+		lblX.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_xmin)));
+		lblY.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_ymin)));
+		labelX2.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_xmax)));
+		labelY2.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_ymax)));
+		textXBins.setText(String.valueOf(settings_.get(PanelKeys.KEY_xBins)));
+		textYBins.setText(String.valueOf(settings_.get(PanelKeys.KEY_yBins)));
+		zmin = (Double) settings_.get(PanelKeys.KEY_zmin);
+		zmax = (Double) settings_.get(PanelKeys.KEY_zmax);
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
 		final Map<String, Object> settings = new HashMap<String, Object>(8);
-		settings.put(KEY_xmin, Double.parseDouble(lblX.getText()));
-		settings.put(KEY_ymin, Double.parseDouble(lblY.getText()));
-		settings.put(KEY_xmax, Double.parseDouble(labelX2.getText()));
-		settings.put(KEY_ymax, Double.parseDouble(labelY2.getText()));
-		settings.put(KEY_xBins, Integer.parseInt(textXBins.getText()));
-		settings.put(KEY_yBins, Integer.parseInt(textYBins.getText()));
-		settings.put(KEY_zmin, zmin);
-		settings.put(KEY_zmax, zmax);
+		settings.put(PanelKeys.KEY_xmin, Double.parseDouble(lblX.getText()));
+		settings.put(PanelKeys.KEY_ymin, Double.parseDouble(lblY.getText()));
+		settings.put(PanelKeys.KEY_xmax, Double.parseDouble(labelX2.getText()));
+		settings.put(PanelKeys.KEY_ymax, Double.parseDouble(labelY2.getText()));
+		settings.put(PanelKeys.KEY_xBins, Integer.parseInt(textXBins.getText()));
+		settings.put(PanelKeys.KEY_yBins, Integer.parseInt(textYBins.getText()));
+		settings.put(PanelKeys.KEY_zmin, zmin);
+		settings.put(PanelKeys.KEY_zmax, zmax);
 		return settings;
 	}
 	
 	public Map<String, Object> getInitialSettings(){
 		final Map<String, Object> settings = new HashMap<String, Object>(8);
-		settings.put(KEY_xmin, new Double(0));
-		settings.put(KEY_ymin, new Double(0));
-		settings.put(KEY_xmax, new Double(100));
-		settings.put(KEY_ymax, new Double(100));
-		settings.put(KEY_xBins,new Integer(500));
-		settings.put(KEY_yBins,new Integer(500));
-		settings.put(KEY_zmin,new Double(0));
-		settings.put(KEY_zmax,new Double(255));
+		settings.put(PanelKeys.KEY_xmin, new Double(0));
+		settings.put(PanelKeys.KEY_ymin, new Double(0));
+		settings.put(PanelKeys.KEY_xmax, new Double(100));
+		settings.put(PanelKeys.KEY_ymax, new Double(100));
+		settings.put(PanelKeys.KEY_xBins,new Integer(500));
+		settings.put(PanelKeys.KEY_yBins,new Integer(500));
+		settings.put(PanelKeys.KEY_zmin,new Double(0));
+		settings.put(PanelKeys.KEY_zmax,new Double(255));
 		return settings;
 	}
 	/**
@@ -182,7 +174,7 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		frame.pack();
 		frame.setVisible( true );
 		Map<String, Object> cur = tp.getSettings();
-		cur.put(KEY_xmax, 200d);
+		cur.put(PanelKeys.KEY_xmax, 200d);
 		tp.setSettings(cur);
 	}
 

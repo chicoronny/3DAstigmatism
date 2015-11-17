@@ -26,11 +26,6 @@ public class CommonFitterPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 3081886846323191618L;
-	public static final String KEY_WINDOW_SIZE = "WINDOW_SIZE";
-	public static final String KEY_CALIBRATION_FILENAME = "CALIBRATION_FILENAME";
-	public static final String KEY_GAIN = "CAMERA_GAIN";
-	public static final String KEY_OFFSET = "CAMERA_OFFSET";
-	public static final String KEY_CENTROID_THRESHOLD = "CENTROID_THRESHOLD";
 	private JButton btnCalibration;
 	private JLabel lblCalibration;
 	private File calibFile;
@@ -119,22 +114,25 @@ public class CommonFitterPanel extends ConfigurationPanel {
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		try{
-			calibFile = (File) settings.get(KEY_CALIBRATION_FILENAME);
+			calibFile = (File) settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
 			lblCalibration.setText(calibFile.getName());
-			textFieldGain.setText((String) settings.get(KEY_GAIN));
-			textFieldOffset.setText((String) settings.get(KEY_OFFSET));
+			textFieldGain.setText(String.valueOf(settings.get(PanelKeys.KEY_GAIN)));
+			textFieldOffset.setText(String.valueOf(settings.get(PanelKeys.KEY_OFFSET)));
 		} catch (Exception e){}
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
 		final Map< String, Object > settings = new HashMap<String, Object>( 4 );
+		try{
+			settings.put(PanelKeys.KEY_GAIN, Double.parseDouble(textFieldGain.getText()));
+			settings.put(PanelKeys.KEY_OFFSET, Double.parseDouble(textFieldOffset.getText()));
+		} catch (Exception ex){}
 		if (calibFile == null){
 			return settings;
 		}
-		settings.put(KEY_CALIBRATION_FILENAME, calibFile.getAbsolutePath());
-		settings.put(KEY_GAIN, textFieldGain.getText());
-		settings.put(KEY_OFFSET, textFieldOffset.getText());
+		settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile.getAbsolutePath());
+		
 		return settings;
 	}
 }

@@ -8,6 +8,7 @@ import net.imglib2.type.numeric.IntegerType;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.FastMedianPanel;
+import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.pipeline.AbstractModule;
 import org.micromanager.AstigPlugin.pipeline.ImageMath.operators;
 import org.micromanager.AstigPlugin.plugins.FastMedianFilter;
@@ -43,7 +44,7 @@ public class FastMedianFilterFactory<T extends IntegerType<T> & NativeType<T>> {
 	}
 
 	public AbstractModule getModule() {
-		int frames  = (Integer) settings.get(FastMedianPanel.KEY_FRAMES);
+		int frames  = (Integer) settings.get(PanelKeys.KEY_FRAMES);
 		return new FastMedianFilter<T>(frames, true);
 	}
 
@@ -57,7 +58,7 @@ public class FastMedianFilterFactory<T extends IntegerType<T> & NativeType<T>> {
 	}
 
 	public int processingFrames() {
-		int procFrames = ((Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(FastMedianPanel.KEY_FRAMES)); 
+		int procFrames = ((Integer) settings.get(PanelKeys.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(PanelKeys.KEY_FRAMES)); 
 		return procFrames;
 	}
 

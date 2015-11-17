@@ -20,7 +20,6 @@ public class FastMedianPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 3273186486718647271L;
-	public static final String KEY_FRAMES = "FRAMES";
 	private JSpinner spinnerFrames;
 
 	public FastMedianPanel() {
@@ -55,14 +54,14 @@ public class FastMedianPanel extends ConfigurationPanel {
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		spinnerFrames.setValue(settings.get(KEY_FRAMES));
+		spinnerFrames.setValue(settings.get(PanelKeys.KEY_FRAMES));
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
 		final Map< String, Object > settings = new HashMap<String, Object>( 2 );
 		final int frames = (Integer) spinnerFrames.getValue();
-		settings.put(KEY_FRAMES, frames);
+		settings.put(PanelKeys.KEY_FRAMES, frames);
 		return settings;
 	}
 }

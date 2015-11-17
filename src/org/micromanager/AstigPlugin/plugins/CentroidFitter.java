@@ -15,7 +15,7 @@ import net.imglib2.view.Views;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
-import org.micromanager.AstigPlugin.gui.CommonFitterPanel;
+import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.math.CentroidFitterRA;
 import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
@@ -112,8 +112,8 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Fitter<T> getFitter() {
-			final int windowSize = (Integer) settings.get( CommonFitterPanel.KEY_WINDOW_SIZE );
-			final double threshold = (Double) settings.get( CommonFitterPanel.KEY_CENTROID_THRESHOLD );
+			final int windowSize = (Integer) settings.get( PanelKeys.KEY_WINDOWSIZE );
+			final double threshold = (Double) settings.get( PanelKeys.KEY_THRESHOLD );
 			return new CentroidFitter<T>(windowSize, threshold);
 		}
 

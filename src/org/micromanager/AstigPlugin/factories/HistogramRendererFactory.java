@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.HistogramRendererPanel;
+import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.pipeline.Renderer;
 import org.micromanager.AstigPlugin.plugins.HistogramRenderer;
 
@@ -35,14 +36,14 @@ public class HistogramRendererFactory {
 	}
 
 	public Renderer getRenderer() {
-		final int xBins = (Integer) settings.get(HistogramRendererPanel.KEY_xBins);
-		final int yBins = (Integer) settings.get(HistogramRendererPanel.KEY_yBins);
-		final double xmin = (Double) settings.get(HistogramRendererPanel.KEY_xmin);
-		final double xmax = (Double) settings.get(HistogramRendererPanel.KEY_xmax);
-		final double ymin = (Double) settings.get(HistogramRendererPanel.KEY_ymin);
-		final double ymax = (Double) settings.get(HistogramRendererPanel.KEY_ymax);
-		final double zmin = (Double) settings.get(HistogramRendererPanel.KEY_zmin);
-		final double zmax = (Double) settings.get(HistogramRendererPanel.KEY_zmax);
+		final int xBins = (Integer) settings.get(PanelKeys.KEY_xBins);
+		final int yBins = (Integer) settings.get(PanelKeys.KEY_yBins);
+		final double xmin = (Double) settings.get(PanelKeys.KEY_xmin);
+		final double xmax = (Double) settings.get(PanelKeys.KEY_xmax);
+		final double ymin = (Double) settings.get(PanelKeys.KEY_ymin);
+		final double ymax = (Double) settings.get(PanelKeys.KEY_ymax);
+		final double zmin = (Double) settings.get(PanelKeys.KEY_zmin);
+		final double zmax = (Double) settings.get(PanelKeys.KEY_zmax);
 		return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax, zmin, zmax);
 	}
 

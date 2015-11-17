@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.DefaultComboBoxModel;
@@ -167,11 +168,15 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblMinrange;
 	private JLabel lblMaxrange;
 	private JButton btnDataSource;
+	private Locale curLocale;
 
 	/**
 	 * Create the frame.
 	 */
 	public Controller() {
+		this.curLocale = Locale.getDefault();
+		final Locale usLocale = new Locale("en", "US"); // setting us locale
+		Locale.setDefault(usLocale);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -179,6 +184,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 				if (contrastAdjuster != null) contrastAdjuster.close();
 				if (rendererWindow != null) rendererWindow.close();
 				setVisible(false);
+				Locale.setDefault(curLocale);
 			}
 		});
 		try {
@@ -718,20 +724,27 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		}
 
 		if (s == this.chkboxFilter) {
-			if (this.chkboxFilter.isSelected())
+			if (this.chkboxFilter.isSelected()){
 				filterTable();
+			} else {
+				((TitledBorder) panelFilter.getBorder()).setTitle("none");
+				((CardLayout) panelFilter.getLayout()).first(panelFilter);
+				repaint();
+			}
 		}
 
 		if (s == this.btnReset) {
 			if (rendererFactory != null) {
 				Map<String, Object> initialMap = rendererFactory.getInitialSettings();
 				if (previewerWindow != null) {
-					initialMap.put(HistogramRendererPanel.KEY_xmax, previewerWindow.getImagePlus().getWidth()
+					initialMap.put(PanelKeys.KEY_xmax, previewerWindow.getImagePlus().getWidth()
 						* previewerWindow.getImagePlus().getCalibration().pixelDepth);
-					initialMap.put(HistogramRendererPanel.KEY_ymax, previewerWindow.getImagePlus().getHeight()
+					initialMap.put(PanelKeys.KEY_ymax, previewerWindow.getImagePlus().getHeight()
 						* previewerWindow.getImagePlus().getCalibration().pixelDepth);
 				}
-				rendererShow(initialMap);
+				filteredTable = null;
+				settings.putAll(initialMap);
+				rendererShow(settings);
 			}
 		}
 
@@ -792,6 +805,10 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (fitter != null) {
 			manager.add(fitter);
 			manager.linkModules(detector, fitter);
+			DataTable dt = new DataTable();
+			manager.add(dt);
+			manager.linkModules(fitter, dt);
+			table = dt.getTable();
 		}
 		if (b) {
 			if (saver == null) {
@@ -801,10 +818,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (renderer != null) {
 			manager.add(renderer);
 			manager.linkModules(fitter, renderer, false, elements);
-			DataTable dt = new DataTable();
-			manager.add(dt);
-			manager.linkModules(fitter, dt);
-			table = dt.getTable();
 		}
 		start = System.currentTimeMillis();
 		manager.execute();
@@ -935,7 +948,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File calibFile = fc.getSelectedFile();
 			calibrator.saveCalib(calibFile.getAbsolutePath());
-			settings.put(CommonFitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
+			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
 		}
 		calibrator.getCalibration().closePlotWindows();
 	}
@@ -1012,6 +1025,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 	private void chooseDetector() {
 		ConfigurationPanel panelDown = detectorFactory.getConfigurationPanel();
+		settings.putAll(panelDown.getSettings());
 		detectorPreview(panelDown.getSettings());
 		widgetSelection = DETECTOR;
 	}
@@ -1047,14 +1061,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		final ConfigurationPanel panelDown = fitterFactory.getConfigurationPanel();
 		final Map<String, Object> fitterSettings = panelDown.getSettings();
 		// TODO paramter for centroid fitter
-
-		if (fitterSettings != null) {
-			final Object calibFile = settings.get(CommonFitterPanel.KEY_CALIBRATION_FILENAME);
-			if (calibFile != null) fitterSettings.put(CommonFitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
-			fitterPreview(fitterSettings);
-		}
+		settings.putAll(fitterSettings);
+		final Object calibFile = settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
+		if (calibFile != null) fitterSettings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
+		
 		widgetSelection = FITTER;
 		repaint();
+		fitterPreview(fitterSettings);
 	}
 
 	private void fitterPreview(Map<String, Object> map) {
@@ -1083,9 +1096,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		Map<String, Object> rendererSettings = rendererFactory.getSettings();
 		if (previewerWindow != null) {
-			rendererSettings.put(HistogramRendererPanel.KEY_xmax, previewerWindow.getImagePlus().getWidth()
+			rendererSettings.put(PanelKeys.KEY_xmax, previewerWindow.getImagePlus().getWidth()
 				* previewerWindow.getImagePlus().getCalibration().pixelDepth);
-			rendererSettings.put(HistogramRendererPanel.KEY_ymax, previewerWindow.getImagePlus().getHeight()
+			rendererSettings.put(PanelKeys.KEY_ymax, previewerWindow.getImagePlus().getHeight()
 				* previewerWindow.getImagePlus().getCalibration().pixelDepth);
 		}
 		settings.putAll(rendererSettings);
@@ -1123,12 +1136,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					try {
 						Rectangle rect = renderer.getImage().getRoi().getBounds();
 
-						final double xmin = (Double) settings.get(HistogramRendererPanel.KEY_xmin);
-						final double xmax = (Double) settings.get(HistogramRendererPanel.KEY_xmax);
-						final double ymin = (Double) settings.get(HistogramRendererPanel.KEY_ymin);
-						final double ymax = (Double) settings.get(HistogramRendererPanel.KEY_ymax);
-						final int xbins = (Integer) settings.get(HistogramRendererPanel.KEY_xBins);
-						final int ybins = (Integer) settings.get(HistogramRendererPanel.KEY_yBins);
+						final double xmin = (Double) settings.get(PanelKeys.KEY_xmin);
+						final double xmax = (Double) settings.get(PanelKeys.KEY_xmax);
+						final double ymin = (Double) settings.get(PanelKeys.KEY_ymin);
+						final double ymax = (Double) settings.get(PanelKeys.KEY_ymax);
+						final int xbins = (Integer) settings.get(PanelKeys.KEY_xBins);
+						final int ybins = (Integer) settings.get(PanelKeys.KEY_yBins);
 
 						final double new_xmin = (xmax - xmin) * rect.getMinX() / xbins + xmin;
 						final double new_ymin = (ymax - ymin) * rect.getMinY() / ybins + ymin;
@@ -1140,12 +1153,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 						final int new_xbins = (int) (Math.round(xbins * ar));
 						final int new_ybins = (int) (Math.round(ybins * ar));
 
-						settings.put(HistogramRendererPanel.KEY_xmin, new_xmin);
-						settings.put(HistogramRendererPanel.KEY_ymin, new_ymin);
-						settings.put(HistogramRendererPanel.KEY_xmax, new_xmax);
-						settings.put(HistogramRendererPanel.KEY_ymax, new_ymax);
-						settings.put(HistogramRendererPanel.KEY_xBins, new_xbins);
-						settings.put(HistogramRendererPanel.KEY_yBins, new_ybins);
+						settings.put(PanelKeys.KEY_xmin, new_xmin);
+						settings.put(PanelKeys.KEY_ymin, new_ymin);
+						settings.put(PanelKeys.KEY_xmax, new_xmax);
+						settings.put(PanelKeys.KEY_ymax, new_ymax);
+						settings.put(PanelKeys.KEY_xBins, new_xbins);
+						settings.put(PanelKeys.KEY_yBins, new_ybins);
 						rendererShow(settings);
 					} catch (NullPointerException ne) {
 					}

@@ -1060,7 +1060,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		System.out.println("AstigPlugin: Fitter_" + index + " : " + key);
 		final ConfigurationPanel panelDown = fitterFactory.getConfigurationPanel();
 		final Map<String, Object> fitterSettings = panelDown.getSettings();
-		// TODO paramter for centroid fitter
+		
 		settings.putAll(fitterSettings);
 		final Object calibFile = settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
 		if (calibFile != null) fitterSettings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);

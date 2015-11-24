@@ -2,7 +2,7 @@
 <?eclipse.ant.import?>
 <project>
 	<property environment="env"/>
-	<property name="InstallRoot" value="Application/Micro-Manager-1.4"/>
+	<property name="InstallRoot" value="/Application/Micro-Manager-1.4"/>
 	<property name="MMPluginsDir-inst" value="${InstallRoot}/mmplugins"/>
 	<property name="JAR-inst" value="${InstallRoot}/plugins/AstigPlugin"/>
 	<target name="CreateJar" description="Create Jar file">

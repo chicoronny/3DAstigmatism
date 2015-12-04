@@ -46,13 +46,14 @@ public class ImageMath<T extends NumericType<T>> extends SingleRunModule {
 			Thread.currentThread().interrupt();
 		}
 	
-		int length = 0;
 		boolean loop = true;
-		while(loop){									// check for equal number in the two input stores
+		while(loop){
+			int length = 0;									// check for equal number in the two input stores
 			for ( Integer key : inputs.keySet()){
+				int value = inputs.get(key).getLength();
 				if (length == inputs.get(key).getLength())
 					loop = false;
-				length = inputs.get(key).getLength();
+				length = value;
 			}
 			pause(10);
 		}
@@ -146,7 +147,7 @@ public class ImageMath<T extends NumericType<T>> extends SingleRunModule {
 
 	@Override
 	public boolean check() {
-		return inputs.size()==1 && outputs.size()>=1;
+		return inputs.size()==2 && outputs.size()>=1;
 	}
 
 }

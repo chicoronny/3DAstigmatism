@@ -16,9 +16,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
+import org.micromanager.AstigPlugin.tools.WaitForChangeListener;
 import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
 
@@ -26,7 +26,6 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 	private JTextField textFieldThreshold;
 	private JSpinner spinnerWindowSize;
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
-
 
 	public NMSDetectorPanel() {
 		setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 205)), "Peak Detection & Fitter", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205)));
@@ -46,11 +45,12 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		JLabel labelWindowSize = new JLabel("WindowSize");
 		
 		spinnerWindowSize = new JSpinner();
-		spinnerWindowSize.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				stateChanged( CHANGE_EVENT );
+		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable() {
+			@Override
+			public void run() {
+				fireChanged( CHANGE_EVENT );
 			}
-		});
+		}));
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout gl_panelPeakDet = new GroupLayout(this);
 		gl_panelPeakDet.setHorizontalGroup(
@@ -72,10 +72,10 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 					.addGroup(gl_panelPeakDet.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelPeakDet.createParallelGroup(Alignment.BASELINE)
 							.addComponent(labelThreshold, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
-							.addComponent(textFieldThreshold, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE))
+							.addComponent(textFieldThreshold, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panelPeakDet.createParallelGroup(Alignment.BASELINE)
 							.addComponent(labelWindowSize)
-							.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)))
+							.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)))
 					.addContainerGap(241, Short.MAX_VALUE))
 		);
 		setLayout(gl_panelPeakDet);

@@ -63,7 +63,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -196,13 +195,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		setTitle("3D Astigmatism Plugin");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 330, 500);
+		setBounds(100, 100, 330, 520);
 		JPanel contentPane = new JPanel();
 		setContentPane(contentPane);
 
 		GridBagLayout gbl_contentPane = new GridBagLayout();
 		gbl_contentPane.columnWidths = new int[] { 315, 0 };
-		gbl_contentPane.rowHeights = new int[] { 400, 0, 30, 0 };
+		gbl_contentPane.rowHeights = new int[] { 432, 22, 30, 0 };
 		gbl_contentPane.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] { 1.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
@@ -223,13 +222,11 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 				saveSettings(panelFilter);
 			}
 		});
-		tabbedPane.setBorder(new EmptyBorder(0, 0, 0, 0));
 
 		panelCalibration = new JPanel();
 		tabbedPane.addTab("Calibration", null, panelCalibration, null);
 
 		labelStepSize = new JLabel("Step Size");
-		labelStepSize.setEnabled(false);
 
 		buttonFitBeads = new JButton("Fit beads");
 		buttonFitBeads.setToolTipText("Gaussian fitting of beads");
@@ -237,7 +234,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		buttonFitBeads.addActionListener(this);
 
 		labelRange = new JLabel("Range");
-		labelRange.setEnabled(false);
 
 		buttonFitCurve = new JButton("Fit curve");
 		buttonFitCurve.setToolTipText("Fit the two sigmas to obtain the calibration curve");
@@ -258,18 +254,16 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			}
 		});
 		rangeSlider.setToolTipText("Adjust slider to constraint the data range");
-		rangeSlider.setValue(0);
-		rangeSlider.setUpperValue(100);
+		rangeSlider.setValue(200);
+		rangeSlider.setUpperValue(1000);
 		rangeSlider.setPaintTicks(true);
 		rangeSlider.setPaintLabels(true);
 		rangeSlider.setMinorTickSpacing(50);
-		rangeSlider.setMaximum(400);
+		rangeSlider.setMaximum(1200);
 		rangeSlider.setMajorTickSpacing(200);
-		rangeSlider.setEnabled(false);
 
 		spinnerStepSize = new JSpinner();
 		spinnerStepSize.setToolTipText("Step size for calibration data");
-		spinnerStepSize.setEnabled(false);
 		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
 
 		btnImagesCalibration = new JButton("Calibration Images");
@@ -282,54 +276,60 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		lblMaxrange = new JLabel(" ");
 		lblMaxrange.setHorizontalAlignment(SwingConstants.TRAILING);
 		GroupLayout gl_panelCalibration = new GroupLayout(panelCalibration);
-		gl_panelCalibration.setHorizontalGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING).addGroup(
-			gl_panelCalibration
-				.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(
-					gl_panelCalibration
-						.createParallelGroup(Alignment.LEADING)
-						.addGroup(
-							gl_panelCalibration.createSequentialGroup().addGap(8)
-								.addComponent(labelStepSize, GroupLayout.PREFERRED_SIZE, 68, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))
-						.addComponent(buttonFitBeads)
-						.addComponent(btnImagesCalibration)
-						.addComponent(buttonSaveCal)
-						.addComponent(buttonFitCurve)
-						.addGroup(
-							gl_panelCalibration
-								.createParallelGroup(Alignment.TRAILING, false)
-								.addGroup(
-									Alignment.LEADING,
-									gl_panelCalibration
-										.createSequentialGroup()
-										.addGap(9)
-										.addGroup(
-											gl_panelCalibration
-												.createParallelGroup(Alignment.LEADING)
-												.addGroup(
-													gl_panelCalibration.createSequentialGroup().addComponent(lblMinrange)
-														.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-														.addComponent(lblMaxrange)).addComponent(labelRange)))
-								.addComponent(rangeSlider, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 289, GroupLayout.PREFERRED_SIZE)))
-				.addContainerGap(14, Short.MAX_VALUE)));
-		gl_panelCalibration.setVerticalGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING).addGroup(
-			gl_panelCalibration
-				.createSequentialGroup()
-				.addGap(7)
-				.addComponent(btnImagesCalibration)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(
-					gl_panelCalibration.createParallelGroup(Alignment.BASELINE)
+		gl_panelCalibration.setHorizontalGroup(
+			gl_panelCalibration.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelCalibration.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelCalibration.createSequentialGroup()
+							.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, 288, GroupLayout.PREFERRED_SIZE)
+							.addContainerGap())
+						.addGroup(gl_panelCalibration.createSequentialGroup()
+							.addGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panelCalibration.createSequentialGroup()
+									.addGap(8)
+									.addComponent(labelStepSize, GroupLayout.PREFERRED_SIZE, 68, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))
+								.addComponent(buttonFitBeads)
+								.addComponent(btnImagesCalibration)
+								.addComponent(buttonSaveCal)
+								.addComponent(buttonFitCurve)
+								.addGroup(gl_panelCalibration.createSequentialGroup()
+									.addGap(9)
+									.addGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panelCalibration.createSequentialGroup()
+											.addComponent(lblMinrange)
+											.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+											.addComponent(lblMaxrange))
+										.addComponent(labelRange))))
+							.addContainerGap(14, Short.MAX_VALUE))))
+		);
+		gl_panelCalibration.setVerticalGroup(
+			gl_panelCalibration.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelCalibration.createSequentialGroup()
+					.addGap(7)
+					.addComponent(btnImagesCalibration)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_panelCalibration.createParallelGroup(Alignment.BASELINE)
 						.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(labelStepSize)).addPreferredGap(ComponentPlacement.RELATED).addComponent(buttonFitBeads).addGap(4)
-				.addComponent(labelRange).addGap(18)
-				.addGroup(gl_panelCalibration.createParallelGroup(Alignment.BASELINE).addComponent(lblMinrange).addComponent(lblMaxrange)).addGap(3)
-				.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED).addComponent(buttonFitCurve).addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(buttonSaveCal).addContainerGap(101, Short.MAX_VALUE)));
+						.addComponent(labelStepSize))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(buttonFitBeads)
+					.addGap(4)
+					.addComponent(labelRange)
+					.addGap(18)
+					.addGroup(gl_panelCalibration.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblMinrange)
+						.addComponent(lblMaxrange))
+					.addGap(3)
+					.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(buttonFitCurve)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(buttonSaveCal)
+					.addContainerGap(101, Short.MAX_VALUE))
+		);
 		panelCalibration.setLayout(gl_panelCalibration);
 
 		panelLoc = new JPanel();
@@ -349,6 +349,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		chckbxPreprocessing.addActionListener(this);
 
 		btnPeakDet = new JButton("Peak Detection");
+		btnPeakDet.addActionListener(this);
 		btnPeakDet.setToolTipText("Detection of localizations for fitting");
 		GridBagConstraints gbc_panelUpper = new GridBagConstraints();
 		gbc_panelUpper.fill = GridBagConstraints.VERTICAL;
@@ -609,39 +610,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 				}
 			}
 		});
-
-		ImagePlus loc_im = null;
-		try {
-			previewerWindow = (StackWindow) WindowManager.getCurrentWindow();
-			loc_im = previewerWindow.getImagePlus();
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
-		if (loc_im == null) {
-			loc_im = loadImages();
-			if (loc_im == null) {
-				IJ.showMessage(getTitle(), "Loading images failed!");
-				return;
-			}
-			previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());
-		}
-
-		tif = new ImageLoader<T>(loc_im);
-		manager.add(tif);
-
-		previewerWindow.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyChar() == 'C') {
-					contrastAdjuster = new ContrastAdjuster();
-					contrastAdjuster.run("B&C");
-				}
-			}
-		});
-
-		lblFile.setText(previewerWindow.getTitle());
-		validate();
-
+		
 		ImagePlus.addImageListener(new ImageListener() {
 
 			@Override
@@ -673,24 +642,53 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					IJ.showMessage(getTitle(), "Loading images failed!");
 					return;
 				}
+				tif = new ImageLoader<T>(loc_im);
 				previewerWindow.setImage(loc_im);
 				previewerWindow.getCanvas().fitToWindow();
 				previewerWindow.repaint();
+				lblFile.setText(previewerWindow.getTitle());
+				repaint();
+			}else{
+				ImagePlus loc_im = null;
+				try {
+					previewerWindow = (StackWindow) WindowManager.getCurrentWindow();
+					loc_im = previewerWindow.getImagePlus();
+				} catch (Exception ex) {
+					System.err.println(ex.getMessage());
+				}
+				if (loc_im == null) {
+					loc_im = loadImages();
+					if (loc_im == null) {
+						IJ.showMessage(getTitle(), "Loading images failed!");
+						return;
+					}
+					previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());
+				}
+				tif = new ImageLoader<T>(loc_im);
+
+				previewerWindow.addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyPressed(KeyEvent e) {
+						if (e.getKeyChar() == 'C') {
+							contrastAdjuster = new ContrastAdjuster();
+							contrastAdjuster.run("B&C");
+						}
+					}
+				});
+
+				lblFile.setText(previewerWindow.getTitle());
+				repaint();
 			}
 		}
 
 		if (s == this.btnImagesCalibration) {
 			if (importImages()) {
-				this.labelStepSize.setEnabled(true);
-				this.spinnerStepSize.setEnabled(true);
 				this.buttonFitBeads.setEnabled(true);
 			}
 		}
 
 		if (s == this.buttonFitBeads) {
 			if (fitbeads()) {
-				this.labelRange.setEnabled(true);
-				this.rangeSlider.setEnabled(true);
 				this.buttonFitCurve.setEnabled(true);
 			}
 		}
@@ -703,11 +701,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		if (s == this.buttonSaveCal) {
 			saveCalibration();
-			this.labelStepSize.setEnabled(false);
-			this.spinnerStepSize.setEnabled(false);
 			this.buttonFitBeads.setEnabled(false);
-			this.labelRange.setEnabled(false);
-			this.rangeSlider.setEnabled(false);
 			this.buttonFitCurve.setEnabled(false);
 			this.buttonSaveCal.setEnabled(false);
 		}
@@ -716,8 +710,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			setRoi();
 		}
 
-		if (s == this.btnPeakDet) if (btnPeakDet.isSelected())
+		if (s == this.btnPeakDet){
 			chooseDetector();
+		}
 
 		if (s == this.comboBoxFitter) {
 			chooseFitter();
@@ -781,6 +776,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			IJ.error("Please load images first!");
 			return;
 		}
+		manager.add(tif);
 
 		if (detector == null) {
 			IJ.error("Please choose detector first!");
@@ -1067,7 +1063,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		
 		widgetSelection = FITTER;
 		repaint();
-		fitterPreview(fitterSettings);
+		fitterPreview(settings);
 	}
 
 	private void fitterPreview(Map<String, Object> map) {

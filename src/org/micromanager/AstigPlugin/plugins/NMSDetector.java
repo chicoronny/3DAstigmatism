@@ -31,13 +31,10 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 	@Override
 	public FrameElements<T> detect(F frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
-		RandomAccess<T> ra = interval.randomAccess();
-
-		T min = ra.get().createVariable();
-        T max = ra.get().createVariable();
+		final RandomAccess<T> ra = interval.randomAccess();
         
         // compute min and max of the Image
-        LemmingUtils.computeMinMax( Views.iterable(interval), min, max );
+        final T max = LemmingUtils.computeMax( Views.iterable(interval));
         double threshold_ = max.getRealDouble() / 100 * threshold;
 		
 		int i,j,ii,jj,ll,kk;

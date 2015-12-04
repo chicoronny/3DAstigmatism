@@ -47,12 +47,9 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 			long frameNumber, double pixelDepth) {
 		
 		final RandomAccessible<T> source = Views.extendZero(pixels);
-		
-		T min = pixels.randomAccess().get().createVariable();
-        T max = pixels.randomAccess().get().createVariable();
         
         // compute min and max of the Image
-        LemmingUtils.computeMinMax( Views.iterable(pixels), min, max );
+        T max = LemmingUtils.computeMax( Views.iterable(pixels));
         double threshold_ = max.getRealDouble() / 100 * threshold;
 		
 		List<Element> found = new ArrayList<Element>();

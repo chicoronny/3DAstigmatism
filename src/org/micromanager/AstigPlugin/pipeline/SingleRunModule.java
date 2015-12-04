@@ -38,7 +38,8 @@ public abstract class SingleRunModule extends AbstractModule {
 				Element data = nextInput();
 				if (data != null) 
 					processData(data);
-				else pause(10);
+				else 
+					pause(10);
 			}
 			afterRun();
 			return;
@@ -48,8 +49,7 @@ public abstract class SingleRunModule extends AbstractModule {
 			while (running) {
 				if (Thread.currentThread().isInterrupted())
 					break;
-				Element data = processData(null);
-				newOutput(data);
+				newOutput(processData(null));
 			}
 			afterRun();
 			return;

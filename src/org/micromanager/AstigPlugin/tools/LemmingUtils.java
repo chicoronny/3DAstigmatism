@@ -97,30 +97,26 @@ public class LemmingUtils {
      * @param input - the input that has to just be {@link Iterable}
      * @param min - the type that will have min
      * @param max - the type that will have max
+	 * @return 
      */
-    public static < T extends Comparable< T > & Type< T > > void computeMinMax(
-        final IterableInterval< T > input, T min, T max )
-    {
+    public static < T extends Comparable< T > & Type< T > > T computeMax(
+        final IterableInterval< T > input){
         /// create a cursor for the image (the order does not matter)
         final Cursor< T > cursor = input.cursor();
  
         // initialize min and max with the first image value
         T type = cursor.next();
-        min = type.copy();
-        max = type.copy();
+        T max = type.copy();
  
         // loop over the rest of the data and determine min and max value
-        while ( cursor.hasNext() )
-        {
+        while ( cursor.hasNext() ){
             // we need this type more than once
             type = cursor.next();
- 
-            if ( type.compareTo( min ) < 0 )
-                min.set( type );
  
             if ( type.compareTo( max ) > 0 )
                 max.set( type );
         }
+        return max;
     }
 
 }

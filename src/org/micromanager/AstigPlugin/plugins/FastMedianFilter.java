@@ -12,7 +12,11 @@ import org.micromanager.AstigPlugin.pipeline.ImgLib2Frame;
 import org.micromanager.AstigPlugin.pipeline.SingleRunModule;
 
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.NativeType;
@@ -91,37 +95,43 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 	}
 	
 	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
-		if (list.isEmpty())
-			return null;
-
-		final Frame<T> firstFrame = list.peek();
-		final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
-
-		Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views.iterable(firstInterval).firstElement());
-		Cursor<T> cursor = Views.iterable(out).cursor();
-
-		List<Cursor<T>> cursorList = new ArrayList<Cursor<T>>();
-
-		for (Frame<T> currentFrame : list)
-			cursorList.add(Views.iterable(currentFrame.getPixels()).cursor());
-
-		while (cursor.hasNext()) {
-			List<Integer> values = new ArrayList<Integer>();
-
-			cursor.fwd();
-			for (Cursor<T> currentCursor : cursorList) {
-				currentCursor.fwd();
-				values.add(currentCursor.get().getInteger());
+		Frame<T> newFrame = null;
+		if (!list.isEmpty()){
+			final Frame<T> firstFrame = list.peek();
+			final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
+	
+			Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views
+					.iterable(firstInterval).firstElement());
+			Cursor<T> cursor = Views.iterable(out).cursor();
+			
+			List<RandomAccess<Neighborhood<T>>> cursorList = new ArrayList<RandomAccess<Neighborhood<T>>>();
+			
+			for (Frame<T> currentFrame : list){
+				final RandomAccessible<T> extended = Views.extendBorder(currentFrame.getPixels());		// handle borders
+				RectangleShape shape = new RectangleShape(3, false);              						// 3x3 kernel
+				cursorList.add(shape.neighborhoodsRandomAccessible(extended).randomAccess());			// creating neighborhoods
 			}
-			// find the median
-
-			Integer median = QuickSelect.fastmedian(values, values.size());
-			// Integer median = QuickSelect.select(values, middle);
-			if (median != null)
-				cursor.get().setInteger(median);
+	
+			while (cursor.hasNext()) {
+				List<Integer> values = new ArrayList<Integer>();
+	
+				cursor.fwd();
+				for (RandomAccess<Neighborhood<T>> currentCursor : cursorList) {
+					for (T value : currentCursor.get())
+						values.add(value.getInteger());
+					currentCursor.fwd(1);
+				}
+				
+				Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
+				//Integer median = QuickSelect.select(values, middle); 
+				if (median != null)
+					cursor.get().setInteger(median);
+			}
+				newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
+				firstFrame.getHeight(), firstFrame.getPixelDepth(), out);
+		} else {
+			newFrame = new ImgLib2Frame<T>(0, 0, 0, 0, null);
 		}
-		Frame<T> newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), firstFrame.getHeight(), 
-				firstFrame.getPixelDepth(), out);
 		if (isLast)
 			newFrame.setLast(true);
 		return newFrame;

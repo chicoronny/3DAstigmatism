@@ -2,6 +2,8 @@ package org.micromanager.AstigPlugin;
 
 import java.util.Locale;
 
+import javax.swing.SwingUtilities;
+
 import org.micromanager.AstigPlugin.gui.Controller;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.api.MMPlugin;
@@ -77,4 +79,17 @@ public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T>
 		}
 	}
 
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					@SuppressWarnings("rawtypes")
+					Controller frame = new Controller();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 }

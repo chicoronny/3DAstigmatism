@@ -104,7 +104,7 @@ import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> extends JFrame implements ActionListener {
 
-	private static final long serialVersionUID = -2596199192028890712L;
+	private static final long serialVersionUID = 1L;
 	private JTabbedPane tabbedPane;
 	private JPanel panelLoc;
 	private JPanel panelRecon;
@@ -642,7 +642,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					IJ.showMessage(getTitle(), "Loading images failed!");
 					return;
 				}
-				tif = new ImageLoader<T>(loc_im);
+				tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 				previewerWindow.setImage(loc_im);
 				previewerWindow.getCanvas().fitToWindow();
 				previewerWindow.repaint();
@@ -664,7 +664,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					}
 					previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());
 				}
-				tif = new ImageLoader<T>(loc_im);
+				tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
 				previewerWindow.addKeyListener(new KeyAdapter() {
 					@Override

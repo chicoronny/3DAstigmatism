@@ -8,7 +8,17 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 
 import java.awt.image.IndexColorModel;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.pipeline.Localization;
@@ -118,5 +128,97 @@ public class LemmingUtils {
         }
         return max;
     }
+    
+    static public Map<String, List<Double>> readCSV(String path){
+		final Locale curLocale = Locale.getDefault();
+		final Locale usLocale = new Locale("en", "US"); // setting us locale
+		Locale.setDefault(usLocale);
+		
+		List<String> list = new ArrayList<String>();
+		List<Double> param = new ArrayList<Double>(); 
+		List<Double> zgrid = new ArrayList<Double>();
+		List<Double> Calibcurve = new ArrayList<Double>();
+		Map<String,List<Double>> result = new HashMap<String, List<Double>>();
+		
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(path));
+
+			String line;
+			br.readLine();
+			while ((line=br.readLine())!=null){
+				if (line.contains("--")) break;
+				list.add(line);
+			}
+			
+			if ((line=br.readLine())!=null){
+				String[] s = line.split(",");
+				for (int i = 0; i < s.length; i++)
+					param.add(Double.parseDouble(s[i].trim()));
+			}
+			br.close();
+			
+			for (String t : list){
+				String[] splitted = t.split(",");
+				zgrid.add(Double.parseDouble(splitted[0].trim()));
+				Calibcurve.add(Double.parseDouble(splitted[3].trim()));
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		result.put("param", param);
+		result.put("zgrid", zgrid);
+		result.put("Calibcurve", Calibcurve);
+
+		Locale.setDefault(curLocale);
+		return result;
+	}
+
+	public static List<Double> readProps(String path) {
+		final Locale curLocale = Locale.getDefault();
+		final Locale usLocale = new Locale( "en", "US" ); // setting us locale
+		Locale.setDefault( usLocale );
+		
+		List<Double> params = new ArrayList<Double>();
+		try {
+			FileReader reader = new FileReader( new File(path) );
+			final Properties props = new Properties();
+			props.load( reader );
+			String[] paramParser = props.getProperty( "FitParameter", "" ).split( "[,\n]" );
+			for (int i=0; i<paramParser.length; i++)
+				params.add(Double.parseDouble(paramParser[i].trim()));
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Locale.setDefault( curLocale );
+		return params;
+	}
+	
+	public static List<Double> readCameraSettings(String path) {
+		final Locale curLocale = Locale.getDefault();
+		final Locale usLocale = new Locale( "en", "US" ); // setting us locale
+		Locale.setDefault( usLocale );
+		List<Double> settings = new ArrayList<Double>();
+		
+		try {
+			FileReader reader = new FileReader( new File(path) );
+			final Properties props = new Properties();
+			props.load( reader );
+			settings.add(Double.parseDouble(props.getProperty( "Offset", "150" )));
+			settings.add(Double.parseDouble(props.getProperty( "EM-Gain", "1" )));
+			settings.add(Double.parseDouble(props.getProperty( "Conversion", "5" )));			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Locale.setDefault( curLocale );
+		return settings;
+	}
 
 }

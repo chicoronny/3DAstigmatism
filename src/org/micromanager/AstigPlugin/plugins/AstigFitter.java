@@ -19,10 +19,10 @@ import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.math.GaussianFitterZ;
-import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.Localization;
-import org.micromanager.AstigPlugin.pipeline.Settings;
+import org.micromanager.AstigPlugin.pipeline.LocalizationAllParameters;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
 
 public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T> {
@@ -55,13 +55,13 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 			double y = loc.getY()/pixelDepth;
 			final Roi origroi = new Roi(x - halfKernel, y - halfKernel, size, size);
 			final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
-			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 3000, 1000, params);
+			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 3000, 1000, pixelDepth, params);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){
 				for (int i = 0; i < 3; i++)
 					result[i] *= pixelDepth;
-				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[5], result[5], result[3], loc.getFrame()));
+				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], loc.getFrame()));
 			}			
 		}
 		return found;
@@ -108,7 +108,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			return new AstigFitter(windowSize, Settings.readCSV(calibFileName).get("param"));
+			return new AstigFitter(windowSize, LemmingUtils.readCSV(calibFileName).get("param"));
 		}
 
 		@Override

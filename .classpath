@@ -44,6 +44,6 @@
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-1.4/plugins/Micro-Manager/TSFProto-SVN.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-1.4/plugins/Micro-Manager/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-1.4/plugins/Micro-Manager/xml-apis-1.3.04.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-1.4/ij.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-1.4/ij.jar" sourcepath="H:/Imagej-src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

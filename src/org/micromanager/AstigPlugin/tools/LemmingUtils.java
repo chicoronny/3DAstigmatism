@@ -7,6 +7,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 
+import java.awt.Rectangle;
 import java.awt.image.IndexColorModel;
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,11 +28,11 @@ import ij.process.FloatPolygon;
 
 public class LemmingUtils {
 	
-	public static FloatPolygon convertToPoints(List<Element> me, double pixelSize){
+	public static FloatPolygon convertToPoints(List<Element> me, Rectangle currentRoi, double pixelSize){
 		FloatPolygon polygon = new FloatPolygon();
 		for (Element el: me){
 			Localization loc = (Localization) el;
-			polygon.addPoint(loc.getX()/pixelSize,loc.getY()/pixelSize);
+			polygon.addPoint(loc.getX()/pixelSize+currentRoi.getX(),loc.getY()/pixelSize+currentRoi.getY());
 		}
 		return polygon;
 	}

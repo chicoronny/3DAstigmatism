@@ -18,6 +18,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
+
+import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
+
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -44,15 +47,7 @@ public class CommonFitterPanel extends ConfigurationPanel {
 		btnCalibration = new JButton("Calib. File");
 		btnCalibration.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
-		    	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		    	fc.setDialogTitle("Import Calibration File");
-		    	int returnVal = fc.showOpenDialog(null);
-		    	 
-		        if (returnVal != JFileChooser.APPROVE_OPTION)
-		        	return;
-		        calibFile = fc.getSelectedFile();
-		        lblCalibration.setText(calibFile.getName());
+				loadCalibrationFile();
 				fireChanged( CHANGE_EVENT );
 			}
 		});
@@ -62,13 +57,25 @@ public class CommonFitterPanel extends ConfigurationPanel {
 		lblOffset = new JLabel("Offset");
 		
 		textFieldGain = new JTextField();
+		textFieldGain.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged( CHANGE_EVENT );
+			}
+		}));
 		textFieldGain.setHorizontalAlignment(SwingConstants.TRAILING);
-		textFieldGain.setText("1");
+		textFieldGain.setText("100");
 		textFieldGain.setColumns(10);
 		
 		textFieldOffset = new JTextField();
+		textFieldOffset.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged( CHANGE_EVENT );
+			}
+		}));
 		textFieldOffset.setHorizontalAlignment(SwingConstants.TRAILING);
-		textFieldOffset.setText("1");
+		textFieldOffset.setText("0");
 		textFieldOffset.setColumns(10);
 		
 		GroupLayout gl_panelFitter = new GroupLayout(this);
@@ -134,5 +141,17 @@ public class CommonFitterPanel extends ConfigurationPanel {
 		settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile.getAbsolutePath());
 		
 		return settings;
+	}
+	
+	protected void loadCalibrationFile(){
+		JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fc.setDialogTitle("Import Calibration File");
+		int returnVal = fc.showOpenDialog(null);
+		 
+	    if (returnVal != JFileChooser.APPROVE_OPTION)
+	    	return;
+	    calibFile = fc.getSelectedFile();
+	    lblCalibration.setText(calibFile.getName());
 	}
 }

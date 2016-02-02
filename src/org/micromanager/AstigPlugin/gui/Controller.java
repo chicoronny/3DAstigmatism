@@ -37,6 +37,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -98,6 +99,7 @@ import org.micromanager.AstigPlugin.pipeline.Manager;
 import org.micromanager.AstigPlugin.pipeline.Renderer;
 import org.micromanager.AstigPlugin.pipeline.SaveLocalizationPrecision3D;
 import org.micromanager.AstigPlugin.pipeline.StoreSaver;
+import org.micromanager.AstigPlugin.plugins.AstigFitter;
 import org.micromanager.AstigPlugin.providers.FitterProvider;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
@@ -161,7 +163,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblEta;
 	private long start;
 	private SaveLocalizationPrecision3D saver;
-	private JPanel panelFitter;
+	private CommonFitterPanel panelFitter;
 	private JSpinner spinnerSkipLastFrames;
 	private JPanel panelPeakDet;
 	private JLabel lblMinrange;
@@ -416,7 +418,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		chckbxROI.setToolTipText("use only that region for further processing");
 		chckbxROI.addActionListener(this);
 
-		lblSkipFrames = new JLabel("Skip frames");
+		lblSkipFrames = new JLabel(" | Skip frames");
 
 		spinnerSkipFrames = new JSpinner();
 		spinnerSkipFrames.setToolTipText("skip frames at the beginning of the image stack");
@@ -425,17 +427,30 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		spinnerSkipLastFrames = new JSpinner();
 		GroupLayout gl_panelMiddle = new GroupLayout(panelMiddle);
-		gl_panelMiddle.setHorizontalGroup(gl_panelMiddle.createParallelGroup(Alignment.LEADING).addGroup(
-			gl_panelMiddle.createSequentialGroup().addComponent(chckbxROI).addPreferredGap(ComponentPlacement.RELATED).addComponent(lblSkipFrames)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addComponent(spinnerSkipLastFrames, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
-				.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-		gl_panelMiddle.setVerticalGroup(gl_panelMiddle.createParallelGroup(Alignment.LEADING).addGroup(
-			gl_panelMiddle.createParallelGroup(Alignment.BASELINE).addComponent(chckbxROI).addComponent(lblSkipFrames)
-				.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addComponent(spinnerSkipLastFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)));
+		gl_panelMiddle.setHorizontalGroup(
+			gl_panelMiddle.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelMiddle.createSequentialGroup()
+					.addComponent(chckbxROI)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(lblSkipFrames)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(spinnerSkipFrames, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(spinnerSkipLastFrames, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+		);
+		gl_panelMiddle.setVerticalGroup(
+			gl_panelMiddle.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelMiddle.createParallelGroup(Alignment.BASELINE)
+					.addComponent(chckbxROI)
+					.addComponent(lblSkipFrames)
+					.addGroup(gl_panelMiddle.createSequentialGroup()
+						.addGap(2)
+						.addComponent(spinnerSkipFrames, GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE))
+					.addGroup(gl_panelMiddle.createSequentialGroup()
+						.addGap(3)
+						.addComponent(spinnerSkipLastFrames)))
+		);
 		panelMiddle.setLayout(gl_panelMiddle);
 
 		panelBackground = this.preProcessingFactory.getConfigurationPanel();
@@ -585,6 +600,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private void init() {
+		System.err.println("Using IJ: "+ IJ.getFullVersion());
 		createFitterProvider();
 		createOtherPanels();
 		settings = new HashMap<String, Object>();
@@ -654,7 +670,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					previewerWindow = (StackWindow) WindowManager.getCurrentWindow();
 					loc_im = previewerWindow.getImagePlus();
 				} catch (Exception ex) {
-					System.err.println(ex.getMessage());
+					System.err.println("No current window opened: loading from file");
 				}
 				if (loc_im == null) {
 					loc_im = loadImages();
@@ -1028,18 +1044,27 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 	@SuppressWarnings("unchecked")
 	private void detectorPreview(Map<String, Object> map) {
+		previewerWindow.getImagePlus().killRoi();
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
 		final int frameNumber = previewerWindow.getImagePlus().getFrame();
 		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		final ImageStack stack = previewerWindow.getImagePlus().getStack();
-		final Object ip = stack.getPixels(frameNumber);
-		final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { stack.getWidth(), stack.getHeight() });
+		Roi currentRoi = previewerWindow.getImagePlus().getRoi();
+		ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(frameNumber);
+		if (currentRoi != null){
+			ip.setRoi(currentRoi.getBounds());
+			ip = ip.crop();
+		} else{
+			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+		}
+
+		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[] { ip.getWidth(), ip.getHeight() });
 		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(
 			frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
-		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), pixelSize);
+		if (detResults.getList().isEmpty()) return;
+		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), currentRoi.getBounds() ,pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
@@ -1059,8 +1084,10 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		
 		settings.putAll(fitterSettings);
 		final Object calibFile = settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
-		if (calibFile != null) fitterSettings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
-		
+		if (calibFile == null && key == AstigFitter.KEY){
+			panelFitter.loadCalibrationFile();
+			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, panelDown.getSettings().get(PanelKeys.KEY_CALIBRATION_FILENAME));
+		}
 		widgetSelection = FITTER;
 		repaint();
 		fitterPreview(settings);
@@ -1073,14 +1100,22 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		previewerWindow.getImagePlus().killRoi();
 		final int frameNumber = previewerWindow.getImagePlus().getFrame();
 		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		final ImageStack stack = previewerWindow.getImagePlus().getStack();
-		final Object ip = stack.getPixels(frameNumber);
-		final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { stack.getWidth(), stack.getHeight() });
+		Roi currentRoi = previewerWindow.getImagePlus().getRoi();
+		ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(frameNumber);;
+		if (currentRoi != null){
+			ip.setRoi(currentRoi.getBounds());
+			ip = ip.crop();
+		} else{
+			ip = previewerWindow.getImagePlus().getStack().getProcessor(frameNumber);
+			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+		}
+		
+		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[] { ip.getWidth(), ip.getHeight() });
 		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(
 			frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber, pixelSize);
-		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, currentRoi.getBounds(), pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
@@ -1224,7 +1259,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private void saveLocalizations() {
-		final JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
+		final JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setDialogTitle("Save Data");
 		final FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", "csv", "CSV");
@@ -1306,7 +1341,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		final List<String> visibleKeys = fitterProvider.getVisibleKeys();
 		final List<String> fitterNames = new ArrayList<String>();
 		final List<String> infoTexts = new ArrayList<String>();
-		fitterNames.add("none");
+		Collections.reverse(visibleKeys);
 		for (final String key : visibleKeys) {
 			final FitterFactory factory = fitterProvider.getFactory(key);
 			factory.setConfigurationPanel((ConfigurationPanel) panelFitter);

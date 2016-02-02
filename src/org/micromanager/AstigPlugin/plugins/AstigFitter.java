@@ -108,7 +108,13 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			return new AstigFitter(windowSize, LemmingUtils.readCSV(calibFileName).get("param"));
+			
+			List<Double> param = LemmingUtils.readCSV(calibFileName).get("param");
+			if (param.isEmpty()){ 
+				IJ.error("Reading calibration file failed!");
+				return null;
+			}
+			return new AstigFitter(windowSize, param );
 		}
 
 		@Override

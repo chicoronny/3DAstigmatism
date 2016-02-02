@@ -33,7 +33,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		JLabel labelThreshold = new JLabel("Threshold [%]");
 		
 		textFieldThreshold = new JTextField();
-		textFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+		textFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
 			@Override
 			public void run() {
 				fireChanged( CHANGE_EVENT );

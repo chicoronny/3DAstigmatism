@@ -49,7 +49,10 @@ public class DataTable extends SingleRunModule {
 	
 	public Element processData(Element data) {
 		if (data==null) return null;
-		if (data.isLast()) cancel();
+		if (data.isLast()){ 
+			cancel();
+			return null;
+		}
 		Map<String,Number> row = new HashMap<String, Number>();
 		for (PropertyDescriptor p:descriptors){
 			try {

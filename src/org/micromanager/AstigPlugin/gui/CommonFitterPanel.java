@@ -139,12 +139,11 @@ public class CommonFitterPanel extends ConfigurationPanel {
 			return settings;
 		}
 		settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile.getAbsolutePath());
-		
 		return settings;
 	}
 	
 	protected void loadCalibrationFile(){
-		JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
+		JFileChooser fc = new JFileChooser(Controller.lastDir);
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setDialogTitle("Import Calibration File");
 		int returnVal = fc.showOpenDialog(null);
@@ -152,6 +151,7 @@ public class CommonFitterPanel extends ConfigurationPanel {
 	    if (returnVal != JFileChooser.APPROVE_OPTION)
 	    	return;
 	    calibFile = fc.getSelectedFile();
+	    Controller.lastDir = calibFile.getAbsolutePath();
 	    lblCalibration.setText(calibFile.getName());
 	}
 }

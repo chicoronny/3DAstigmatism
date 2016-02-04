@@ -7,6 +7,7 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optim
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.micromanager.AstigPlugin.interfaces.FitterInterface;
 
@@ -146,28 +147,27 @@ public class GaussianFitterZ implements FitterInterface {
 		double sigma2 = a2*sx*sy;
 		double l2 = params[INDEX_C]*params[INDEX_C];
 		double d2 = params[INDEX_D]*params[INDEX_D];
-		double tau = 2*Math.PI*(b*b+r)*(sigma2*(1+l2/d2)+a2/12)/(N*a2);
+		double tau = 2*FastMath.PI*(b*b+r)*(sigma2*(1+l2/d2)+a2/12)/(N*a2);
 		
 		dsx2 = (g*sx*sx+a2/12)*(1+8*tau)/N;
 		dsy2 = (g*sy*sy+a2/12)*(1+8*tau)/N;
 		dx2 = (g*sx*sx+a2/12)*(16/9+4*tau)/N;
 		dy2 = (g*sy*sy+a2/12)*(16/9+4*tau)/N;
-		error3d[0] = Math.sqrt(dx2);
-		error3d[1] = Math.sqrt(dy2);
+		error3d[0] = FastMath.sqrt(dx2);
+		error3d[1] = FastMath.sqrt(dy2);
 
 		double z2 = fittedEG[INDEX_Z0]*fittedEG[INDEX_Z0];
 		double F2 = 4*l2*z2/(l2+d2+z2)/(l2+d2+z2);
 		double dF2 = (1-F2)*(dsx2/(sx*sx)+dsy2/(sy*sy));
 
-		dz2 = dF2*(l2+d2+z2)*(l2+d2+z2)*(l2+d2+z2)*(l2+d2+z2)/(4*l2*(l2+d2+z2)*(l2-d2-z2));
-		error3d[2] = Math.sqrt(dz2);
+		dz2 = dF2*(l2+d2+z2)*(l2+d2+z2)*(l2+d2+z2)*(l2+d2+z2)/(4*l2*(l2+d2-z2)*(l2-d2-z2));
+		error3d[2] = FastMath.sqrt(dz2);
 
 		return error3d;
 	}
 
 	// Convergence Checker
-	private class ConvChecker3DGauss implements
-			ConvergenceChecker<PointVectorValuePair> {
+	private class ConvChecker3DGauss implements ConvergenceChecker<PointVectorValuePair> {
 
 		int iteration_ = 0;
 		boolean lastResult_ = false;

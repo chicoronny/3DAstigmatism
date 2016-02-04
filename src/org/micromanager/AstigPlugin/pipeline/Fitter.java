@@ -54,7 +54,7 @@ public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 		Integer cc=0;
 		for (Integer i : counterList)
 			cc+=i;
-		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(0, 0, 0, 0, 0, 0, 1, 1) ;
+		Localization lastLoc = new Localization(0, 0, 1, 1) ;
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
 		System.out.println("Fitting of "+ cc +" elements done in " + (System.currentTimeMillis() - start)+"ms.");
@@ -72,6 +72,4 @@ public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 		double y2 = curRect.getMaxY() > imageRoi.getMaxY() ? imageRoi.getMaxY() : curRect.getMaxY();
 		return new Roi(x1,y1,x2-x1,y2-y1);
 	}
-
-
 }

@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.math3.special.Erf;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.pipeline.Localization;
 
@@ -221,5 +222,9 @@ public class LemmingUtils {
 		Locale.setDefault( curLocale );
 		return settings;
 	}
+	
+	 public static double erf(double x) {
+		return Erf.erf(x);
+    }
 
 }

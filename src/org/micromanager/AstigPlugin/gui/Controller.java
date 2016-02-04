@@ -97,7 +97,7 @@ import org.micromanager.AstigPlugin.pipeline.ImageMath.operators;
 import org.micromanager.AstigPlugin.pipeline.ImgLib2Frame;
 import org.micromanager.AstigPlugin.pipeline.Manager;
 import org.micromanager.AstigPlugin.pipeline.Renderer;
-import org.micromanager.AstigPlugin.pipeline.SaveLocalizationPrecision3D;
+import org.micromanager.AstigPlugin.pipeline.SaveLocalizations;
 import org.micromanager.AstigPlugin.pipeline.StoreSaver;
 import org.micromanager.AstigPlugin.plugins.AstigFitter;
 import org.micromanager.AstigPlugin.providers.FitterProvider;
@@ -162,7 +162,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private Calibrator calibrator;
 	private JLabel lblEta;
 	private long start;
-	private SaveLocalizationPrecision3D saver;
+	private SaveLocalizations saver;
 	private CommonFitterPanel panelFitter;
 	private JSpinner spinnerSkipLastFrames;
 	private JPanel panelPeakDet;
@@ -170,6 +170,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblMaxrange;
 	private JButton btnDataSource;
 	private Locale curLocale;
+	public static String lastDir = System.getProperty("user.home"); 
 
 	/**
 	 * Create the frame.
@@ -838,8 +839,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	// // Private Methods
 	private ImagePlus loadImages() {
 		manager.reset();
-
-		final JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
+		
+		final JFileChooser fc = new JFileChooser(lastDir);
 		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fc.setDialogTitle("Import Images");
 
@@ -848,6 +849,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (returnVal != JFileChooser.APPROVE_OPTION) return null;
 
 		final File file = fc.getSelectedFile();
+		lastDir = file.getAbsolutePath();
 
 		ImagePlus loc_im = null;
 		if (file.isDirectory()) {
@@ -889,7 +891,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private boolean importImages() {
-		final JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
+		final JFileChooser fc = new JFileChooser(lastDir);
 		fc.setLocation(getLocation());
 		fc.setDialogTitle("Import Calibration Images");
 		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -899,7 +901,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (returnVal != JFileChooser.APPROVE_OPTION) return false;
 
 		final File file = fc.getSelectedFile();
-
+		lastDir = file.getAbsolutePath();
+		
 		ImagePlus calibImage = new ImagePlus();
 		if (file.isDirectory()) {
 			calibImage = FolderOpener.open(file.getAbsolutePath());
@@ -951,7 +954,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private void saveCalibration() {
-		final JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
+		final JFileChooser fc = new JFileChooser(lastDir);
 		fc.setLocation(getLocation());
 		fc.setDialogTitle("Save calibration");
 		final FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", "csv", "CSV");
@@ -959,10 +962,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File calibFile = fc.getSelectedFile();
+			lastDir = calibFile.getAbsolutePath();
 			calibrator.saveCalib(calibFile.getAbsolutePath());
 			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
 		}
 		calibrator.getCalibration().closePlotWindows();
+		
 	}
 
 	private void choosePP() {
@@ -1094,6 +1099,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private void fitterPreview(Map<String, Object> map) {
+		if (fitterFactory == null) return;
 		if (!fitterFactory.setAndCheckSettings(map)) return;
 		fitter = fitterFactory.getFitter();
 
@@ -1259,7 +1265,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private void saveLocalizations() {
-		final JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
+		final JFileChooser fc = new JFileChooser(lastDir);
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setDialogTitle("Save Data");
 		final FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", "csv", "CSV");
@@ -1267,6 +1273,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
 		final File file = fc.getSelectedFile();
+		lastDir = file.getAbsolutePath();
 		if (this.chkboxFilter.isSelected()) {
 			ExtendableTable tableToProcess = filteredTable == null ? table : filteredTable;
 			Store s = tableToProcess.getFIFO();
@@ -1276,7 +1283,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			tSaver.run();
 		} else {
 			if (fitter != null) {
-				saver = new SaveLocalizationPrecision3D(file);
+				saver = new SaveLocalizations(file);
 				manager.add(saver);
 				manager.linkModules(fitter, saver, false, 100);
 			} else {

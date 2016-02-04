@@ -8,8 +8,8 @@ import java.util.Arrays;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.OptimizationData;
-import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class EllipticalGaussianZ implements OptimizationData {
 	
@@ -38,7 +38,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 	public static int PARAM_LENGTH = 5;
 	
 	static double defaultSigma = 1.5;
-	private static double sqrt2 = Math.sqrt(2);
+	private static double sqrt2 = FastMath.sqrt(2);
 	
 	public EllipticalGaussianZ(int[] xgrid, int[] ygrid, double[] params){
 		this.xgrid = xgrid;
@@ -76,7 +76,7 @@ public class EllipticalGaussianZ implements OptimizationData {
         	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*
         	    			 (dEsx(xgrid[i],point)*Ey(ygrid[i], point)*dSx(point[INDEX_Z0])+
 	    					 Ex(xgrid[i],point)*dEsy(ygrid[i], point)*dSy(point[INDEX_Z0]));
-        	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i],point);
+        	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i], point);
         	    	 jacobian[i][INDEX_Bg] = 1;
         	     }
         	     return jacobian;
@@ -107,7 +107,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 	// /////////////////////////////////////////////////////////////
 	// Math functions
 	private static double erf(double x) {
-		return Erf.erf(x);
+		return LemmingUtils.erf(x);
 	}
 
 	private static double dErf(double x) {
@@ -161,14 +161,14 @@ public class EllipticalGaussianZ implements OptimizationData {
 	public double Sx(double z) {
 		double b = (z - params[INDEX_C] - params[INDEX_Mp]) / params[INDEX_D];
 		return params[INDEX_WX]
-				* Math.sqrt(1 + b * b + params[INDEX_AX] * b * b * b
+				* FastMath.sqrt(1 + b * b + params[INDEX_AX] * b * b * b
 						+ params[INDEX_BX] * b * b * b * b);
 	}
 
 	public double Sy(double z) {
 		double b = (z + params[INDEX_C] - params[INDEX_Mp]) / params[INDEX_D];
 		return params[INDEX_WY]
-				* Math.sqrt(1 + b * b + params[INDEX_AY] * b * b * b
+				* FastMath.sqrt(1 + b * b + params[INDEX_AY] * b * b * b
 						+ params[INDEX_BY] * b * b * b * b);
 	}
 

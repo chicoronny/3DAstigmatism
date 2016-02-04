@@ -55,11 +55,11 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 			double y = loc.getY()/pixelDepth;
 			final Roi origroi = new Roi(x - halfKernel, y - halfKernel, size, size);
 			final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
-			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 3000, 1000, pixelDepth, params);
+			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 1000, 1000, pixelDepth, params);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 6; i++)
 					result[i] *= pixelDepth;
 				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], loc.getFrame()));
 			}			
@@ -92,6 +92,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			if(settings==null) return false;
 			this.settings.putAll(settings);
 			configPanel.setSettings(settings);
 			if(settings.get(PanelKeys.KEY_CALIBRATION_FILENAME) != null)

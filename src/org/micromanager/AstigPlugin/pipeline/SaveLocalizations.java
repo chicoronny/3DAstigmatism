@@ -6,15 +6,16 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
+import org.micromanager.AstigPlugin.interfaces.LocalizationInterface;
 
-public class SaveLocalizationAll extends SingleRunModule {
+public class SaveLocalizations extends SingleRunModule {
 
 	final private Locale curLocale;
 	private File file;
 	private FileWriter w;
 	private int counter = 0;
 
-	public SaveLocalizationAll(File file) {
+	public SaveLocalizations(File file) {
 		this.curLocale = Locale.getDefault();
 		this.file = file;
 	}
@@ -45,7 +46,7 @@ public class SaveLocalizationAll extends SingleRunModule {
 			return null;
 		}
 		
-		LocalizationAllParameters loc = (LocalizationAllParameters) data;
+		LocalizationInterface loc = (LocalizationInterface) data;
 
 		try {
 			w.write(loc.toString()+"\n");

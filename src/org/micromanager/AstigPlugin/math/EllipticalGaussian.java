@@ -9,8 +9,8 @@ import ij.process.ImageStatistics;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.OptimizationData;
-import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class EllipticalGaussian implements OptimizationData {
 	private int[] xgrid, ygrid;
@@ -98,7 +98,7 @@ public class EllipticalGaussian implements OptimizationData {
 	///////////////////////////////////////////////////////////////
 	// Math functions
 	private static double erf(double x) {
-		return Erf.erf(x);
+		return LemmingUtils.erf(x);
 	}
 	
 	private static double dErf(double x){

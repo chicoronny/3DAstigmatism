@@ -8,12 +8,12 @@ import org.micromanager.AstigPlugin.interfaces.Store;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
-public class ImageMath<T extends NumericType<T>> extends SingleRunModule {
+public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 	
 	public enum operators {
 		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION, NONE
@@ -118,7 +118,9 @@ public class ImageMath<T extends NumericType<T>> extends SingleRunModule {
 		case SUBSTRACTION:		
 			while ( cursorA.hasNext()){
 	            cursorA.fwd();  cursorB.fwd(); // move both cursors forward by one pixel
-	            cursorA.get().sub(cursorB.get());
+	            double val = cursorB.get().getRealDouble() - cursorA.get().getRealDouble();
+	            val = val<0?0:val; 				// check for negative values
+	            cursorA.get().setReal(val);
 	        }
 			break;
 		case MULTIPLICATION:

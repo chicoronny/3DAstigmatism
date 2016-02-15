@@ -98,6 +98,20 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 		return null;
 	}
 	
+	private void findBorderMedian(Cursor<T> cursor, List<RandomAccess<T>> cursorList){
+		final List<Integer> values = new ArrayList<Integer>();
+		while(cursor.hasNext()){
+			cursor.fwd();
+			for (RandomAccess<T> currentCursor : cursorList) {
+				currentCursor.setPosition(cursor);
+				values.add(currentCursor.get().getInteger());
+			}
+		}
+		final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
+		if (median != null)
+			cursor.get().setInteger(median);
+	}
+	
 	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
 		Frame<T> newFrame = null;
 		if (!list.isEmpty()){
@@ -139,53 +153,13 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 			
 			// Borders
 			final Cursor<T>  top = Views.interval(out, Intervals.createMinMax(0,0,dims[0]-1,0)).cursor();
-			while(top.hasNext()){
-				final List<Integer> values = new ArrayList<Integer>();
-				top.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(top);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					top.get().setInteger(median);
-			}
+			findBorderMedian(top,cursorList);
 			final Cursor<T>  left = Views.interval(out,Intervals.createMinMax(0,1,0,dims[1]-2)).cursor();
-			while(left.hasNext()){
-				final List<Integer> values = new ArrayList<Integer>();
-				left.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(left);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					left.get().setInteger(median);
-			}
+			findBorderMedian(left,cursorList);
 			final Cursor<T>  right = Views.interval(out,Intervals.createMinMax(dims[0]-1,1,dims[0]-1,dims[1]-2)).cursor();
-			while(right.hasNext()){
-				final List<Integer> values = new ArrayList<Integer>();
-				right.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(right);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					right.get().setInteger(median);
-			}
+			findBorderMedian(right,cursorList);
 			final Cursor<T>  bottom = Views.interval(out,Intervals.createMinMax(0,dims[1]-1,dims[0]-1,dims[1]-1)).cursor();
-			while(bottom.hasNext()){
-				final List<Integer> values = new ArrayList<Integer>();
-				bottom.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(bottom);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					bottom.get().setInteger(median);
-			}		
+			findBorderMedian(bottom,cursorList);
 			
 			newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
 			firstFrame.getHeight(), firstFrame.getPixelDepth(), out);

@@ -84,7 +84,7 @@ public class Calibrator {
 				public void run() {
 					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
 						ImageProcessor ip = is.getProcessor(i + 1);
-						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 100, 100);
+						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 200, 200);
 						double[] results = gf.fit();
 						if (results!=null){
 							Wx[i]=results[2];
@@ -113,6 +113,21 @@ public class Calibrator {
 		for (int i=1 ; i<d.length-1;i++)
 			if (d[i]<0.1) d[i]=(d[i-1]+d[i+1])/2;
 	}
+	
+	@SuppressWarnings("unused")
+	private int findIntersection(){
+		int length = Math.min(Wx.length,Wy.length);
+		int i=0;
+		double min = Double.MAX_VALUE;
+		for (int index=0 ; index<length; index++){
+			double test = Math.abs(Wx[index]-Wy[index]);
+			if(test<min){
+				min=test;
+				i=index;
+			}
+		}
+		return (int)(i*zstep);
+	}
 
 
 	public void fitCalibrationCurve(final int rStart, final int rEnd){	
@@ -124,7 +139,7 @@ public class Calibrator {
 				calculateRange(rStart, rEnd);
 		    	
 				try{
-					fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 100, 100);
+					fitCurves(zgrid, Wx, Wy, param, curveWx, curveWy, rangeStart, rangeEnd, 200, 200);
 		    	} catch (TooManyEvaluationsException e) {
 		    		System.err.println("Too many evaluations!");				
 		    	}  catch (TooManyIterationsException e) {
@@ -233,6 +248,7 @@ public class Calibrator {
         
     	// Copy the fitted parameters
         double[] result = optimum.getPoint().toArray();
+        System.out.println("Calibration converged after: "+optimum.getIterations());
 
         for(int i=0; i<PARAM_1D_LENGTH;i++){
         	param[i] = result[i];

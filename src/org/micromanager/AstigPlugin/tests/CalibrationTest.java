@@ -13,7 +13,7 @@ public class CalibrationTest {
 	private Calibrator calibrator;
 	
 	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("H:\\Images\\set1.tif");
+		ImagePlus calibImage = new ImagePlus("/Users/ronny/Documents/set1.tif");
 		calibWindow = new StackWindow(calibImage);
 		calibImage.setRoi(21, 19, 21, 21);
 	}
@@ -39,19 +39,19 @@ public class CalibrationTest {
 		//final double[] zgrid = calibrator.getCalibration().getZgrid();
 		//Arrays.sort(zgrid);
 
-		calibWindow.close();
 		return true;
 	}
 
 	private boolean fitCurve() {
-		final int rangeMin = 195; //set
+		final int rangeMin = 205; //set
 		final int rangeMax = 1080; //set
 		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
 		return true;
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("H:\\Images\\set1-calib.csv");
+		calibrator.saveCalib("/Users/ronny/Documents/set1-calib.csv");
+		calibWindow.close();
 		//calibrator.getCalibration().closePlotWindows();
 	}
 

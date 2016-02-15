@@ -61,7 +61,8 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 			if (result != null){
 				for (int i = 0; i < 6; i++)
 					result[i] *= pixelDepth;
-				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], loc.getFrame()));
+				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], 
+						result[7], 0, (int) result[8], loc.getFrame()));
 			}			
 		}
 		return found;

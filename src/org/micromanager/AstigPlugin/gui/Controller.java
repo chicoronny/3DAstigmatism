@@ -227,9 +227,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		});
 
 		panelCalibration = new JPanel();
-		tabbedPane.addTab("Calibration", null, panelCalibration, null);
+		tabbedPane.addTab("Calibrate", null, panelCalibration, null);
 
-		labelStepSize = new JLabel("Step Size");
+		labelStepSize = new JLabel("Step Size [nm]");
 
 		buttonFitBeads = new JButton("Fit beads");
 		buttonFitBeads.setToolTipText("Gaussian fitting of beads");
@@ -269,7 +269,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		spinnerStepSize.setToolTipText("Step size for calibration data");
 		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
 
-		btnImagesCalibration = new JButton("Calibration Images");
+		btnImagesCalibration = new JButton("Calibration Stack");
 		btnImagesCalibration.setToolTipText("Load Images for 3D calibration");
 		btnImagesCalibration.addActionListener(this);
 
@@ -289,13 +289,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 							.addContainerGap())
 						.addGroup(gl_panelCalibration.createSequentialGroup()
 							.addGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelCalibration.createSequentialGroup()
-									.addGap(8)
-									.addComponent(labelStepSize, GroupLayout.PREFERRED_SIZE, 68, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))
 								.addComponent(buttonFitBeads)
-								.addComponent(btnImagesCalibration)
 								.addComponent(buttonSaveCal)
 								.addComponent(buttonFitCurve)
 								.addGroup(gl_panelCalibration.createSequentialGroup()
@@ -303,10 +297,17 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 									.addGroup(gl_panelCalibration.createParallelGroup(Alignment.LEADING)
 										.addGroup(gl_panelCalibration.createSequentialGroup()
 											.addComponent(lblMinrange)
-											.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+											.addPreferredGap(ComponentPlacement.RELATED, 208, Short.MAX_VALUE)
 											.addComponent(lblMaxrange))
-										.addComponent(labelRange))))
-							.addContainerGap(14, Short.MAX_VALUE))))
+										.addComponent(labelRange)))
+								.addGroup(gl_panelCalibration.createParallelGroup(Alignment.TRAILING, false)
+									.addGroup(gl_panelCalibration.createSequentialGroup()
+										.addGap(8)
+										.addComponent(labelStepSize, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+										.addPreferredGap(ComponentPlacement.RELATED)
+										.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))
+									.addComponent(btnImagesCalibration, Alignment.LEADING)))
+							.addContainerGap(78, Short.MAX_VALUE))))
 		);
 		gl_panelCalibration.setVerticalGroup(
 			gl_panelCalibration.createParallelGroup(Alignment.LEADING)
@@ -315,8 +316,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					.addComponent(btnImagesCalibration)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_panelCalibration.createParallelGroup(Alignment.BASELINE)
-						.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(labelStepSize))
+						.addComponent(labelStepSize)
+						.addComponent(spinnerStepSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(buttonFitBeads)
 					.addGap(4)
@@ -331,7 +332,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 					.addComponent(buttonFitCurve)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(buttonSaveCal)
-					.addContainerGap(101, Short.MAX_VALUE))
+					.addContainerGap(121, Short.MAX_VALUE))
 		);
 		panelCalibration.setLayout(gl_panelCalibration);
 
@@ -942,7 +943,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		this.rangeSlider.setValue((int) zgrid[0]);
 		this.rangeSlider.setUpperValue((int) zgrid[zgrid.length - 1]);
 
-		calibWindow.close();
 		return true;
 	}
 
@@ -967,7 +967,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
 		}
 		calibrator.getCalibration().closePlotWindows();
-		
+		calibWindow.close();
 	}
 
 	private void choosePP() {

@@ -151,7 +151,7 @@ public class CommonFitterPanel extends ConfigurationPanel {
 	    if (returnVal != JFileChooser.APPROVE_OPTION)
 	    	return;
 	    calibFile = fc.getSelectedFile();
-	    Controller.lastDir = calibFile.getAbsolutePath();
+	    Controller.lastDir = calibFile.getParent();
 	    lblCalibration.setText(calibFile.getName());
 	}
 }

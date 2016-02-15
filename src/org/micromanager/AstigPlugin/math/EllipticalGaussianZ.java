@@ -93,10 +93,11 @@ public class EllipticalGaussianZ implements OptimizationData {
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
 
-		double w0 = (params[INDEX_WX]+params[INDEX_WY])/2;
-		double c = params[INDEX_C];
-		double d = params[INDEX_D];
-	    initialGuess[INDEX_Z0] = d*d*(centroid[INDEX_SY]*centroid[INDEX_SY]-centroid[INDEX_SX]*centroid[INDEX_SX])/(4*w0*w0*c)+params[INDEX_Mp];
+		//double w0 = (params[INDEX_WX]+params[INDEX_WY])/2;
+		//double c = params[INDEX_C];
+		//double d = params[INDEX_D];
+	    //initialGuess[INDEX_Z0] = d*d*(centroid[INDEX_SY]*centroid[INDEX_SY]-centroid[INDEX_SX]*centroid[INDEX_SX])/(4*w0*w0*c)+params[INDEX_Mp];
+	    initialGuess[INDEX_Z0] = params[INDEX_Mp];
 
 	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin();
 	    initialGuess[INDEX_Bg] = ip.getMin();

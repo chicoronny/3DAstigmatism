@@ -170,7 +170,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblMaxrange;
 	private JButton btnDataSource;
 	private Locale curLocale;
-	public static String lastDir = System.getProperty("user.home"); 
+	public static String lastDir = System.getProperty("user.home");
+	private Roi imageRoi;
 
 	/**
 	 * Create the frame.
@@ -870,6 +871,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 				calibration.setTimeUnit("frame");
 			}
 		}
+		imageRoi = new Roi(0, 0, loc_im.getWidth(), loc_im.getHeight());
 		return loc_im;
 	}
 
@@ -884,7 +886,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 				final int iHeight = r.height / 2;
 				final int iXROI = r.x + r.width / 4;
 				final int iYROI = r.y + r.height / 4;
-				curImage.setRoi(iXROI, iYROI, iWidth, iHeight);
+				imageRoi = new Roi(iXROI, iYROI, iWidth, iHeight);
+				curImage.killRoi();
 			}
 		} else {
 			curImage.killRoi();
@@ -1052,15 +1055,16 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		previewerWindow.getImagePlus().killRoi();
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
-		final int frameNumber = previewerWindow.getImagePlus().getFrame();
-		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		Roi currentRoi = previewerWindow.getImagePlus().getRoi();
-		ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(frameNumber);
-		if (currentRoi != null){
-			ip.setRoi(currentRoi.getBounds());
+		final ImagePlus img = previewerWindow.getImagePlus();
+		final int frameNumber = img.getFrame();
+		final double pixelSize = img.getCalibration().pixelDepth;
+		img.killRoi();
+		ImageProcessor ip = img.getStack().getProcessor(frameNumber);
+		if (imageRoi.getBounds().width < ip.getWidth() || imageRoi.getBounds().height < ip.getHeight()){
+			ip.setRoi(imageRoi.getBounds());
 			ip = ip.crop();
 		} else{
-			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+			imageRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 
 		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[] { ip.getWidth(), ip.getHeight() });
@@ -1069,7 +1073,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		if (detResults.getList().isEmpty()) return;
-		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), currentRoi.getBounds() ,pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), imageRoi.getBounds() ,pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
@@ -1106,14 +1110,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		previewerWindow.getImagePlus().killRoi();
 		final int frameNumber = previewerWindow.getImagePlus().getFrame();
 		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		Roi currentRoi = previewerWindow.getImagePlus().getRoi();
 		ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(frameNumber);;
-		if (currentRoi != null){
-			ip.setRoi(currentRoi.getBounds());
+		if (imageRoi.getBounds().width < ip.getWidth() || imageRoi.getBounds().height < ip.getHeight()){
+			ip.setRoi(imageRoi.getBounds());
 			ip = ip.crop();
 		} else{
-			ip = previewerWindow.getImagePlus().getStack().getProcessor(frameNumber);
-			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+			imageRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 		
 		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[] { ip.getWidth(), ip.getHeight() });
@@ -1121,7 +1123,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber, pixelSize);
-		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, currentRoi.getBounds(), pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, imageRoi.getBounds(), pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}

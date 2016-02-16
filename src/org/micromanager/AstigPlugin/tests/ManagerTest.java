@@ -27,9 +27,10 @@ public class ManagerTest<T extends IntegerType<T> & NativeType<T> & RealType<T>,
 	private Manager pipe;
 	private Map<Integer, Store> storeMap;
 	private ImagePlus loc_im;
+	private static String appPath ="D:\\Images\\";
 	
 	private void setUp() {
-		final File file = new File("/Users/ronny/Documents/set1.tif");
+		final File file = new File(appPath+"set1.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -49,10 +50,10 @@ public class ManagerTest<T extends IntegerType<T> & NativeType<T> & RealType<T>,
 		final NMSDetector<T, F> peak = new NMSDetector<T, F>(6,9);
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
-		final Fitter<T> fitter = new AstigFitter<T,F>(9, LemmingUtils.readCSV("/Users/ronny/Documents/set1-calib.csv").get("param"));
+		final Fitter<T> fitter = new AstigFitter<T,F>(9, LemmingUtils.readCSV(appPath+"set1-calib.csv").get("param"));
 		//final Fitter<T> fitter = new CentroidFitter<T>(7, 100);
 
-		final SaveLocalizations saver = new SaveLocalizations(new File("/Users/ronny/Documents/set1.csv"));
+		final SaveLocalizations saver = new SaveLocalizations(new File(appPath+"set1.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

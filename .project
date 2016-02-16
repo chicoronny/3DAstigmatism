@@ -24,4 +24,10 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>MM_HOME</name>
+			<value>file:/C:/Program%20Files/Micro-Manager-1.4</value>
+		</variable>
+	</variableList>
 </projectDescription>

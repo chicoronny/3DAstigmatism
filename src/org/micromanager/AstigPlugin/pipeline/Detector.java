@@ -21,10 +21,16 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 
 		if (fe.isLast()) {
 			cancel();
-			final FrameElements<T> res = detect(fe);
-			counterList.add(res.getList().size());
-			res.setLast(true);
-			return res;
+			FrameElements<T> res = detect(fe);
+			if (res!=null){
+				res.setLast(true);
+				counterList.add(res.getList().size());
+				return res;
+			} else {
+				res = new FrameElements<T>(null, fe);
+				res.setLast(true);
+				return res;
+			}
 		}
 		
 		final FrameElements<T> res = detect(fe);

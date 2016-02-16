@@ -11,9 +11,10 @@ public class CalibrationTest {
 	
 	private StackWindow calibWindow;
 	private Calibrator calibrator;
+	private static String appPath ="D:\\Images\\";
 	
 	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("/Users/ronny/Documents/set1.tif");
+		ImagePlus calibImage = new ImagePlus(appPath+"set1.tif");
 		calibWindow = new StackWindow(calibImage);
 		calibImage.setRoi(21, 19, 21, 21);
 	}
@@ -50,7 +51,7 @@ public class CalibrationTest {
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("/Users/ronny/Documents/set1-calib.csv");
+		calibrator.saveCalib(appPath+"set1-calib.csv");
 		calibWindow.close();
 		//calibrator.getCalibration().closePlotWindows();
 	}

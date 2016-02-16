@@ -91,9 +91,9 @@ public class GaussianFitterZ implements FitterInterface {
 		double[] initialGuess = eg.getInitialGuess(ip,roi);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
-		//double[] sigmas;
-		double RMS;
-		int iter, eval;
+		double[] sigmas;
+		//double RMS;
+		int iter;
 		try {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
@@ -106,10 +106,9 @@ public class GaussianFitterZ implements FitterInterface {
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
-			RMS = optimum.getRMS();
+			//RMS = optimum.getRMS();
 			iter = optimum.getIterations();
-			eval = optimum.getEvaluations();
-			//sigmas = optimum.getSigma(0.01).toArray();
+			sigmas = optimum.getSigma(0.001).toArray();
 		} catch(Exception e){
         	return null;
 		}
@@ -127,9 +126,9 @@ public class GaussianFitterZ implements FitterInterface {
 		result[4] = error[1]; // Sx
 		result[5] = error[2]; // Sz
 		result[6] = fittedEG[3]; // I0
-		result[7] = RMS;
+		result[7] = sigmas[2];
 		result[8] = iter;
-		result[9] = eval;
+		result[9] = fittedEG[4];
 		return result;
 	}
 	
@@ -185,7 +184,7 @@ public class GaussianFitterZ implements FitterInterface {
 					&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
 					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002
 					&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
-					&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
+					&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.001) {
 				lastResult_ = true;
 				return true;
 			}

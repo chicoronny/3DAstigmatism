@@ -53,6 +53,6 @@ public class LocalizationAllParameters extends Localization{
 	@Override
 	public String toString(){
 		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + 
-				getIntensity() +"\t" + getBg()+ "\t" + getRMS()+ "\t" + getIterations() + "\t"+ getFrame();
+				getIntensity() + "\t" + getFrame() + "\t" + getBg()+ "\t" + getRMS()+ "\t" + getIterations() ;
 	}
 }

@@ -40,14 +40,14 @@ public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 	}
 
 	private void process1(FrameElements<T> data) {
-		List<Element> res = fit( data.getList(), data.getFrame().getPixels(), size, data.getFrame().getFrameNumber(), data.getFrame().getPixelDepth());
+		List<Element> res = fit( data.getList(), data.getFrame().getPixels(), size, data.getFrame().getFrameNumber(), data.getFrame().getPixelDepth(),data.getFrame().getStepSize());
 		counterList.add(res.size());
 		for (Element el : res)
 			newOutput(el);
 	}
 	
 	public abstract List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, 
-			long frameNumber, final double pixelDepth);
+			long frameNumber, final double pixelDepth, final double stepSize);
 
 	@Override
 	protected void afterRun() {

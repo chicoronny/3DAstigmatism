@@ -1,12 +1,7 @@
 package org.micromanager.AstigPlugin.tests;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
-import java.util.Map;
-
 import org.micromanager.AstigPlugin.interfaces.Frame;
-import org.micromanager.AstigPlugin.interfaces.Store;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.ImageLoader;
 import org.micromanager.AstigPlugin.pipeline.Manager;
@@ -25,12 +20,11 @@ import net.imglib2.type.numeric.RealType;
 public class ManagerTest<T extends IntegerType<T> & NativeType<T> & RealType<T>, F extends Frame<T>> {
 	
 	private Manager pipe;
-	private Map<Integer, Store> storeMap;
 	private ImagePlus loc_im;
 	private static String appPath ="D:\\Images\\";
 	
 	private void setUp() {
-		final File file = new File(appPath+"set1.tif");
+		final File file = new File(appPath+"p500ast_.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -47,13 +41,13 @@ public class ManagerTest<T extends IntegerType<T> & NativeType<T> & RealType<T>,
 		
 		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
-		final NMSDetector<T, F> peak = new NMSDetector<T, F>(6,9);
+		final NMSDetector<T, F> peak = new NMSDetector<T, F>(70,7);
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
-		final Fitter<T> fitter = new AstigFitter<T,F>(9, LemmingUtils.readCSV(appPath+"set1-calib.csv").get("param"));
+		final Fitter<T> fitter = new AstigFitter<T,F>(7, LemmingUtils.readCSV(appPath+"set1-calib.csv").get("param"));
 		//final Fitter<T> fitter = new CentroidFitter<T>(7, 100);
 
-		final SaveLocalizations saver = new SaveLocalizations(new File(appPath+"set1.csv"));
+		final SaveLocalizations saver = new SaveLocalizations(new File(appPath+"p500ast_.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
@@ -64,7 +58,7 @@ public class ManagerTest<T extends IntegerType<T> & NativeType<T> & RealType<T>,
 		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
 		pipe.linkModules(peak,fitter);
 		pipe.linkModules(fitter,saver);
-		storeMap = pipe.getMap();
+		pipe.getMap();
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -72,8 +66,6 @@ public class ManagerTest<T extends IntegerType<T> & NativeType<T> & RealType<T>,
 		ManagerTest mt = new ManagerTest();
 		mt.setUp();
 		mt.pipe.run();
-		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
-		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
 	}
 
 }

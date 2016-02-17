@@ -105,15 +105,6 @@
             <classpath refid="3DAstigmatism.classpath"/>
         </java>
     </target>
-    <target name="ManagerTest">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="org.micromanager.AstigPlugin.tests.ManagerTest" todir="${junit.output.dir}"/>
-            <jvmarg line="-XX:+HeapDumpOnOutOfMemoryError -Xmx2048M"/>
-            <classpath refid="3DAstigmatism.classpath"/>
-        </junit>
-    </target>
     <target name="Run MicroManager">
         <java classname="ij.ImageJ" dir="../../../../../../Applications/Micro-Manager1.4" failonerror="true" fork="yes">
             <jvmarg line="-XX:+HeapDumpOnOutOfMemoryError -Xmx2048M"/>

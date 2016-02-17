@@ -7,12 +7,13 @@ import net.imglib2.type.numeric.NumericType;
 
 public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 
-	private long frameNo;
-	private int width;
-	private int height;
-	private RandomAccessibleInterval<T> slice;
+	final private long frameNo;
+	final private int width;
+	final private int height;
+	final private RandomAccessibleInterval<T> slice;
 	private boolean isLast = false;
-	private double pixelDepth;
+    final private double pixelDepth;
+	final private double stepSize;
 
 	/**
 	 * Creates a Frame with a reference to the appropriate (2D, although not
@@ -26,16 +27,18 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 	 *            - height
 	 * @param pixelDepth
 	 *            - pixelDepth
+	 * @param stepSize 
 	 * @param slice
 	 *            - slice
 	 */
 	public ImgLib2Frame(long frameNo, int width, int height, double pixelDepth,
-			RandomAccessibleInterval<T> slice) {
+			double stepSize, RandomAccessibleInterval<T> slice) {
 		this.frameNo = frameNo;
 		this.width = width;
 		this.height = height;
 		this.slice = slice;
 		this.pixelDepth = pixelDepth;
+		this.stepSize = stepSize;
 	}
 
 	@Override
@@ -78,6 +81,11 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 			return 1;
 		else if (this.getFrameNumber() == o.getFrameNumber()) return 0;
 		else return -1;
+	}
+
+	@Override
+	public double getStepSize() {
+		return stepSize;
 	}
 	
 }

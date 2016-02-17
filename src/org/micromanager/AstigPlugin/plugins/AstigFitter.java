@@ -45,7 +45,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 	}
 	
 	@Override
-	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth) {
+	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth, double stepSize) {
 		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
 		List<Element> found = new ArrayList<Element>();
 		int halfKernel = size / 2;
@@ -59,11 +59,15 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){
-				for (int i = 0; i < 6; i++)
-					result[i] *= pixelDepth;
-				if(result[5]<params[6]*10)
-					found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], 
-						result[7], result[9], (int) result[8], loc.getFrame()));
+				result[0] *= pixelDepth;
+				result[1] *= pixelDepth;
+				result[2] *= stepSize;
+				result[3] *= pixelDepth;
+				result[4] *= pixelDepth;
+				result[5] *= stepSize;
+				if(!(Double.isInfinite(result[3]) || Double.isInfinite(result[4]) || Double.isInfinite(result[5])) || result[7]>0)
+				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], 
+						result[7], result[8], (int) result[9], loc.getFrame()));
 			}			
 		}
 		return found;

@@ -1,12 +1,7 @@
 package org.micromanager.AstigPlugin.tests;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
-import java.util.Map;
-
 import org.micromanager.AstigPlugin.interfaces.Frame;
-import org.micromanager.AstigPlugin.interfaces.Store;
 import org.micromanager.AstigPlugin.pipeline.AbstractModule;
 import org.micromanager.AstigPlugin.pipeline.ImageLoader;
 import org.micromanager.AstigPlugin.pipeline.ImageMath;
@@ -24,8 +19,6 @@ import net.imglib2.type.numeric.RealType;
 public class FastMedianTest<T extends IntegerType<T> & NativeType<T> & RealType<T>, F extends Frame<T>> {
 	
 	private Manager pipe;
-	private Map<Integer, Store> storeMap;
-
 	private void setUp() {
 		final File file = new File("H:\\Images\\set1.tif");
        
@@ -54,14 +47,7 @@ public class FastMedianTest<T extends IntegerType<T> & NativeType<T> & RealType<
 		pipe.linkModules(tif, substracter);
 		pipe.linkModules(filter, substracter);
 		pipe.linkModules(substracter, imsaver);
-		/*pipe.add(peak);
-		pipe.add(fitter);
-		pipe.add(saver);
-		
-		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
-		pipe.linkModules(peak,fitter);
-		pipe.linkModules(fitter,saver);*/
-		storeMap = pipe.getMap();
+		pipe.getMap();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -69,8 +55,6 @@ public class FastMedianTest<T extends IntegerType<T> & NativeType<T> & RealType<
 		FastMedianTest t = new FastMedianTest();
 		t.setUp();
 		t.pipe.run();
-		assertEquals(true,((Store) t.storeMap.values().iterator().next()).isEmpty());
-		assertEquals(true,((Store) t.storeMap.values().iterator().next()).isEmpty());
 	}
 
 }

@@ -44,7 +44,7 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 	@Override
 	public List<Element> fit(List<Element> sliceLocs,
 			RandomAccessibleInterval<T> pixels, long windowSize,
-			long frameNumber, double pixelDepth) {
+			long frameNumber, double pixelDepth, double stepSize) {
 		
 		final RandomAccessible<T> source = Views.extendZero(pixels);
         

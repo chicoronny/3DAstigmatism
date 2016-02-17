@@ -211,9 +211,11 @@ public class LemmingUtils {
 			FileReader reader = new FileReader( new File(path) );
 			final Properties props = new Properties();
 			props.load( reader );
-			settings.add(Double.parseDouble(props.getProperty( "Offset", "150" )));
+			settings.add(Double.parseDouble(props.getProperty( "Offset", "0" )));
 			settings.add(Double.parseDouble(props.getProperty( "EM-Gain", "1" )));
-			settings.add(Double.parseDouble(props.getProperty( "Conversion", "5" )));			
+			settings.add(Double.parseDouble(props.getProperty( "Conversion", "1" )));	
+			settings.add(Double.parseDouble(props.getProperty( "PixelSize", "130" )));
+			settings.add(Double.parseDouble(props.getProperty( "StepSize", "10" )));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

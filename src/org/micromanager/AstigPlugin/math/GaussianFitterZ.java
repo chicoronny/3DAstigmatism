@@ -91,8 +91,8 @@ public class GaussianFitterZ implements FitterInterface {
 		double[] initialGuess = eg.getInitialGuess(ip,roi);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
-		double[] sigmas;
-		//double RMS;
+		//double[] sigmas;
+		double RMS;
 		int iter;
 		try {
 			final Optimum optimum = optimizer.optimize(
@@ -106,9 +106,9 @@ public class GaussianFitterZ implements FitterInterface {
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
-			//RMS = optimum.getRMS();
+			RMS = optimum.getRMS();
 			iter = optimum.getIterations();
-			sigmas = optimum.getSigma(0.001).toArray();
+			//sigmas = optimum.getSigma(0.001).toArray();
 		} catch(Exception e){
         	return null;
 		}
@@ -126,9 +126,9 @@ public class GaussianFitterZ implements FitterInterface {
 		result[4] = error[1]; // Sx
 		result[5] = error[2]; // Sz
 		result[6] = fittedEG[3]; // I0
-		result[7] = sigmas[2];
-		result[8] = iter;
-		result[9] = fittedEG[4];
+		result[7] = fittedEG[4]; // Bg
+		result[8] = RMS;
+		result[9] = iter;
 		return result;
 	}
 	

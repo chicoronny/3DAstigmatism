@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;;
 
-public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public abstract class Detector<T extends RealType<T>> extends MultiRunModule {
 		
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
 
@@ -17,7 +17,7 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F fe = (F) data;
+		Frame<T> fe = (Frame<T>) data;
 
 		if (fe.isLast()) {
 			cancel();
@@ -33,7 +33,7 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 		return res;
 	}
 
-	public abstract FrameElements<T> detect(F frame);
+	public abstract FrameElements<T> detect(Frame<T> frame);
 		
 	
 	@Override

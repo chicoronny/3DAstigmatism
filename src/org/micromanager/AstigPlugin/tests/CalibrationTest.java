@@ -13,7 +13,7 @@ public class CalibrationTest {
 	private Calibrator calibrator;
 	
 	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("H:\\Images\\set1.tif");
+		ImagePlus calibImage = new ImagePlus("/media/backup/ownCloud/set1.tif");
 		calibWindow = new StackWindow(calibImage);
 		calibImage.setRoi(21, 19, 21, 21);
 	}
@@ -44,14 +44,16 @@ public class CalibrationTest {
 	}
 
 	private boolean fitCurve() {
-		final int rangeMin = 195; //set
+		final int rangeMin = 170; //set
 		final int rangeMax = 1080; //set
-		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
+		//calibrator.fitCalibrationCurve(rangeMin, rangeMax);
+		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("H:\\Images\\set1-calib.csv");
+		calibrator.saveCalib("/media/backup/ownCloud/set1-calb.csv");
+		calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}
 

@@ -4,35 +4,26 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.util.FastMath;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
-public class EllipticalGaussianZ implements OptimizationData {
+public class EllipticalGaussianZB implements OptimizationData {
 	
 	int[] xgrid, ygrid;
-	double[] params;
+	PolynomialSplineFunction psx;
+	PolynomialSplineFunction psy;
 	double[] initialGuess;
-		
-	public static int INDEX_WX = 0;
-	public static int INDEX_WY = 1;
-	public static int INDEX_AX = 2;
-	public static int INDEX_AY = 3;
-	public static int INDEX_BX = 4;
-	public static int INDEX_BY = 5;
-	public static int INDEX_C = 6;
-	public static int INDEX_D = 7;
-	public static int INDEX_Mp = 8;
-	public static int PARAM_1D_LENGTH = 9;
-	
+	private Double z0;
+
 	public static int INDEX_X0 = 0;
 	public static int INDEX_Y0 = 1;
-	public static int INDEX_SX = 2;
 	public static int INDEX_Z0 = 2;
-	public static int INDEX_SY = 3;
 	public static int INDEX_I0 = 3;
 	public static int INDEX_Bg = 4;
 	public static int PARAM_LENGTH = 5;
@@ -40,10 +31,12 @@ public class EllipticalGaussianZ implements OptimizationData {
 	static double defaultSigma = 1.5;
 	private static double sqrt2 = FastMath.sqrt(2);
 	
-	public EllipticalGaussianZ(int[] xgrid, int[] ygrid, double[] params){
+	public EllipticalGaussianZB(int[] xgrid, int[] ygrid, Map<String,Object> params){
 		this.xgrid = xgrid;
 		this.ygrid = ygrid;
-		this.params = params;
+		psx = (PolynomialSplineFunction) params.get("psx");
+		psy = (PolynomialSplineFunction) params.get("psy");
+		z0 = (Double) params.get("z0");
 	}
 	
     public double getValue(double[] parameter, double x, double y) {
@@ -92,7 +85,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 	    	    
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
-	    initialGuess[INDEX_Z0] = params[INDEX_Mp];
+	    initialGuess[INDEX_Z0] = z0;
 	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin();
 	    initialGuess[INDEX_Bg] = ip.getMin();
 	    
@@ -154,42 +147,27 @@ public class EllipticalGaussianZ implements OptimizationData {
 	}
 
 	public double Sx(double z) {
-		double b = (z - params[INDEX_C] - params[INDEX_Mp]) / params[INDEX_D];
-		return params[INDEX_WX]
-				* FastMath.sqrt(1 + b * b + params[INDEX_AX] * b * b * b
-						+ params[INDEX_BX] * b * b * b * b);
+		if(psx.isValidPoint(z))
+			return psx.value(z);
+		return 1;
 	}
 
 	public double Sy(double z) {
-		double b = (z + params[INDEX_C] - params[INDEX_Mp]) / params[INDEX_D];
-		return params[INDEX_WY]
-				* FastMath.sqrt(1 + b * b + params[INDEX_AY] * b * b * b
-						+ params[INDEX_BY] * b * b * b * b);
+		if(psy.isValidPoint(z))
+			return psy.value(z);
+		return 1;
 	}
 
 	public double dSx(double z) {
-		double value;
-
-		double A = params[INDEX_AX];
-		double B = params[INDEX_BX];
-		double d = params[INDEX_D];
-		double b = (z - params[INDEX_C] - params[INDEX_Mp]) / d;
-		value = 0.5 * params[INDEX_WX] * params[INDEX_WX]
-				* (2 * b / d + 3 * A * b * b / d + 4 * B * b * b * b / d)
-				/ Sx(z);
-		return value;
+		if(psx.isValidPoint(z))
+			return -psx.derivative().value(z);
+		return -1;
 	}
 
 	public double dSy(double z) {
-		double value;
-		double A = params[INDEX_AY];
-		double B = params[INDEX_BY];
-		double d = params[INDEX_D];
-		double b = (z + params[INDEX_C] - params[INDEX_Mp]) / d;
-		value = 0.5 * params[INDEX_WY] * params[INDEX_WY]
-				* (2 * b / d + 3 * A * b * b / d + 4 * B * b * b * b / d)
-				/ Sy(z);
-		return value;
+		if(psy.isValidPoint(z))
+			return -psy.derivative().value(z);
+		return -1;
 	}
 	
 	

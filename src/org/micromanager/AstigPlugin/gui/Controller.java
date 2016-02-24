@@ -69,6 +69,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.FontUIResource;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -103,6 +104,7 @@ import org.micromanager.AstigPlugin.plugins.AstigFitter;
 import org.micromanager.AstigPlugin.providers.FitterProvider;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
+import java.awt.Font;
 
 public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> extends JFrame implements ActionListener {
 
@@ -115,7 +117,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JCheckBox chckbxROI;
 	private JLabel lblSkipFrames;
 	private JSpinner spinnerSkipFrames;
-	private JButton btnSave;
 	private JPanel panelMiddle;
 	private JButton btnProcess;
 	private NMSDetectorFactory detectorFactory;
@@ -179,6 +180,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		this.curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
+		changeFontRecursive();
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -190,7 +192,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			}
 		});
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 		} catch (Exception e1) {
 			IJ.error(e1.getMessage());
 		}
@@ -210,15 +212,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		contentPane.setLayout(gbl_contentPane);
 
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setFont(UIManager.getFont("TabbedPane.font"));
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if (btnSave == null) return;
 				if (btnProcess == null) return;
 				if (tabbedPane.getSelectedIndex() > 0) {
-					btnSave.setEnabled(true);
 					btnProcess.setEnabled(true);
 				} else {
-					btnSave.setEnabled(false);
 					btnProcess.setEnabled(false);
 				}
 				saveSettings(panelBackground);
@@ -504,28 +504,30 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		btnReset.setToolTipText("Zoom out to see all data");
 		btnReset.addActionListener(this);
 		GroupLayout gl_panelRenderer = new GroupLayout(panelRenderer);
-		gl_panelRenderer.setHorizontalGroup(gl_panelRenderer.createParallelGroup(Alignment.LEADING).addGroup(
-			gl_panelRenderer
-				.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(
-					gl_panelRenderer
-						.createParallelGroup(Alignment.LEADING)
+		gl_panelRenderer.setHorizontalGroup(
+			gl_panelRenderer.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelRenderer.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panelRenderer.createParallelGroup(Alignment.LEADING)
 						.addComponent(chkboxRenderer)
-						.addGroup(
-							gl_panelRenderer.createSequentialGroup().addComponent(chkboxFilter)
-								.addPreferredGap(ComponentPlacement.RELATED, 159, Short.MAX_VALUE).addComponent(btnReset)))));
-		gl_panelRenderer.setVerticalGroup(gl_panelRenderer.createParallelGroup(Alignment.LEADING).addGroup(
-			gl_panelRenderer
-				.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(
-					gl_panelRenderer
-						.createParallelGroup(Alignment.TRAILING)
-						.addComponent(btnReset)
-						.addGroup(
-							gl_panelRenderer.createSequentialGroup().addComponent(chkboxRenderer).addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(chkboxFilter))).addContainerGap(7, Short.MAX_VALUE)));
+						.addComponent(chkboxFilter))
+					.addPreferredGap(ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
+					.addComponent(btnReset)
+					.addContainerGap())
+		);
+		gl_panelRenderer.setVerticalGroup(
+			gl_panelRenderer.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelRenderer.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(chkboxRenderer)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(chkboxFilter)
+					.addContainerGap(7, Short.MAX_VALUE))
+				.addGroup(Alignment.TRAILING, gl_panelRenderer.createSequentialGroup()
+					.addContainerGap(24, Short.MAX_VALUE)
+					.addComponent(btnReset)
+					.addGap(21))
+		);
 		panelRenderer.setLayout(gl_panelRenderer);
 
 		panelFilter = new JPanel();
@@ -553,11 +555,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		btnProcess.setEnabled(false);
 		btnProcess.setToolTipText("Process all images");
 		btnProcess.addActionListener(this);
-
-		btnSave = new JButton("Save");
-		btnSave.setEnabled(false);
-		btnSave.setToolTipText("Save localizations in ViSP format");
-		btnSave.addActionListener(this);
 
 		JPanel panelProgress = new JPanel();
 		GridBagConstraints gbc_panelProgress = new GridBagConstraints();
@@ -590,7 +587,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_lblEta.gridx = 1;
 		gbc_lblEta.gridy = 0;
 		panelProgress.add(lblEta, gbc_lblEta);
-		panelButtons.add(btnSave);
 		panelButtons.add(btnProcess);
 		GridBagConstraints gbc_panelButtons = new GridBagConstraints();
 		gbc_panelButtons.anchor = GridBagConstraints.NORTH;
@@ -598,6 +594,41 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		gbc_panelButtons.gridy = 2;
 		contentPane.add(panelButtons, gbc_panelButtons);
 		init();
+	}
+	
+	private void changeFontRecursive() {
+		UIManager.put("Label.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Button.font", new FontUIResource(new Font("Dialog", Font.BOLD, 11)));
+	    UIManager.put("TextField.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ToggleButton.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("RadioButton.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("CheckBox.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ColorChooser.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ComboBox.font", new FontUIResource(new Font("Dialog", Font.BOLD, 11)));
+	    UIManager.put("List.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("MenuBar.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("MenuItem.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("RadioButtonMenuItem.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("CheckBoxMenuItem.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Menu.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("PopupMenu.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("OptionPane.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Panel.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ProgressBar.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ScrollPane.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Viewport.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("TabbedPane.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Table.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("TableHeader.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("PasswordField.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("TextArea.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("TextPane.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("EditorPane.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("TitledBorder.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ToolBar.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("ToolTip.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Tree.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
+	    UIManager.put("Spinner.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 11)));
 	}
 
 	private void init() {
@@ -780,10 +811,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (s == this.btnProcess) {
 			process(true);
 		}
-
-		if (s == this.btnSave) {
-			saveLocalizations();
-		}
 	}
 
 	private void process(boolean b) {// Manager
@@ -935,7 +962,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		final int zstep = (Integer) this.spinnerStepSize.getValue();
 		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);
 		calibrator.fitStack();
-		final double[] zgrid = calibrator.getCalibration().getZgrid();
+		final double[] zgrid = calibrator.getZgrid();
 		Arrays.sort(zgrid);
 		this.rangeSlider.setMinimum((int) zgrid[0]);
 		this.rangeSlider.setMaximum((int) zgrid[zgrid.length - 1]);
@@ -949,7 +976,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private boolean fitCurve() {
 		final int rangeMin = rangeSlider.getValue();
 		final int rangeMax = rangeSlider.getUpperValue();
-		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
+		//calibrator.fitCalibrationCurve(rangeMin, rangeMax);
+		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
 
@@ -966,7 +994,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			calibrator.saveCalib(calibFile.getAbsolutePath());
 			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
 		}
-		calibrator.getCalibration().closePlotWindows();
+		calibrator.closePlotWindows();
 		
 	}
 

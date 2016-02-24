@@ -15,7 +15,7 @@ import org.micromanager.AstigPlugin.pipeline.FrameElements;
 import org.micromanager.AstigPlugin.pipeline.Localization;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
-public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
+public class NMSDetector <T extends RealType<T>> extends Detector<T> {
 	
 	private double threshold;
 	
@@ -29,7 +29,7 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 	}
 		
 	@Override
-	public FrameElements<T> detect(F frame) {
+	public FrameElements<T> detect(Frame<T> frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		final RandomAccess<T> ra = interval.randomAccess();
         

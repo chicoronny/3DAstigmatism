@@ -48,6 +48,7 @@ public class Calibrator {
     
 	private ImageStack is;
 	private Calibration cal;
+	private BSplines b;
 	
    
 	public Calibrator(ImagePlus im, int zstep, Roi r){
@@ -67,6 +68,7 @@ public class Calibrator {
     	curveWy = new double[nSlice];					// value of the calibration on Y
     	paramWx = new double[PARAM_1D_LENGTH];			// parameters of the calibration on X
     	cal = new Calibration(zgrid, Wx, Wy, curveWx, curveWy, Calibcurve, paramWx);
+    	b = new BSplines();
 	}
 	
 	
@@ -113,6 +115,10 @@ public class Calibrator {
 		for (int i=1 ; i<d.length-1;i++)
 			if (d[i]<0.1) d[i]=(d[i-1]+d[i+1])/2;
 	}
+	
+	public double[] getZgrid(){
+		return zgrid;
+	}
 
 
 	public void fitCalibrationCurve(final int rStart, final int rEnd){	
@@ -153,10 +159,46 @@ public class Calibrator {
 		}
 	}
 	
+	public void fitBSplines(final int rStart, final int rEnd){
+		calculateRange(rStart, rEnd);
+		int arraySize = rangeEnd-rangeStart+1;
+		final double[] rangedZ = new double[arraySize];
+    	final double[] rangedWx = new double[arraySize];
+    	final double[] rangedWy = new double[arraySize];
+    	
+    	System.arraycopy(zgrid, rangeStart, rangedZ, 0, arraySize);
+    	System.arraycopy(Wx, rangeStart, rangedWx, 0, arraySize);
+    	System.arraycopy(Wy, rangeStart, rangedWy, 0, arraySize); 
+    	
+       Thread t = new Thread(new Runnable() {
+
+				@Override
+	            public void run() {
+			    	b.init(rangedZ, rangedWx, rangedWy);
+			    	
+			    	curveWx = b.valuesWithX();
+			    	curveWy	= b.valuesWithY(); 			
+					// sx2-sy2
+					for(int i=0;i<curveWx.length;i++)
+						Calibcurve[i] = curveWx[i]*curveWx[i]-curveWy[i]*curveWy[i];
+				
+					// Display result
+					b.plotWxWyFitCurves();
+	            }
+	        });
+		    t.start();
+		    try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	
 	//////////////////////////////////////////////////////////////
 	// Save
 	public void saveCalib(String path){
-		cal.saveAsCSV(path);
+		//cal.saveAsCSV(path);
+		b.saveAsCSV(path);
 	}
 	
 	//////////////////////////////////////////////////////////////
@@ -212,9 +254,9 @@ public class Calibrator {
     	double[] rangedWx = new double[rEnd-rStart+1];
     	double[] rangedWy = new double[rEnd-rStart+1];
     	
-    	java.lang.System.arraycopy(z, rStart, rangedZ, 0, rEnd-rStart+1);
-    	java.lang.System.arraycopy(wx, rStart, rangedWx, 0, rEnd-rStart+1);
-    	java.lang.System.arraycopy(wy, rStart, rangedWy, 0, rEnd-rStart+1); 
+    	System.arraycopy(z, rStart, rangedZ, 0, rEnd-rStart+1);
+    	System.arraycopy(wx, rStart, rangedWx, 0, rEnd-rStart+1);
+    	System.arraycopy(wy, rStart, rangedWy, 0, rEnd-rStart+1); 
     	
         final CalibrationCurve problem = new CalibrationCurve(rangedZ,rangedWx, rangedWy);
         
@@ -245,6 +287,17 @@ public class Calibrator {
         	curvex[i] = values[i];
         	curvey[i] = values[i+curvex.length];
         }
+	}
+
+
+	public void closePlotWindows() {
+		b.closePlotWindows();
+		//cal.closePlotWindows();
+	}
+
+
+	public void readCalib(String path) {
+		b.readCSV(path);
 	}
 	
 }

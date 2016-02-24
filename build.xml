@@ -5,61 +5,60 @@
               directory with the processing instruction <?eclipse.ant.import?>
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="3DAstigmatism">
     <property environment="env"/>
-    <property name="ECLIPSE_HOME" value="../../../../../../Applications/eclipse/"/>
     <property name="junit.output.dir" value="junit"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
     <import file="user.xml"/>
     <path id="JUnit 4.libraryclasspath">
-        <pathelement location="${ECLIPSE_HOME}plugins/org.junit_4.11.0.v201303080030/junit.jar"/>
-        <pathelement location="${ECLIPSE_HOME}plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
+        <pathelement location="${eclipse.home}/plugins/org.junit_4.11.0.v201303080030/junit.jar"/>
+        <pathelement location="${eclipse.home}/plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
     </path>
     <path id="3DAstigmatism.classpath">
         <pathelement location="bin"/>
         <path refid="JUnit 4.libraryclasspath"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/AstigPlugin/imglib2-2.2.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/AstigPlugin/imglib2-algorithm-0.2.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/AstigPlugin/imglib2-algorithm-gpl-0.1.3.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/AstigPlugin/imglib2-ij-2.0.0-beta-30.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/AstigPlugin/jama-1.0.3.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/ij.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/bsh-2.0b4.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/clojure-1.3.0.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/clooj-0.2.7.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/commons-math-2.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/commons-math3-3.4.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/core.cache-0.6.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/core.memoize-0.5.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/data.json-0.1.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/formats-api-5.1.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/formats-common-5.1.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/gson-2.2.4.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/guava-17.0.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/ij-1.48v.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/jcommon-1.0.23.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/jfreechart-1.0.19.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/joda-time-2.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/kryo-2.24.0.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/logback-classic-1.1.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/logback-core-1.1.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/miglayout-core-4.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/miglayout-swing-4.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/minlog-1.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/MMAcqEngine.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/MMCoreJ.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/MMJ_.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/objenesis-2.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/ome-xml-5.1.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/protobuf-java-2.5.0.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/rsyntaxtextarea-2.5.2.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/serializer-2.7.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/slf4j-api-1.7.6.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/swingx-0.9.5.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/TSFProto-SVN.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/xalan-2.7.1.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/Micro-Manager/xml-apis-1.3.04.jar"/>
-        <pathelement location="../../../../../../Applications/Micro-Manager-1.4/plugins/AstigPlugin/scijava-common-2.40.0.jar"/>
+        <pathelement location="${InstallRoot}/plugins/AstigPlugin/imglib2-2.2.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/AstigPlugin/imglib2-algorithm-0.2.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/AstigPlugin/imglib2-algorithm-gpl-0.1.3.jar"/>
+        <pathelement location="${InstallRoot}/plugins/AstigPlugin/imglib2-ij-2.0.0-beta-30.jar"/>
+        <pathelement location="${InstallRoot}/plugins/AstigPlugin/jama-1.0.3.jar"/>
+        <pathelement location="${InstallRoot}/plugins/AstigPlugin/scijava-common-2.40.0.jar"/>
+        <pathelement location="${InstallRoot}/ij.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/bsh-2.0b4.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/clojure-1.3.0.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/clooj-0.2.7.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/commons-math-2.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/commons-math3-3.4.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/core.cache-0.6.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/core.memoize-0.5.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/data.json-0.1.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/formats-api-5.1.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/formats-common-5.1.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/gson-2.2.4.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/guava-17.0.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/ij-1.48v.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/jcommon-1.0.23.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/jfreechart-1.0.19.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/joda-time-2.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/kryo-2.24.0.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/logback-classic-1.1.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/logback-core-1.1.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/miglayout-core-4.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/miglayout-swing-4.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/minlog-1.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/MMAcqEngine.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/MMCoreJ.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/MMJ_.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/objenesis-2.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/ome-xml-5.1.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/protobuf-java-2.5.0.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/rsyntaxtextarea-2.5.2.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/serializer-2.7.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/slf4j-api-1.7.6.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/swingx-0.9.5.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/TSFProto-SVN.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/xalan-2.7.1.jar"/>
+        <pathelement location="${InstallRoot}/plugins/Micro-Manager/xml-apis-1.3.04.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -105,15 +104,6 @@
         <java classname="org.micromanager.AstigPlugin.gui.HistogramRendererPanel" failonerror="true" fork="yes">
             <classpath refid="3DAstigmatism.classpath"/>
         </java>
-    </target>
-    <target name="ManagerTest">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="org.micromanager.AstigPlugin.tests.ManagerTest" todir="${junit.output.dir}"/>
-            <jvmarg line="-XX:+HeapDumpOnOutOfMemoryError -Xmx2048M"/>
-            <classpath refid="3DAstigmatism.classpath"/>
-        </junit>
     </target>
     <target name="Run MicroManager">
         <java classname="ij.ImageJ" dir="../../../../../../Applications/Micro-Manager1.4" failonerror="true" fork="yes">

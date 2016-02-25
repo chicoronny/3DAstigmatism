@@ -46,14 +46,15 @@ public class CalibrationTest {
 	private boolean fitCurve() {
 		final int rangeMin = 170; //set
 		final int rangeMax = 1080; //set
-		//calibrator.fitCalibrationCurve(rangeMin, rangeMax);
+		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("/media/backup/ownCloud/set1-calb.csv");
-		calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
+		calibrator.saveCalib("/media/backup/ownCloud/set1-calb.csv",true);
+		calibrator.saveCalib("/media/backup/ownCloud/set1-calib.csv",false);
+		//calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}
 

@@ -1,16 +1,13 @@
 package org.micromanager.AstigPlugin.plugins;
 
 import ij.IJ;
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
@@ -43,16 +40,20 @@ public class AstigFitterB<T extends RealType<T>> extends Fitter<T> {
 	
 	@Override
 	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth) {
-		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
 		List<Element> found = new ArrayList<Element>();
 		int halfKernel = size / 2;
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			double x = loc.getX()/pixelDepth;
-			double y = loc.getY()/pixelDepth;
-			final Roi origroi = new Roi(x - halfKernel, y - halfKernel, size, size);
-			final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
-			GaussianFitterZB gf = new GaussianFitterZB(ip, roi, 1000, 1000, pixelDepth, params);
+			long x = Math.round(loc.getX()/pixelDepth);
+			long y = Math.round(loc.getY()/pixelDepth);
+			//final Roi origroi = new Roi(x - halfKernel, y - halfKernel, size, size);
+			//final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
+			long[] imageMin = new long[2];
+			pixels.min(imageMin);
+			long[] imageMax = new long[2];
+			pixels.max(imageMax);
+			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
+			GaussianFitterZB<T> gf = new GaussianFitterZB<T>(pixels, roi, 1000, 1000, pixelDepth, params);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){

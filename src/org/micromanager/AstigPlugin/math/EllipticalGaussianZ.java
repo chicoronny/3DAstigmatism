@@ -1,7 +1,9 @@
 package org.micromanager.AstigPlugin.math;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import java.util.Arrays;
 
@@ -71,12 +73,14 @@ public class EllipticalGaussianZ implements OptimizationData {
             	 double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
             	 
         	     for (int i = 0; i < xgrid.length; ++i) {	 
-        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*Ey(ygrid[i], point)*dEx(xgrid[i],point);
-        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*Ex(xgrid[i], point)*dEy(ygrid[i],point); 
+        	    	 double ex = Ex(xgrid[i], point);
+        	    	 double ey = Ey(ygrid[i], point);
+        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*ey*dEx(xgrid[i],point);
+        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*ex*dEy(ygrid[i],point); 
         	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*
-        	    			 (dEsx(xgrid[i],point)*Ey(ygrid[i], point)*dSx(point[INDEX_Z0])+
-	    					 Ex(xgrid[i],point)*dEsy(ygrid[i], point)*dSy(point[INDEX_Z0]));
-        	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i], point);
+        	    			 (dEsx(xgrid[i],point)*ey*dSx(point[INDEX_Z0])+
+	    					 ex*dEsy(ygrid[i], point)*dSy(point[INDEX_Z0]));
+        	    	 jacobian[i][INDEX_I0] = ex*ey;
         	    	 jacobian[i][INDEX_Bg] = 1;
         	     }
         	     return jacobian;
@@ -84,17 +88,22 @@ public class EllipticalGaussianZ implements OptimizationData {
         };
     }
  
-	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
+	public <T extends RealType<T>> double[] getInitialGuess(RandomAccessibleInterval<T> ip, Interval roi) {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
 	    
-	    double[] centroid = CentroidFitterIP.fitCentroidandWidth(ip,roi, ip.getAutoThreshold());
+        // compute min and max of the Image
+	    final T max = LemmingUtils.computeMax( Views.iterable(ip));
+	    final T min = LemmingUtils.computeMin( Views.iterable(ip));
+	    
+	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(Views.interval(ip, roi), 0);
+	    double[] centroid = cf.fit();
 	    	    
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
 	    initialGuess[INDEX_Z0] = params[INDEX_Mp];
-	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin();
-	    initialGuess[INDEX_Bg] = ip.getMin();
+	    initialGuess[INDEX_I0] = max.getRealDouble()-min.getRealDouble();
+	    initialGuess[INDEX_Bg] = min.getRealDouble();
 	    
 		return initialGuess;
 	}

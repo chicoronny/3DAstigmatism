@@ -97,12 +97,10 @@ public class CalibrationCurve {
         for (int i = 0; i < z.length; ++i) {
     		b = (z[i]-params[INDEX_C]-params[INDEX_Mp])/params[INDEX_D];
     		values[i] = params[INDEX_WX]*Math.sqrt(1+b*b+params[INDEX_AX]*b*b*b+params[INDEX_BX]*b*b*b*b);
-    		//System.out.println(values[i]);
         }
         for (int i = z.length; i < 2*z.length; ++i) {
     		b = (z[i-z.length]+params[INDEX_C]-params[INDEX_Mp])/params[INDEX_D];
     		values[i] = params[INDEX_WY]*Math.sqrt(1+b*b+params[INDEX_AY]*b*b*b+params[INDEX_BY]*b*b*b*b);
-    		//System.out.println(values[i]);
         }
 
         return values;

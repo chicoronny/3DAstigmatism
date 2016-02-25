@@ -11,10 +11,12 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.micromanager.AstigPlugin.interfaces.FitterInterface;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.RealType;
 
-public class GaussianFitterZ implements FitterInterface {
+public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 	
 	public static final int INDEX_X0 = 0;
 	public static final int INDEX_Y0 = 1;
@@ -24,8 +26,7 @@ public class GaussianFitterZ implements FitterInterface {
 	private static final int INDEX_C = 6;
 	private static final int INDEX_D = 7;
 	
-	private ImageProcessor ip;
-	private Roi roi;
+	private Interval roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
@@ -33,9 +34,10 @@ public class GaussianFitterZ implements FitterInterface {
 	private double[] Ival;
 	private double[] params;
 	private double pixelSize;
+	private RandomAccessibleInterval<T> ip;
 
-	public GaussianFitterZ(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_, double pixelSize_, double[] params_) {
-		ip = ip_;
+	public GaussianFitterZ(RandomAccessibleInterval<T> pixels_, Interval roi_, int maxIter_, int maxEval_, double pixelSize_, double[] params_) {
+		ip = pixels_;
 		roi = roi_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
@@ -62,21 +64,24 @@ public class GaussianFitterZ implements FitterInterface {
 	}
 	
 	private void createGrids(){
-		int rwidth = (int) roi.getFloatWidth();
-		int rheight = (int) roi.getFloatHeight();
-		int xstart = (int) roi.getXBase();
-		int ystart = (int) roi.getYBase();
+		int rwidth = (int) roi.dimension(0);
+		int rheight = (int) roi.dimension(1);
+		int xstart = (int) roi.min(0);
+		int ystart = (int) roi.min(1);
 
 		xgrid = new int[rwidth*rheight];
 		ygrid = new int[rwidth*rheight];
 		Ival = new double[rwidth*rheight];
+		RandomAccess<T> ra = ip.randomAccess();
 		
 		//double max = Double.NEGATIVE_INFINITY;
 		for(int i=0;i<rheight;i++){
 			for(int j=0;j<rwidth;j++){
 				ygrid[i*rwidth+j] = i+ystart;
 				xgrid[i*rwidth+j] = j+xstart;
-				Ival[i*rwidth+j] = ip.get(j+xstart,i+ystart);
+				
+				ra.setPosition(new int[]{j+xstart,j+xstart});
+				Ival[i*rwidth+j]  = ra.get().getRealDouble();                 //ip.get(j+xstart,i+ystart);
 				//max = Math.max(max, Ival[i*rwidth+j]);
 			}
 		}
@@ -113,10 +118,7 @@ public class GaussianFitterZ implements FitterInterface {
 		} catch(Exception e){
         	return null;
 		}
-        
-		//check bounds
-		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
-			return null;
+   
 		
 		double[] result = new double[10];
 		double[] error = get3DError(fittedEG, eg);

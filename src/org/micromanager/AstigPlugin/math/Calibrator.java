@@ -192,13 +192,13 @@ public class Calibrator {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
+	}
 	
 	//////////////////////////////////////////////////////////////
 	// Save
-	public void saveCalib(String path){
-		//cal.saveAsCSV(path);
-		b.saveAsCSV(path);
+	public void saveCalib(String path, boolean bsplines){
+		cal.saveAsCSV(path);
+		if (bsplines) b.saveAsCSV(path);
 	}
 	
 	//////////////////////////////////////////////////////////////
@@ -292,12 +292,12 @@ public class Calibrator {
 
 	public void closePlotWindows() {
 		b.closePlotWindows();
-		//cal.closePlotWindows();
+		cal.closePlotWindows();
 	}
 
 
 	public void readCalib(String path) {
-		b.readCSV(path);
+		cal.readCSV(path);
 	}
 	
 }

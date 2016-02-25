@@ -64,7 +64,7 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 		
 		RandomAccess<T> ra = op.randomAccess();
 		for (int i = 0; i < n; i++){
-			ra.setPosition(StrictMath.round(r[i]), i);
+			ra.setPosition(Math.round(r[i]), i);
 		}
 		r[n*2] = ra.get().getRealDouble();
 		

@@ -9,6 +9,7 @@ import java.util.Map;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
@@ -41,19 +42,17 @@ public class AstigFitterB<T extends RealType<T>> extends Fitter<T> {
 	@Override
 	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth) {
 		List<Element> found = new ArrayList<Element>();
-		int halfKernel = size / 2;
+		int halfKernel = size;
+		long[] imageMax = new long[2];
+		long[] imageMin = new long[2];
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			long x = Math.round(loc.getX()/pixelDepth);
 			long y = Math.round(loc.getY()/pixelDepth);
-			//final Roi origroi = new Roi(x - halfKernel, y - halfKernel, size, size);
-			//final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
-			long[] imageMin = new long[2];
 			pixels.min(imageMin);
-			long[] imageMax = new long[2];
 			pixels.max(imageMax);
 			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			GaussianFitterZB<T> gf = new GaussianFitterZB<T>(pixels, roi, 1000, 1000, pixelDepth, params);
+			GaussianFitterZB<T> gf = new GaussianFitterZB<T>(Views.interval(pixels, roi), 1000, 1000, pixelDepth, params);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){

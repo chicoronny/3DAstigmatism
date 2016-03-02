@@ -137,6 +137,7 @@ public class Calibration {
 	///////////////////////////////////////// Save
 	public void saveAsCSV(String path){
 		csvWriter w = new csvWriter(new File(path));
+		final double zStep=Math.abs(zgrid[zgrid.length-1]-zgrid[0])/zgrid.length;
 		w.process("zGrid, Wx, Wy, Curve, curveWx, CurveWy \n");
  	    for (int i=0; i< zgrid.length;i++){
  	    	String s = "" + zgrid[i] + ", " + Wx[i] + ", " + Wy[i] + ", " + Calibcurve[i] + ", " +  curveWx[i] + ", " + curveWy[i] + "\n";
@@ -146,9 +147,8 @@ public class Calibration {
  	   String ps = "";
  	   for (int j=0;j<PARAM_LENGTH;j++)
  		   ps += param[j] + ", ";
- 	   ps = ps.substring(0,ps.length()-3);
- 	   ps += "\n";
- 	   w.process(ps);	   
+ 	   ps += zStep + "\n";
+ 	   w.process(ps);
  	   w.close();
 	}
 	

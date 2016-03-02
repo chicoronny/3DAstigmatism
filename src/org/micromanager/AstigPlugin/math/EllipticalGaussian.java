@@ -26,7 +26,8 @@ public class EllipticalGaussian implements OptimizationData {
 	private static int INDEX_I0 = 4;
 	private static int INDEX_Bg = 5;
 	private static int PARAM_LENGTH = 6;
-	private static double sqrt2 = Math.sqrt(2);
+	private static double sqrt2 = FastMath.sqrt(2);
+	private static double sqrtPI = FastMath.sqrt(FastMath.PI);
 	
 	//private static double defaultSigma = 1.5;
 	
@@ -61,12 +62,14 @@ public class EllipticalGaussian implements OptimizationData {
 
             	 double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
             	 
-        	     for (int i = 0; i < xgrid.length; ++i) {        	    	 
-        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*Ey(ygrid[i], point)*dEx(xgrid[i],point);
-        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*Ex(xgrid[i], point)*dEy(ygrid[i],point);
-        	    	 jacobian[i][INDEX_SX] = point[INDEX_I0]*Ey(ygrid[i], point)*dEsx(xgrid[i],point);
-        	    	 jacobian[i][INDEX_SY] = point[INDEX_I0]*Ex(xgrid[i], point)*dEsy(ygrid[i],point);
-        	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i],point);
+        	     for (int i = 0; i < xgrid.length; ++i) {
+        	    	 double ex = Ex(xgrid[i], point);
+         	    	 double ey = Ey(ygrid[i], point);
+        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*ey*dEx(xgrid[i],point);
+        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*ex*dEy(ygrid[i],point);
+        	    	 jacobian[i][INDEX_SX] = point[INDEX_I0]*ey*dEsx(xgrid[i],point);
+        	    	 jacobian[i][INDEX_SY] = point[INDEX_I0]*ex*dEsy(ygrid[i],point);
+        	    	 jacobian[i][INDEX_I0] = ex*ey;
         	    	 jacobian[i][INDEX_Bg] = 1;
         	     }
         	     
@@ -78,9 +81,7 @@ public class EllipticalGaussian implements OptimizationData {
 	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
-	    //ImageProcessor ip = ip_.duplicate();
 	    ip.setRoi(roi);
-	    //double[] centroid = CentroidFitterAlternative.fitCentroidandWidth(ip,roi, ip.getAutoThreshold());
 	    ImageStatistics stat = ip.getStatistics();
 	    
 	    initialGuess[INDEX_X0] = stat.xCenterOfMass;
@@ -89,8 +90,8 @@ public class EllipticalGaussian implements OptimizationData {
 	    initialGuess[INDEX_SX] = Math.abs(stat.skewness);
 	    initialGuess[INDEX_SY] = Math.abs(stat.skewness);
 	        
-	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin(); 
-	    initialGuess[INDEX_Bg] = stat.median;
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE; 
+	    initialGuess[INDEX_Bg] = 0;
 		
 		return initialGuess;
 	}
@@ -102,7 +103,7 @@ public class EllipticalGaussian implements OptimizationData {
 	}
 	
 	private static double dErf(double x){
-		return 2*FastMath.exp(-x*x)/FastMath.sqrt(FastMath.PI);
+		return 2*FastMath.exp(-x*x)/sqrtPI;
 	}
 
 	private static double Ex(double x, double[] variables){

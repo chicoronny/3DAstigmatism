@@ -1,5 +1,7 @@
 package org.micromanager.AstigPlugin.math;
 
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
@@ -11,10 +13,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.micromanager.AstigPlugin.interfaces.FitterInterface;
 
-import net.imglib2.Interval;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 	
@@ -26,7 +27,6 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 	private static final int INDEX_C = 6;
 	private static final int INDEX_D = 7;
 	
-	private Interval roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
@@ -34,11 +34,10 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 	private double[] Ival;
 	private double[] params;
 	private double pixelSize;
-	private RandomAccessibleInterval<T> ip;
+	private IntervalView<T> interval;
 
-	public GaussianFitterZ(RandomAccessibleInterval<T> pixels_, Interval roi_, int maxIter_, int maxEval_, double pixelSize_, double[] params_) {
-		ip = pixels_;
-		roi = roi_;
+	public GaussianFitterZ(final IntervalView<T> interval_, final int maxIter_, final int maxEval_, final double pixelSize_, final double[] params_) {
+		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 		params = params_;
@@ -64,6 +63,21 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 	}
 	
 	private void createGrids(){
+		
+		Cursor<T> cursor = interval.cursor();
+		int arraySize=(int)(interval.dimension(0)*interval.dimension(1));
+		Ival = new double[arraySize];
+		xgrid = new int[arraySize];
+		ygrid = new int[arraySize];
+		int index=0;
+		while(cursor.hasNext()){
+			cursor.fwd();
+			xgrid[index]=cursor.getIntPosition(0);
+			ygrid[index]=cursor.getIntPosition(1);
+			Ival[index++]=cursor.get().getRealDouble();
+		}
+		
+		/*
 		int rwidth = (int) roi.dimension(0);
 		int rheight = (int) roi.dimension(1);
 		int xstart = (int) roi.min(0);
@@ -72,7 +86,7 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 		xgrid = new int[rwidth*rheight];
 		ygrid = new int[rwidth*rheight];
 		Ival = new double[rwidth*rheight];
-		RandomAccess<T> ra = ip.randomAccess();
+		RandomAccess<T> ra = interval.randomAccess();
 		
 		//double max = Double.NEGATIVE_INFINITY;
 		for(int i=0;i<rheight;i++){
@@ -84,7 +98,7 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 				Ival[i*rwidth+j]  = ra.get().getRealDouble();                 //ip.get(j+xstart,i+ystart);
 				//max = Math.max(max, Ival[i*rwidth+j]);
 			}
-		}
+		}*/
 		//for (int l=0; l<Ival.length;l++)
 		//	Ival[l] /= max;
 	}
@@ -93,7 +107,7 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);
-		double[] initialGuess = eg.getInitialGuess(ip,roi);
+		double[] initialGuess = eg.getInitialGuess(interval);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		//double[] sigmas;
@@ -115,10 +129,12 @@ public class GaussianFitterZ<T extends RealType<T>> implements FitterInterface {
 			iter = optimum.getIterations();
 			eval = optimum.getEvaluations();
 			//sigmas = optimum.getSigma(0.01).toArray();
-		} catch(Exception e){
+		} catch(TooManyEvaluationsException e){
+			System.err.println("max evaluations: "+e.getMax());
         	return null;
+		} catch(DimensionMismatchException e1){
+			return null;
 		}
-   
 		
 		double[] result = new double[10];
 		double[] error = get3DError(fittedEG, eg);

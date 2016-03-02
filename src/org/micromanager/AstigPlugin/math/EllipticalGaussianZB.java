@@ -1,10 +1,7 @@
 package org.micromanager.AstigPlugin.math;
 
-import net.imglib2.Interval;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
-
+import net.imglib2.view.IntervalView;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -17,11 +14,12 @@ import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class EllipticalGaussianZB implements OptimizationData {
 	
-	int[] xgrid, ygrid;
-	PolynomialSplineFunction psx;
-	PolynomialSplineFunction psy;
-	double[] initialGuess;
-	private Double z0;
+	private int[] xgrid, ygrid;
+	private PolynomialSplineFunction psx;
+	private PolynomialSplineFunction psy;
+	private double z0;
+	private double[] initialGuess;
+	
 
 	public static int INDEX_X0 = 0;
 	public static int INDEX_Y0 = 1;
@@ -30,8 +28,9 @@ public class EllipticalGaussianZB implements OptimizationData {
 	public static int INDEX_Bg = 4;
 	public static int PARAM_LENGTH = 5;
 	
-	static double defaultSigma = 1.5;
+	//static double defaultSigma = 1.5;
 	private static double sqrt2 = FastMath.sqrt(2);
+	private static double sqrtPI = FastMath.sqrt(FastMath.PI);
 	
 	public EllipticalGaussianZB(int[] xgrid, int[] ygrid, Map<String,Object> params){
 		this.xgrid = xgrid;
@@ -64,15 +63,15 @@ public class EllipticalGaussianZB implements OptimizationData {
             public double[][] value(double[] point) throws IllegalArgumentException {
 
             	 double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
+            	 double dsx = dSx(point[INDEX_Z0]);
+            	 double dsy = dSy(point[INDEX_Z0]);
             	 
         	     for (int i = 0; i < xgrid.length; ++i) {
         	    	 double ex = Ex(xgrid[i], point);
         	    	 double ey = Ey(ygrid[i], point);
         	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*ey*dEx(xgrid[i],point);
         	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*ex*dEy(ygrid[i],point); 
-        	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*
-        	    			 (dEsx(xgrid[i],point)*ey*dSx(point[INDEX_Z0])+
-	    					 ex*dEsy(ygrid[i], point)*dSy(point[INDEX_Z0]));
+        	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*(dEsx(xgrid[i],point)*ey*dsx + ex*dEsy(ygrid[i], point)*dsy);
         	    	 jacobian[i][INDEX_I0] = ex*ey;
         	    	 jacobian[i][INDEX_Bg] = 1;
         	     }
@@ -81,22 +80,18 @@ public class EllipticalGaussianZB implements OptimizationData {
         };
     }
  
-    public <T extends RealType<T>> double[] getInitialGuess(RandomAccessibleInterval<T> ip, Interval roi) {
+    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
-	    
-        // compute min and max of the Image
-	    final T max = LemmingUtils.computeMax( Views.iterable(ip));
-	    final T min = LemmingUtils.computeMin( Views.iterable(ip));
-	    
-	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(Views.interval(ip, roi), 0);
+  
+	    final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
 	    double[] centroid = cf.fit();
 	    	    
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
 	    initialGuess[INDEX_Z0] = z0;
-	    initialGuess[INDEX_I0] = max.getRealDouble()-min.getRealDouble();
-	    initialGuess[INDEX_Bg] = min.getRealDouble();
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
+	    initialGuess[INDEX_Bg] = 0;
 	    
 		return initialGuess;
 	}
@@ -108,7 +103,7 @@ public class EllipticalGaussianZB implements OptimizationData {
 	}
 
 	private static double dErf(double x) {
-		return 2 * FastMath.exp(-x * x) / FastMath.sqrt(FastMath.PI);
+		return 2 * FastMath.exp(-x * x) / sqrtPI;
 	}
 
 	public double Ex(double x, double[] variables) {
@@ -156,27 +151,31 @@ public class EllipticalGaussianZB implements OptimizationData {
 	}
 
 	public double Sx(double z) {
+		double valuex = 1.;
 		if(psx.isValidPoint(z))
-			return psx.value(z);
-		return 1;
+			valuex = psx.value(z);
+		return valuex;
 	}
 
 	public double Sy(double z) {
+		double valuey = 1.;
 		if(psy.isValidPoint(z))
-			return psy.value(z);
-		return 1;
+			valuey = psy.value(z);
+		return valuey;
 	}
 
 	public double dSx(double z) {
+		double value = 1.;
 		if(psx.isValidPoint(z))
-			return psx.derivative().value(z);
-		return 1;
+			value = psx.derivative().value(z);
+		return value;
 	}
 
 	public double dSy(double z) {
+		double value = 1.;
 		if(psy.isValidPoint(z))
-			return -psy.derivative().value(z);
-		return 1;
+			value = psy.derivative().value(z);
+		return value;
 	}
 	
 	

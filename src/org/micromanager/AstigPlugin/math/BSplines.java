@@ -149,7 +149,7 @@ public class BSplines {
 				line=br.readLine();
 				polynomsY[n]=new PolynomialFunction(stringToDoubleArray(line));
 			}
-			map.put("psy", new PolynomialSplineFunction(knotsX,polynomsX));
+			map.put("psy", new PolynomialSplineFunction(knotsY,polynomsY));
 			line=br.readLine();
 			if (!line.contains("--")) System.err.println("Corrupt File!");
 			line=br.readLine();
@@ -165,23 +165,19 @@ public class BSplines {
 		
 		return map;
 	}
-	
-	private static int findMinIndex(double[] A){
-    	double min = A[0];
-    	int index = 0;
-    	for(int i=0;i<A.length;i++){
-    		if(A[i] < min){
-    			index = i;
-    			min = A[i];
-    		}
-    	}
-    	return index;
-	}
-	
+		
 	private double findIntersection(){
-		int minx = findMinIndex(valuesWith(zgrid,fwx)); 
-		int miny = findMinIndex(valuesWith(zgrid,fwy)); 
-		return (zgrid[minx]+zgrid[miny])/2;
+		int index = 0;
+		double max = Double.MAX_VALUE;
+		double diff = Double.MAX_VALUE;
+		for (int i=0; i<zgrid.length;i++){
+			diff = Math.abs(fwx.value(zgrid[i])-fwy.value(zgrid[i]));
+			if (diff<max){ 
+				index = i;
+				max=diff;
+			}
+		}
+		return zgrid[index];
 	}
 	
 	///////////////////////////////////////// Plot

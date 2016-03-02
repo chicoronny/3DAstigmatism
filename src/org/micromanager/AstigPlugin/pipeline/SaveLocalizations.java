@@ -1,12 +1,20 @@
 package org.micromanager.AstigPlugin.pipeline;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.LocalizationInterface;
+
+import ij.IJ;
 
 public class SaveLocalizations extends SingleRunModule {
 
@@ -14,6 +22,7 @@ public class SaveLocalizations extends SingleRunModule {
 	private File file;
 	private FileWriter w;
 	private int counter = 0;
+	private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","intensity","frame"}; 
 
 	public SaveLocalizations(File file) {
 		this.curLocale = Locale.getDefault();
@@ -25,9 +34,28 @@ public class SaveLocalizations extends SingleRunModule {
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
 
+		Element el = inputs.get(iterator).peek();
+		Set<String> headset = new LinkedHashSet<String>();
 		try {
 			w = new FileWriter(file);
+			BeanInfo b = Introspector.getBeanInfo(el.getClass());
+			for (PropertyDescriptor p : b.getPropertyDescriptors()) {
+				String prop = p.getName();
+				boolean test = prop.contains("class") | prop.contains("last");
+				if (!test){
+					headset.add(prop);
+				}
+			}
+			String headline="";
+			for (int n=0; n<preferredOrder.length; n++){
+				if(headset.contains(preferredOrder[n]))
+					headline += preferredOrder[n]+ "\t";
+			}
+			headline = headline.substring(0, headline.length()-1);
+			w.write(headline+"\n");
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IntrospectionException e) {
 			e.printStackTrace();
 		}
 
@@ -51,7 +79,7 @@ public class SaveLocalizations extends SingleRunModule {
 		try {
 			w.write(loc.toString()+"\n");
 		} catch (IOException e) {
-			e.printStackTrace();
+			IJ.error("SaveLocalization:"+e.getMessage());
 		}
 		counter++;
 		return null;

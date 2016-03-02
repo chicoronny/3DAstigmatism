@@ -122,7 +122,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private NMSDetectorFactory detectorFactory;
 	private JLabel lblFitter;
 	private FitterProvider fitterProvider;
-	private JComboBox<String> comboBoxFitter;
+	private JComboBox comboBoxFitter;
 	private JCheckBox chkboxRenderer;
 	private JCheckBox chkboxFilter;
 	private FitterFactory fitterFactory;
@@ -363,7 +363,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 
 		lblFitter = new JLabel("Fitter");
 
-		comboBoxFitter = new JComboBox<String>();
+		comboBoxFitter = new JComboBox();
 		comboBoxFitter.setPreferredSize(new Dimension(32, 26));
 		comboBoxFitter.addActionListener(this);
 
@@ -1391,7 +1391,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			infoTexts.add(factory.getInfoText());
 		}
 		final String[] names = fitterNames.toArray(new String[] {});
-		comboBoxFitter.setModel(new DefaultComboBoxModel<String>(names));
+		comboBoxFitter.setModel(new DefaultComboBoxModel(names));
 		comboBoxFitter.setRenderer(new ToolTipRenderer(infoTexts));
 
 	}
@@ -1404,7 +1404,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			this.tooltips = tooltips;
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			JComponent comp = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

@@ -2,6 +2,8 @@ package org.micromanager.AstigPlugin.math;
 
 import java.util.Map;
 
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
@@ -12,10 +14,9 @@ import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
 import org.micromanager.AstigPlugin.interfaces.FitterInterface;
 
-import net.imglib2.Interval;
-import net.imglib2.RandomAccess;
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface {
 	
@@ -25,8 +26,6 @@ public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface
 	public static final int INDEX_I0 = 3;
 	public static final int INDEX_Bg = 4;
 	
-	private RandomAccessibleInterval<T> ip;
-	private Interval roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
@@ -34,10 +33,10 @@ public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface
 	private double[] Ival;
 	private Map<String, Object> params;
 	private double pixelSize;
+	private IntervalView<T> interval;
 
-	public GaussianFitterZB(RandomAccessibleInterval<T> pixels_, Interval roi_, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
-		ip = pixels_;
-		roi = roi_;
+	public GaussianFitterZB(final IntervalView<T> interval_, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
+		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 		params = params_;
@@ -63,26 +62,17 @@ public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface
 	}
 	
 	private void createGrids(){
-		int rwidth = (int) roi.dimension(0);
-		int rheight = (int) roi.dimension(1);
-		int xstart = (int) roi.min(0);
-		int ystart = (int) roi.min(1);
-
-		xgrid = new int[rwidth*rheight];
-		ygrid = new int[rwidth*rheight];
-		Ival = new double[rwidth*rheight];
-		RandomAccess<T> ra = ip.randomAccess();
-		
-		//double max = Double.NEGATIVE_INFINITY;
-		for(int i=0;i<rheight;i++){
-			for(int j=0;j<rwidth;j++){
-				ygrid[i*rwidth+j] = i+ystart;
-				xgrid[i*rwidth+j] = j+xstart;
-				
-				ra.setPosition(new int[]{j+xstart,j+xstart});
-				Ival[i*rwidth+j]  = ra.get().getRealDouble();                 //ip.get(j+xstart,i+ystart);
-				//max = Math.max(max, Ival[i*rwidth+j]);
-			}
+		Cursor<T> cursor = interval.cursor();
+		int arraySize=(int)(interval.dimension(0)*interval.dimension(1));
+		Ival = new double[arraySize];
+		xgrid = new int[arraySize];
+		ygrid = new int[arraySize];
+		int index=0;
+		while(cursor.hasNext()){
+			cursor.fwd();
+			xgrid[index]=cursor.getIntPosition(0);
+			ygrid[index]=cursor.getIntPosition(1);
+			Ival[index++]=cursor.get().getRealDouble();
 		}
 	}
 
@@ -90,10 +80,9 @@ public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZB eg = new EllipticalGaussianZB(xgrid, ygrid, params);
-		double[] initialGuess = eg.getInitialGuess(ip,roi);
+		double[] initialGuess = eg.getInitialGuess(interval);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
-		double[] sigmas;
 		double RMS;
 		int iter, eval;
 		try {
@@ -111,9 +100,11 @@ public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface
 			RMS = optimum.getRMS();
 			iter = optimum.getIterations();
 			eval = optimum.getEvaluations();
-			sigmas = optimum.getSigma(0.01).toArray();
-		} catch(Exception e){
+		} catch(TooManyEvaluationsException e){
+			System.err.println("max evaluations: "+e.getMax());
         	return null;
+		} catch(DimensionMismatchException e1){
+			return null;
 		}
         
 		double[] result = new double[10];
@@ -123,7 +114,7 @@ public class GaussianFitterZB<T extends RealType<T>>  implements FitterInterface
 		result[2] = fittedEG[2]; // Z
 		result[3] = get2DErrorX(fittedEG,eg); // Sy
 		result[4] = get2DErrorY(fittedEG,eg); // Sx
-		result[5] = sigmas[2]; // Sz
+		result[5] = 0;//sigmas[2]; // Sz
 		result[6] = fittedEG[3]; // I0
 		result[7] = RMS;
 		result[8] = iter;

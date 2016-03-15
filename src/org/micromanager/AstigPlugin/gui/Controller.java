@@ -160,7 +160,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JButton btnImagesCalibration;
 	private JSpinner spinnerStepSize;
 	private StackWindow calibWindow;
-	private Calibrator calibrator;
+	private Calibrator<T> calibrator;
 	private JLabel lblEta;
 	private long start;
 	private SaveLocalizations saver;
@@ -960,7 +960,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		}
 
 		final int zstep = (Integer) this.spinnerStepSize.getValue();
-		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);
+		calibrator = new Calibrator<T>(calibWindow.getImagePlus(), LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"), zstep, calibRoi);
 		calibrator.fitStack();
 		final double[] zgrid = calibrator.getZgrid();
 		Arrays.sort(zgrid);
@@ -991,7 +991,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File calibFile = fc.getSelectedFile();
 			lastDir = calibFile.getAbsolutePath();
-			calibrator.saveCalib(calibFile.getAbsolutePath(),false);
+			calibrator.saveCalib(calibFile.getAbsolutePath());
 			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
 		}
 		calibrator.closePlotWindows();

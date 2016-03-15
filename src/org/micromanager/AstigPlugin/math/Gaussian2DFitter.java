@@ -11,22 +11,21 @@ import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.Cursor;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
-public class Gaussian2DFitter {
+public class Gaussian2DFitter<T extends RealType<T>> {
 
-	private ImageProcessor ip;
-	private Roi roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
-
-	public Gaussian2DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
-		ip = ip_;
-		roi = roi_;
+	private IntervalView<T> interval;
+	
+	public Gaussian2DFitter(final IntervalView<T> interval_, int maxIter_, int maxEval_) {
+		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 	}
@@ -50,20 +49,17 @@ public class Gaussian2DFitter {
 	}
 	
 	private void createGrids(){
-		int rwidth = (int) roi.getFloatWidth();
-		int rheight = (int) roi.getFloatHeight();
-		int xstart = (int) roi.getXBase();
-		int ystart = (int) roi.getYBase();
-
-		xgrid = new int[rwidth*rheight];
-		ygrid = new int[rwidth*rheight];
-		Ival = new double[rwidth*rheight];
-		for(int i=0;i<rheight;i++){
-			for(int j=0;j<rwidth;j++){
-				ygrid[i*rwidth+j] = i+ystart;
-				xgrid[i*rwidth+j] = j+xstart;
-				Ival[i*rwidth+j] = ip.get(j+xstart,i+ystart);
-			}
+		Cursor<T> cursor = interval.cursor();
+		int arraySize=(int)(interval.dimension(0)*interval.dimension(1));
+		Ival = new double[arraySize];
+		xgrid = new int[arraySize];
+		ygrid = new int[arraySize];
+		int index=0;
+		while(cursor.hasNext()){
+			cursor.fwd();
+			xgrid[index]=cursor.getIntPosition(0);
+			ygrid[index]=cursor.getIntPosition(1);
+			Ival[index++]=cursor.get().getRealDouble();
 		}
 	}
 	
@@ -78,7 +74,7 @@ public class Gaussian2DFitter {
 	                .target(Ival)
 	                .checkerPair(new ConvChecker2DGauss())
                     .parameterValidator(new ParamValidator2DGauss())
-	                .start(eg.getInitialGuess(ip,roi))
+	                .start(eg.getInitialGuess(interval))
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
 	                .build()
@@ -90,9 +86,6 @@ public class Gaussian2DFitter {
 		} catch(ConvergenceException e){
         	return null;
 		}
-        //check bounds
-		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
-			return null;
 		
         return fittedEG;
 	}	
@@ -158,7 +151,5 @@ public class Gaussian2DFitter {
 			}
 			return arg;
 		}
-
 	}
-
 }

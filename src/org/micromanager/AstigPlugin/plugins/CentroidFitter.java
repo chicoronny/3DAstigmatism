@@ -48,7 +48,7 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 		
 		final RandomAccessible<T> source = Views.extendZero(pixels);
         
-        // compute min and max of the Image
+        // compute max of the Image
         T max = LemmingUtils.computeMax( Views.iterable(pixels));
         double threshold_ = max.getRealDouble() / 100 * threshold;
 		
@@ -61,9 +61,9 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 			double x = loc.getX()/pixelDepth;
 			double y = loc.getY()/pixelDepth;
 
-			final Interval roi = new FinalInterval(new long[] { (long) StrictMath.floor(x - halfKernel),
-					(long) StrictMath.floor(y - halfKernel) }, new long[] { (long) StrictMath.ceil(x + halfKernel),
-					(long) StrictMath.ceil(y + halfKernel) });
+			final Interval roi = new FinalInterval(new long[] { (long) Math.floor(x - halfKernel),
+					(long) Math.floor(y - halfKernel) }, new long[] { (long) Math.ceil(x + halfKernel),
+					(long) Math.ceil(y + halfKernel) });
 			IntervalView<T> interval = Views.interval(source, roi);
 
 			CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, threshold_);

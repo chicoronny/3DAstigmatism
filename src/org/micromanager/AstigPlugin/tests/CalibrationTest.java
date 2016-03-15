@@ -1,23 +1,26 @@
 package org.micromanager.AstigPlugin.tests;
 
 import org.micromanager.AstigPlugin.math.Calibrator;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.gui.StackWindow;
 
+@SuppressWarnings("rawtypes")
 public class CalibrationTest {
 	
 	private StackWindow calibWindow;
 	private Calibrator calibrator;
 	
 	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("/media/backup/ownCloud/set1.tif");
+		ImagePlus calibImage = new ImagePlus("D:/ownCloud/set1.tif");
 		calibWindow = new StackWindow(calibImage);
 		calibImage.setRoi(21, 19, 21, 21);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private boolean fitbeads() {
 		final Roi roitemp = calibWindow.getImagePlus().getRoi();
 		Roi calibRoi = null;
@@ -34,7 +37,7 @@ public class CalibrationTest {
 		}
 
 		final int zstep = 10; // set
-		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);
+		calibrator = new Calibrator(calibWindow.getImagePlus(), LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"), zstep, calibRoi);
 		calibrator.fitStack();
 		//final double[] zgrid = calibrator.getCalibration().getZgrid();
 		//Arrays.sort(zgrid);
@@ -46,14 +49,12 @@ public class CalibrationTest {
 	private boolean fitCurve() {
 		final int rangeMin = 170; //set
 		final int rangeMax = 1080; //set
-		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("/media/backup/ownCloud/set1-calb.csv",true);
-		calibrator.saveCalib("/media/backup/ownCloud/set1-calib.csv",false);
+		calibrator.saveCalib("D:/ownCloud/set1-calb.csv");
 		//calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}

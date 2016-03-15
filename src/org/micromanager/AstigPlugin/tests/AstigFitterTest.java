@@ -12,7 +12,6 @@ import org.micromanager.AstigPlugin.pipeline.ImageLoader;
 import org.micromanager.AstigPlugin.pipeline.Manager;
 import org.micromanager.AstigPlugin.pipeline.SaveLocalizations;
 import org.micromanager.AstigPlugin.plugins.AstigFitter;
-import org.micromanager.AstigPlugin.plugins.AstigFitterB;
 import org.micromanager.AstigPlugin.plugins.NMSDetector;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
@@ -51,7 +50,7 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
 		//final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calib.csv").get("param"));
-		final Fitter<T> fitter = new AstigFitterB<T>(7, BSplines.readCSV("/media/backup/ownCloud/set1-calb.csv"));
+		final Fitter<T> fitter = new AstigFitter<T>(7, BSplines.readCSV("/media/backup/ownCloud/set1-calb.csv"));
 
 		final SaveLocalizations saver = new SaveLocalizations(new File("/media/backup/ownCloud/set1-b.csv"));
 		

@@ -2,9 +2,8 @@ package org.micromanager.AstigPlugin.math;
 
 import java.util.Arrays;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-import ij.process.ImageStatistics;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
@@ -78,19 +77,18 @@ public class EllipticalGaussian implements OptimizationData {
         };
     }
  
-	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
+    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
-	    ip.setRoi(roi);
-	    ImageStatistics stat = ip.getStatistics();
-	    
-	    initialGuess[INDEX_X0] = stat.xCenterOfMass;
-	    initialGuess[INDEX_Y0] = stat.yCenterOfMass;
+   
+	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
+	    double[] centroid = cf.fit();
 
-	    initialGuess[INDEX_SX] = Math.abs(stat.skewness);
-	    initialGuess[INDEX_SY] = Math.abs(stat.skewness);
-	        
-	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE; 
+		initialGuess[INDEX_X0] = centroid[INDEX_X0];
+		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];    
+	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
+	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
 	    initialGuess[INDEX_Bg] = 0;
 		
 		return initialGuess;

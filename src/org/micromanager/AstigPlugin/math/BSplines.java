@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.apache.commons.math3.exception.NonMonotonicSequenceException;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -27,6 +28,8 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import ij.IJ;
 
 public class BSplines {
 
@@ -56,8 +59,11 @@ public class BSplines {
 		double[] kwy = new double[numKnots];
 		calculateKnots(z, Wx, kz, kwx);
 		calculateKnots(z, Wy, kz, kwy);
+		try{
 		fwx = interpolator.interpolate(kz, kwx);
 		fwy = interpolator.interpolate(kz, kwy);
+		} catch (NonMonotonicSequenceException e)
+		{IJ.handleException(e);}
 	}
 	
 	private void calculateKnots(double[] z, double[] w, double[] kz, double[] kw){
@@ -90,9 +96,8 @@ public class BSplines {
 	
 	private static double[] valuesWith(double z[], PolynomialSplineFunction function) {
 		double[] values = new double[z.length];
-		for (int i = 0; i < z.length; ++i) {
+		for (int i = 0; i < z.length; ++i) 
 			values[i] = function.value(z[i]);
-		}
 		return values;
 	}
 	

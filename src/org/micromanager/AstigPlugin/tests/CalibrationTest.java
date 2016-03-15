@@ -15,9 +15,9 @@ public class CalibrationTest {
 	private Calibrator calibrator;
 	
 	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("D:/ownCloud/set1.tif");
+		ImagePlus calibImage = new ImagePlus("D:/ownCloud/z-stack_1.tif");
 		calibWindow = new StackWindow(calibImage);
-		calibImage.setRoi(21, 19, 21, 21);
+		calibImage.setRoi(45, 95, 21, 21);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -47,8 +47,8 @@ public class CalibrationTest {
 	}
 
 	private boolean fitCurve() {
-		final int rangeMin = 170; //set
-		final int rangeMax = 1080; //set
+		final int rangeMin = 0; //set
+		final int rangeMax = 400; //set
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}

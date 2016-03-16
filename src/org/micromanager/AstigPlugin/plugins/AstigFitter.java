@@ -58,10 +58,10 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 			if (result != null){
 				result[0] *= pixelDepth;
 				result[1] *= pixelDepth;
-				result[2] *= (Double)params.get("zStep");
+			//	result[2] *= (Double)params.get("zStep");
 				result[3] *= pixelDepth;
 				result[4] *= pixelDepth;
-				result[5] *= (Double)params.get("zStep");
+			//	result[5] *= (Double)params.get("zStep");
 				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], loc.getFrame()));
 			}			
 		}

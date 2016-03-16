@@ -70,7 +70,8 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 			transferList.addAll(frameList);
 			frameB = process(transferList, true);
 			if(interpolating)
-				interpolate();
+				if (frameA != null)
+                    interpolate();
 			running = false;
 			lastListSize = frameList.size() - 1;
 			lastFrames();

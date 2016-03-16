@@ -171,7 +171,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblMaxrange;
 	private JButton btnDataSource;
 	private Locale curLocale;
-	public static String lastDir = System.getProperty("user.home"); 
+	public static String lastDir = "X:/projects/Benchmark data/ImageOpticsPlugin/Owndata";//System.getProperty("user.home"); 
 
 	/**
 	 * Create the frame.
@@ -951,7 +951,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			final double w = roitemp.getFloatWidth();
 			final double h = roitemp.getFloatHeight();
 			if (w != h) {
-				IJ.showMessage("Needs a quadratic ROI /n(hint: press Shift).");
+				IJ.showMessage("Needs a square ROI /n(hint: press Shift).");
 				return false;
 			}
 			calibRoi = roitemp;

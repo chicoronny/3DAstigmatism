@@ -95,8 +95,10 @@ public class Calibrator<T extends RealType<T> & NativeType<T>> {
 		ThreadUtil.startAndJoin(threads);
 
 		createZgrid(zgrid, 0);
-		fixCurve(Wx);
+		fixCurve(Wx);											
 		fixCurve(Wy);
+		
+		b.plot(zgrid, Wx, Wy, "Lateral PSF sizes");
 	}	
 	
 	private static void fixCurve(double[] d) {
@@ -118,6 +120,8 @@ public class Calibrator<T extends RealType<T> & NativeType<T>> {
     	System.arraycopy(zgrid, rangeStart, rangedZ, 0, arraySize);
     	System.arraycopy(Wx, rangeStart, rangedWx, 0, arraySize);
     	System.arraycopy(Wy, rangeStart, rangedWy, 0, arraySize); 
+    	
+    	double maxz = zgrid[zgrid.length-1];
     	
        Thread t = new Thread(new Runnable() {
 

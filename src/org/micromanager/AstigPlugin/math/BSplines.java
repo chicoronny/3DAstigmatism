@@ -62,6 +62,7 @@ public class BSplines {
 		try{
 		fwx = interpolator.interpolate(kz, kwx);
 		fwy = interpolator.interpolate(kz, kwy);
+		
 		} catch (NonMonotonicSequenceException e)
 		{IJ.handleException(e);}
 	}
@@ -186,9 +187,9 @@ public class BSplines {
 	}
 	
 	///////////////////////////////////////// Plot
-	public void plot(double[] W1, double[] W2, String title){
+	public void plot(double[] z, double[] W1, double[] W2, String title){
 		if(W1.length > 0 && W2.length>0){
-			createXYDots(createDataSet(zgrid, W1, "Width in x", W2, "Width in y"), "Z (nm)", "Width", title);
+			createXYDots(createDataSet(z, W1, "Width in x", W2, "Width in y"), "Z (nm)", "Width", title);
 		}
 	}	
 

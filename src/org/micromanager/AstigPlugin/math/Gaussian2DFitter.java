@@ -82,6 +82,9 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 	        );
 			fittedEG = optimum.getPoint().toArray();
 	        
+
+		    System.out.println("Fitted: "+fittedEG[0]+","+fittedEG[1]+","+fittedEG[2]+","+fittedEG[3]+","+fittedEG[4]+","+fittedEG[5]);
+			
 		} catch(TooManyEvaluationsException  e){
         	return null;
 		} catch(ConvergenceException e){

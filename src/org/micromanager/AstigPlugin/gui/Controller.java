@@ -968,15 +968,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 		this.rangeSlider.setMaximum((int) zgrid[zgrid.length - 1]);
 		this.rangeSlider.setValue((int) zgrid[0]);
 		this.rangeSlider.setUpperValue((int) zgrid[zgrid.length - 1]);
-
-		calibWindow.close();
+		
 		return true;
 	}
 
 	private boolean fitCurve() {
 		final int rangeMin = rangeSlider.getValue();
 		final int rangeMax = rangeSlider.getUpperValue();
-		//calibrator.fitCalibrationCurve(rangeMin, rangeMax);
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
@@ -995,7 +993,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, calibFile);
 		}
 		calibrator.closePlotWindows();
-		
+		calibWindow.close();
 	}
 
 	private void choosePP() {

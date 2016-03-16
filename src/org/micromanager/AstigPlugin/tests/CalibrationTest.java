@@ -36,7 +36,7 @@ public class CalibrationTest {
 			calibRoi = new Roi(0, 0, calibWindow.getImagePlus().getWidth(), calibWindow.getImagePlus().getHeight());
 		}
 
-		final int zstep = 10; // set
+		final int zstep = 50; // set
 		calibrator = new Calibrator(calibWindow.getImagePlus(), LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"), zstep, calibRoi);
 		calibrator.fitStack();
 		//final double[] zgrid = calibrator.getCalibration().getZgrid();
@@ -48,7 +48,7 @@ public class CalibrationTest {
 
 	private boolean fitCurve() {
 		final int rangeMin = 0; //set
-		final int rangeMax = 400; //set
+		final int rangeMax = 2000; //set
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}

@@ -65,8 +65,9 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 	
 	public double[] fit() {
 		createGrids();
-		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
-		LevenbergMarquardtOptimizer optimizer = getOptimizer();
+		final EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
+		final double[] initial = eg.getInitialGuess(interval);
+		final LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		try {
 			final Optimum optimum = optimizer.optimize(
@@ -74,7 +75,7 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 	                .target(Ival)
 	                .checkerPair(new ConvChecker2DGauss())
                     .parameterValidator(new ParamValidator2DGauss())
-	                .start(eg.getInitialGuess(interval))
+	                .start(initial)
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
 	                .build()
@@ -86,7 +87,8 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 		} catch(ConvergenceException e){
         	return null;
 		}
-		
+		if (fittedEG[2]>5*initial[2]||fittedEG[3]>5*initial[3]) //check for extremes
+			return null;
         return fittedEG;
 	}	
 	

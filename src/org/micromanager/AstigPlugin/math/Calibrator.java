@@ -62,7 +62,7 @@ public class Calibrator<T extends RealType<T> & NativeType<T>> {
 	// 1D and 2D fits
 	public void fitStack() {
 
-		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors()-1);
+		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors());
 		final AtomicInteger ai = new AtomicInteger(0);
 
 		for (int ithread = 0; ithread < threads.length; ithread++) {

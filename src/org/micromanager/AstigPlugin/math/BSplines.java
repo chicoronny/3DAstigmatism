@@ -39,7 +39,7 @@ public class BSplines {
 	private double[] Wx;
 	private double[] Wy;
 	private JFrame plotWindow;
-	private static int numKnots = 21;
+	private static int numKnots = 17;
 	
 	public BSplines(){
 		plotWindow = new JFrame();

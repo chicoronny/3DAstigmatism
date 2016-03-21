@@ -7,14 +7,24 @@ public class LocalizationAllParameters extends Localization{
 	final private double sY;
 	final private double sZ;
 	final private double bg;
+	final private double RMS;
+	final private double iter;
+	final private double eval;
+	final private double xdetect;
+	final private double ydetect;
 
-	public LocalizationAllParameters(double x, double y, double z, double sx, double sy, double sz, double intensity, double bg, long frame) {
+	public LocalizationAllParameters(double x, double y, double z, double intensity, double bg, double sx, double sy, double sz, double RMS, double iter, double eval, double xdetect, double ydetect, long frame) {
 		super(x, y, intensity, frame);
 		this.Z = z;
 		this.sX = sx;
 		this.sY = sy;
 		this.sZ = sz;
 		this.bg = bg;
+		this.RMS = RMS;
+		this.iter = iter;
+		this.eval = eval;
+		this.xdetect = xdetect;
+		this.ydetect = ydetect;
 	}
 
 	public double getZ(){
@@ -32,13 +42,31 @@ public class LocalizationAllParameters extends Localization{
 	public double getsZ(){
 		return sZ;
 	}
-	
+
 	public double getBg(){
 		return bg;
+	}
+
+	public double getRMS(){
+		return RMS;
+	}
+
+	public double getEval(){
+		return eval;
+	}
+
+	public double getIter(){
+		return iter;
+	}
+	public double getXdetect(){
+		return xdetect;
+	}
+	public double getYdetect(){
+		return ydetect;
 	}
 	
 	@Override
 	public String toString(){
-		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + getIntensity() +"\t" + getBg()+ "\t" + getFrame();
+		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + getIntensity() +"\t" + getBg()+  "\t"+ getXdetect()+ "\t" + getYdetect()+"\t" + getRMS()+ "\t" + getIter()+ "\t" + getEval()+ "\t"  + getFrame();
 	}
 }

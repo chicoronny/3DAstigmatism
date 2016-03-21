@@ -29,7 +29,7 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	private ImagePlus loc_im;
 	
 	private void setUp() {
-		final File file = new File("/media/backup/ownCloud/set1.tif");
+		final File file = new File("X/projects/Benchmark data/ImageOpticsPlugin/Owndata/3D-experiment/data2/img_000023381_Default_000.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -69,10 +69,13 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	@SuppressWarnings({ "rawtypes" })
 	public static void main(String[] args) {
 		AstigFitterTest mt = new AstigFitterTest();
-		mt.setUp();
-		mt.pipe.run();
-		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
-		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
+		//mt.setUp();
+		//mt.pipe.run();
+		//assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
+		//assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
+		
+		
+		
 	}
 
 }

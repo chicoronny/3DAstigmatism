@@ -83,7 +83,7 @@ public class NMSDetector <T extends RealType<T>> extends Detector<T> {
 					ra.setPosition(new int[]{mi,mj});
 					T value = ra.get().copy();
 					if (value.getRealDouble() > threshold_) {
-						found.add(new Localization(mi * frame.getPixelDepth(), mj * frame.getPixelDepth(), value.getRealDouble(), frame.getFrameNumber()));
+						found.add(new Localization(mi, mj, value.getRealDouble(), frame.getFrameNumber()));
 						counter++;
 					}
 				}

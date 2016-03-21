@@ -40,15 +40,18 @@ public class ImageLoader<T extends IntegerType<T> & NativeType<T>> extends Singl
 	@Override
 	public Element processData(Element data) {
 		Object ip = img.getPixels(++curSlice);
-		
+
 		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
 		final Cursor<T> it = theImage.cursor();
 		while(it.hasNext()){
 			it.fwd();
+
 			final double adu = Math.max((it.get().getRealDouble()-offset), 0);
 			final double im2phot = adu*conversion/em_gain;
+
 			it.get().setReal(im2phot);
 		}
+		
 		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
 		
 		if (curSlice >= stackSize){

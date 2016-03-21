@@ -2,6 +2,7 @@ package org.micromanager.AstigPlugin.math;
 
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
+
 import java.util.Arrays;
 import java.util.Map;
 
@@ -80,18 +81,20 @@ public class EllipticalGaussianZ implements OptimizationData {
         };
     }
  
-    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
+    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval, double x, double y) {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
   
 	    final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
 	    double[] centroid = cf.fit();
-	    	    
-	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
-	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
+	    
+	    initialGuess[INDEX_X0] = x;
+	    initialGuess[INDEX_Y0] = y;
 	    initialGuess[INDEX_Z0] = z0;
 	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
 	    initialGuess[INDEX_Bg] = 0;
+	    
+	    //System.out.println(initialGuess[0]+","+initialGuess[1]+","+initialGuess[2]+","+initialGuess[3]+","+initialGuess[4]);
 	    
 		return initialGuess;
 	}

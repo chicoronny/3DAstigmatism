@@ -171,7 +171,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	private JLabel lblMaxrange;
 	private JButton btnDataSource;
 	private Locale curLocale;
-	public static String lastDir = "X:/projects/Benchmark data/ImageOpticsPlugin/Owndata";//System.getProperty("user.home"); 
+	public static String lastDir = "X:/projects/Benchmark data/ImageOpticsPlugin/ImagineOptic/CCs";//System.getProperty("user.home"); 
 
 	/**
 	 * Create the frame.

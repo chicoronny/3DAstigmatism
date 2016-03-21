@@ -40,29 +40,31 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 	}
 	
 	@Override
-	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth) {
+	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelsize) {
+		
 		List<Element> found = new ArrayList<Element>();
 		int halfKernel = size;
 		long[] imageMax = new long[2];
 		long[] imageMin = new long[2];
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			long x = Math.round(loc.getX()/pixelDepth);
-			long y = Math.round(loc.getY()/pixelDepth);
 			pixels.min(imageMin);
 			pixels.max(imageMax);
-			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), 1000, 1000, pixelDepth, params);
+			long xdetect = (long) loc.getX();
+			long ydetect = (long) loc.getY();
+			Interval roi = cropInterval(imageMin,imageMax,new long[]{xdetect - halfKernel,ydetect - halfKernel},new long[]{xdetect + halfKernel,ydetect + halfKernel});
+			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), xdetect, ydetect, 1000, 1000, pixelsize, params);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){
-				result[0] *= pixelDepth;
-				result[1] *= pixelDepth;
-			//	result[2] *= (Double)params.get("zStep");
-				result[3] *= pixelDepth;
-				result[4] *= pixelDepth;
-			//	result[5] *= (Double)params.get("zStep");
-				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], loc.getFrame()));
+				if(Math.abs(loc.getX()-result[0])<3 && Math.abs(loc.getY()-result[1])<3){
+					result[0] *= pixelsize; // x
+					result[1] *= pixelsize; // y
+					xdetect *=  pixelsize;
+					ydetect *=  pixelsize;
+				
+					found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], result[9], result[10], xdetect, ydetect, loc.getFrame()));
+				}
 			}			
 		}
 		return found;
@@ -105,7 +107,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		@Override
 		public Fitter getFitter() {
 			final int windowSize = (Integer) settings.get( PanelKeys.KEY_WINDOWSIZE );
-			final String calibFileName = (String) settings.get( PanelKeys.KEY_CALIBRATION_FILENAME );
+			final String calibFileName = (String) settings.get( PanelKeys.KEY_CALIBRATION_FILENAME );										///////////////// here creates error when just calibrated and start localizing
 			if (calibFileName == null){ 
 				IJ.error("No Calibration File!");
 				return null;

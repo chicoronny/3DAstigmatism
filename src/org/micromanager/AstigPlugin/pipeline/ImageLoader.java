@@ -25,7 +25,7 @@ public class ImageLoader<T extends IntegerType<T> & NativeType<T>> extends Singl
 	public ImageLoader(ImagePlus loc_im, List<Double> cameraSettings) {
 		this.img = loc_im.getStack();
 		stackSize = loc_im.getNSlices()*loc_im.getNFrames()*loc_im.getNChannels();
-		pixelDepth = loc_im.getCalibration().pixelDepth == 0 ? 1 : loc_im.getCalibration().pixelDepth;
+		pixelDepth = cameraSettings.get(3);
 		offset = cameraSettings.get(0);
 		em_gain = cameraSettings.get(1);
 		conversion = cameraSettings.get(2);

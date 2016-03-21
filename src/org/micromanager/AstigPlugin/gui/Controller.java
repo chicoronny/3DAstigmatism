@@ -814,7 +814,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 	}
 
 	private void process(boolean b) {// Manager
-		final int elements = previewerWindow != null ? previewerWindow.getImagePlus().getStackSize() : 100;
+		final int elements = previewerWindow != null ? (previewerWindow.getImagePlus().getStackSize()<50 ? previewerWindow.getImagePlus().getStackSize() : 50) : 50;
 
 		if (tif == null) {
 			IJ.error("Please load images first!");

@@ -835,18 +835,22 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> &
 			ImageMath<T> math = new ImageMath<T>();
 			math.setOperator(operators.SUBSTRACTION);
 			manager.add(math);
+
 			manager.linkModules(tif, math, true, elements);
 			manager.linkModules(pp, math);
 			manager.linkModules(math, detector);
+
 		} else {
 			manager.linkModules(tif, detector, true, elements);
 		}
 
 		if (fitter != null) {
 			manager.add(fitter);
+
 			manager.linkModules(detector, fitter);
 			DataTable dt = new DataTable();
 			manager.add(dt);
+
 			manager.linkModules(fitter, dt);
 			table = dt.getTable();
 		}

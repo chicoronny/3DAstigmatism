@@ -117,7 +117,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			return null;
 		}
         
-		double[] result = new double[10];
+		double[] result = new double[11];
 		//double[] error = get3DError(fittedEG, eg);
 		result[INDEX_X0] = fittedEG[INDEX_X0]; // X								
 		result[INDEX_Y0] = fittedEG[INDEX_Y0]; // Y
@@ -213,6 +213,9 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			}
 			if (arg.getEntry(INDEX_Bg) < 0) {
 				arg.setEntry(INDEX_Bg, 0);
+			}
+			if (arg.getEntry(INDEX_Z0) < 0) {
+				arg.setEntry(INDEX_Z0, 0);
 			}
 			return arg;
 		}

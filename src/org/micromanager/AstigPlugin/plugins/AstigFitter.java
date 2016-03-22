@@ -57,7 +57,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 			double[] result = null;
 			result = gf.fit();
 			if (result != null){
-				if(Math.abs(loc.getX()-result[0])<3 && Math.abs(loc.getY()-result[1])<3){
+				if(Math.abs(loc.getX()-result[0])<2 && Math.abs(loc.getY()-result[1])<2 && result[9]<30 && result[10]<30){
 					result[0] *= pixelsize; // x
 					result[1] *= pixelsize; // y
 					xdetect *=  pixelsize;

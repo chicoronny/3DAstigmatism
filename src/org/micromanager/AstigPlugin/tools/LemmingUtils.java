@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.special.Erf;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.pipeline.Localization;
@@ -215,7 +217,63 @@ public class LemmingUtils {
 		return kStar;
 	}
     
-    static public Map<String, List<Double>> readCSV(String path){
+    public static String doubleArrayToString(double[] array){
+		String result ="";
+		for (int num=0; num<array.length;num++)
+			result += array[num] + ",";
+		result = result.substring(0, result.length()-1);
+		return result;
+	}
+	
+    public static double[] stringToDoubleArray(String line){
+		String[] s = line.split(",");
+		double[] result = new double[s.length];
+		for (int n=0;n<s.length;n++)
+			result[n]=Double.parseDouble(s[n].trim());
+		return result;
+	}
+    
+    public static Map<String,Object> readCSV(String path){
+		Map<String,Object>  map = new HashMap<String, Object>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(path));
+			String line=br.readLine();
+			final double[] knotsX = stringToDoubleArray(line);
+			PolynomialFunction[] polynomsX = new PolynomialFunction[knotsX.length-1];
+			for (int n=0;n<polynomsX.length;n++){
+				line=br.readLine();
+				polynomsX[n]=new PolynomialFunction(stringToDoubleArray(line));
+			}
+			map.put("psx", new PolynomialSplineFunction(knotsX,polynomsX));
+			line=br.readLine();
+			if (!line.contains("--")) System.err.println("Corrupt File!");
+			line=br.readLine();
+			final double[] knotsY = stringToDoubleArray(line);
+			PolynomialFunction[] polynomsY = new PolynomialFunction[knotsY.length-1];
+			for (int n=0;n<polynomsY.length;n++){
+				line=br.readLine();
+				polynomsY[n]=new PolynomialFunction(stringToDoubleArray(line));
+			}
+			map.put("psy", new PolynomialSplineFunction(knotsY,polynomsY));
+			line=br.readLine();
+			if (!line.contains("--")) System.err.println("Corrupt File!");
+			line=br.readLine();
+			map.put("z0", Double.parseDouble(line.trim()));
+			line=br.readLine();
+			map.put("zStep", Double.parseDouble(line.trim()));
+			line=br.readLine();
+			map.put("zgrid", stringToDoubleArray(line));
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return map;
+	}
+	
+	static public Map<String, List<Double>> readCSVOld(String path){
 		final Locale curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
@@ -297,7 +355,8 @@ public class LemmingUtils {
 			props.load( reader );
 			settings.add(Double.parseDouble(props.getProperty( "Offset", "150" )));
 			settings.add(Double.parseDouble(props.getProperty( "EM-Gain", "1" )));
-			settings.add(Double.parseDouble(props.getProperty( "Conversion", "5" )));			
+			settings.add(Double.parseDouble(props.getProperty( "Conversion", "5" )));	
+			settings.add(Double.parseDouble(props.getProperty( "PixelSize", "130" )));			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

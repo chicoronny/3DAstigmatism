@@ -1,6 +1,5 @@
 package org.micromanager.AstigPlugin.pipeline;
 
-import java.awt.Rectangle;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -10,8 +9,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
-
-import ij.gui.Roi;
 
 public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 
@@ -60,6 +57,7 @@ public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
 		System.out.println("Fitting of "+ cc +" elements done in " + (System.currentTimeMillis() - start)+"ms.");
+		counterList.clear();
 	}
 
 	@Override
@@ -67,13 +65,13 @@ public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 		return inputs.size()==1;
 	}
 	
-	protected static Roi cropRoi(Rectangle imageRoi, Rectangle curRect) {
-		double x1 = curRect.getMinX() < imageRoi.getMinX() ? imageRoi.getMinX() : curRect.getMinX();
-		double y1 = curRect.getMinY() < imageRoi.getMinY() ? imageRoi.getMinY() : curRect.getMinY();
-		double x2 = curRect.getMaxX() > imageRoi.getMaxX() ? imageRoi.getMaxX() : curRect.getMaxX();
-		double y2 = curRect.getMaxY() > imageRoi.getMaxY() ? imageRoi.getMaxY() : curRect.getMaxY();
-		return new Roi(x1,y1,x2-x1,y2-y1);
-	}
+//	protected static Roi cropRoi(Rectangle imageRoi, Rectangle curRect) {
+//		double x1 = curRect.getMinX() < imageRoi.getMinX() ? imageRoi.getMinX() : curRect.getMinX();
+//		double y1 = curRect.getMinY() < imageRoi.getMinY() ? imageRoi.getMinY() : curRect.getMinY();
+//		double x2 = curRect.getMaxX() > imageRoi.getMaxX() ? imageRoi.getMaxX() : curRect.getMaxX();
+//		double y2 = curRect.getMaxY() > imageRoi.getMaxY() ? imageRoi.getMaxY() : curRect.getMaxY();
+//		return new Roi(x1,y1,x2-x1,y2-y1);
+//	}
 	
 	protected static Interval cropInterval(long[] imageMin, long[] imageMax, long[] curMin, long[] curMax ){
 		long x1 = curMin[0] < imageMin[0] ? imageMin[0] : curMin[0];

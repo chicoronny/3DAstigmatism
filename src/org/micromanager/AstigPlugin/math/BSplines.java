@@ -2,15 +2,9 @@ package org.micromanager.AstigPlugin.math;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -28,6 +22,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 import ij.IJ;
 
@@ -39,7 +34,7 @@ public class BSplines {
 	private double[] Wx;
 	private double[] Wy;
 	private JFrame plotWindow;
-	private static int numKnots = 17;
+	private int numKnots;
 	
 	public BSplines(){
 		plotWindow = new JFrame();
@@ -54,15 +49,15 @@ public class BSplines {
 		this.Wx = Wx;							// width in x of the PSF
 		this.Wy = Wy;							// width in y of the PSF
 		final SplineInterpolator interpolator = new SplineInterpolator();
+		numKnots = Math.min(Math.round(z.length/4),21);
 		double[] kz = new double[numKnots];
 		double[] kwx = new double[numKnots];
 		double[] kwy = new double[numKnots];
 		calculateKnots(z, Wx, kz, kwx);
 		calculateKnots(z, Wy, kz, kwy);
 		try{
-		fwx = interpolator.interpolate(kz, kwx);
-		fwy = interpolator.interpolate(kz, kwy);
-		
+			fwx = interpolator.interpolate(kz, kwx);
+			fwy = interpolator.interpolate(kz, kwy);
 		} catch (NonMonotonicSequenceException e)
 		{IJ.handleException(e);}
 	}
@@ -77,22 +72,6 @@ public class BSplines {
 		}
 		kz[numKnots-1]=z[z.length-1];
 		kw[numKnots-1]=w[w.length-1];
-	}
-	
-	private static String doubleArrayToString(double[] array){
-		String result ="";
-		for (int num=0; num<array.length;num++)
-			result += array[num] + ",";
-		result = result.substring(0, result.length()-1);
-		return result;
-	}
-	
-	private static double[] stringToDoubleArray(String line){
-		String[] s = line.split(",");
-		double[] result = new double[s.length];
-		for (int n=0;n<s.length;n++)
-			result[n]=Double.parseDouble(s[n].trim());
-		return result;
 	}
 	
 	private static double[] valuesWith(double z[], PolynomialSplineFunction function) {
@@ -118,58 +97,21 @@ public class BSplines {
 		
 		try {
 			FileWriter w = new FileWriter(new File(path));
-			w.write(doubleArrayToString(knotsX)+"\n");
+			w.write(LemmingUtils.doubleArrayToString(knotsX)+"\n");
 			for (int i=0; i<polynomsX.length;i++)
-				w.write(doubleArrayToString(polynomsX[i].getCoefficients())+"\n");
+				w.write(LemmingUtils.doubleArrayToString(polynomsX[i].getCoefficients())+"\n");
 			w.write("--\n");
-			w.write(doubleArrayToString(knotsY)+"\n");
+			w.write(LemmingUtils.doubleArrayToString(knotsY)+"\n");
 			for (int i=0; i<polynomsY.length;i++)
-				w.write(doubleArrayToString(polynomsY[i].getCoefficients())+"\n");
+				w.write(LemmingUtils.doubleArrayToString(polynomsY[i].getCoefficients())+"\n");
 			w.write("--\n");
 			w.write(Double.toString(findIntersection())+"\n");
 			w.write(Double.toString(zStep)+"\n");
+			w.write(LemmingUtils.doubleArrayToString(zgrid)+"\n");
 			w.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static Map<String,Object> readCSV(String path){
-		Map<String,Object>  map = new HashMap<String, Object>();
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(path));
-			String line=br.readLine();
-			final double[] knotsX = stringToDoubleArray(line);
-			PolynomialFunction[] polynomsX = new PolynomialFunction[knotsX.length-1];
-			for (int n=0;n<polynomsX.length;n++){
-				line=br.readLine();
-				polynomsX[n]=new PolynomialFunction(stringToDoubleArray(line));
-			}
-			map.put("psx", new PolynomialSplineFunction(knotsX,polynomsX));
-			line=br.readLine();
-			if (!line.contains("--")) System.err.println("Corrupt File!");
-			line=br.readLine();
-			final double[] knotsY = stringToDoubleArray(line);
-			PolynomialFunction[] polynomsY = new PolynomialFunction[knotsY.length-1];
-			for (int n=0;n<polynomsY.length;n++){
-				line=br.readLine();
-				polynomsY[n]=new PolynomialFunction(stringToDoubleArray(line));
-			}
-			map.put("psy", new PolynomialSplineFunction(knotsY,polynomsY));
-			line=br.readLine();
-			if (!line.contains("--")) System.err.println("Corrupt File!");
-			line=br.readLine();
-			map.put("z0", Double.parseDouble(line.trim()));
-			line=br.readLine();
-			map.put("zStep", Double.parseDouble(line.trim()));
-			br.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return map;
 	}
 		
 	private double findIntersection(){

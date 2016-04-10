@@ -17,6 +17,5 @@ public class FitterProvider extends AbstractProvider<FitterFactory> {
 		final FitterProvider provider = new FitterProvider();
 		System.out.println( provider.echo() );
 	}
-
-
+	
 }

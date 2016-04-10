@@ -22,7 +22,8 @@ public class SaveLocalizations extends SingleRunModule {
 	private File file;
 	private FileWriter w;
 	private int counter = 0;
-	private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","intensity","frame"}; 
+	private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","photons","frame"}; 
+	//private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","N", "Bg", "xdetect", "ydetect", "RMS", "Iter", "Eval", "frame"}; 
 
 	public SaveLocalizations(File file) {
 		this.curLocale = Locale.getDefault();
@@ -64,7 +65,6 @@ public class SaveLocalizations extends SingleRunModule {
 
 	@Override
 	public Element processData(Element data) {
-
 		if (data.isLast()) {
 			if (inputs.get(iterator).isEmpty()) {
 				cancel();

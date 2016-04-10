@@ -4,9 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.micromanager.AstigPlugin.interfaces.Store;
-import org.micromanager.AstigPlugin.math.BSplines;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.ImageLoader;
 import org.micromanager.AstigPlugin.pipeline.Manager;
@@ -44,17 +44,17 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	    if (loc_im==null)
 		    return;
 		
-		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
+		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings(System.getProperty("user.home")+"camera.props"));
 
 		final NMSDetector<T> peak = new NMSDetector<T>(50,10);
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
 		//final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calib.csv").get("param"));
-		final Fitter<T> fitter = new AstigFitter<T>(7, BSplines.readCSV("/media/backup/ownCloud/set1-calb.csv"));
+		final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calb.csv"));
 
 		final SaveLocalizations saver = new SaveLocalizations(new File("/media/backup/ownCloud/set1-b.csv"));
 		
-		pipe = new Manager();
+		pipe = new Manager(Executors.newCachedThreadPool());
 		pipe.add(tif);
 		pipe.add(peak);
 		pipe.add(fitter);
@@ -70,7 +70,7 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	public static void main(String[] args) {
 		AstigFitterTest mt = new AstigFitterTest();
 		mt.setUp();
-		mt.pipe.run();
+		mt.pipe.startAndJoin();
 		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
 		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
 	}

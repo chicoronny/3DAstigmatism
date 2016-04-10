@@ -19,7 +19,7 @@ public class NMSDetectorFactory {
 			+ "</html>";
 	
 	private Map<String, Object> settings = new HashMap<String, Object>();
-	private NMSDetectorPanel configPanel = new NMSDetectorPanel();
+	private ConfigurationPanel configPanel = new NMSDetectorPanel();
 
 	public String getInfoText() {
 		return INFO_TEXT;

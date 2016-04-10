@@ -91,7 +91,7 @@ public class EllipticalGaussian implements OptimizationData {
 	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
 	    initialGuess[INDEX_Bg] = 0;
 		
-	    System.out.println("Initial guess: "+initialGuess[0]+","+initialGuess[1]+","+initialGuess[2]+","+initialGuess[3]+","+initialGuess[4]+","+initialGuess[5]);
+	    //System.out.println("Initial guess: "+initialGuess[0]+","+initialGuess[1]+","+initialGuess[2]+","+initialGuess[3]+","+initialGuess[4]+","+initialGuess[5]);
 	    
 		return initialGuess;
 	}

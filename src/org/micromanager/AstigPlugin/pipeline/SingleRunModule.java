@@ -2,6 +2,8 @@ package org.micromanager.AstigPlugin.pipeline;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 
+import ij.IJ;
+
 public abstract class SingleRunModule extends AbstractModule {
 
 	@Override
@@ -15,8 +17,6 @@ public abstract class SingleRunModule extends AbstractModule {
 			
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = nextInput();
 				if (data != null) 
 					processData(data);
@@ -33,8 +33,6 @@ public abstract class SingleRunModule extends AbstractModule {
 			
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = nextInput();
 				if (data != null) 
 					processData(data);
@@ -47,13 +45,12 @@ public abstract class SingleRunModule extends AbstractModule {
 		if (!outputs.isEmpty()) { // no inputs
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				newOutput(processData(null));
 			}
 			afterRun();
 			return;
 		}
+		IJ.error("No inputs or outputs!");
 		return;
 	}
 
@@ -62,6 +59,7 @@ public abstract class SingleRunModule extends AbstractModule {
 
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
+		running = true;
 	}
 	
 }

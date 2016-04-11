@@ -98,8 +98,8 @@ public class Manager{
 	
 	private void setProgress(int i) {
 		final PropertyChangeEvent EVENT_PROGRESS = new PropertyChangeEvent(this, "progress", progress, i);
-		progress=i;
 		firePropertyChanged(EVENT_PROGRESS);
+		progress=i;
 	}
 
 	

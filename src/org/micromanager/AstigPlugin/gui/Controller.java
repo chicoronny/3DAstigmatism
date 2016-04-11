@@ -35,8 +35,6 @@ import javax.swing.plaf.FontUIResource;
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 
 import org.micromanager.AstigPlugin.factories.FitterFactory;
@@ -54,7 +52,7 @@ import org.micromanager.AstigPlugin.providers.FitterProvider;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
-public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> extends JFrame implements ActionListener {
+public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	private JTabbedPane tabbedPane;

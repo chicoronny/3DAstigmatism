@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.RealType;
 
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.FastMedianPanel;
 import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.plugins.NMSFastMedian;
 
-public class NMSFastMedianFactory<T extends IntegerType<T> & NativeType<T>> {
+public class NMSFastMedianFactory<T extends RealType<T> & NativeType<T>> {
 	
 	public static final String NAME = "NMS with Fast Median Filter";
 

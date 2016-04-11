@@ -325,7 +325,7 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 		
 		for (int i = start; i < start + numberOfFrames; i++) {
 			if (i < stackSize) {
-				Object ip = stack.getPixels(i);
+				Object ip = stack.getPixels(i+1);
 				Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
 				final Cursor<T> it = curImage.cursor();
 				while(it.hasNext()){

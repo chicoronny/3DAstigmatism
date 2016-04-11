@@ -11,12 +11,10 @@ import org.micromanager.api.ScriptInterface;
 
 import mmcorej.CMMCore;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 
 @SuppressWarnings("unused")
-public class AstigPlugin <T extends NumericType<T> & NativeType<T> & RealType<T> & IntegerType<T>> implements MMPlugin{
+public class AstigPlugin <T extends NativeType<T> & RealType<T>> implements MMPlugin{
 	
 	public static String menuName = "3DAstigmatism";
 	public static String tooltipDescription = "3DAstigmatism calibration and fit";

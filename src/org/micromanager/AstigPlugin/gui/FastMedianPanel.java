@@ -55,6 +55,7 @@ public class FastMedianPanel extends ConfigurationPanel {
 		JLabel labelWindowSize = new JLabel("WindowSize");
 		
 		spinnerWindowSize = new JSpinner();
+		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(15), new Integer(1), null, new Integer(1)));
 		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable() {
 			@Override
 			public void run() {

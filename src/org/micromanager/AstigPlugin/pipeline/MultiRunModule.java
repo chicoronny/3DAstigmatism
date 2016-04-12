@@ -3,11 +3,14 @@ package org.micromanager.AstigPlugin.pipeline;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 
 import com.google.common.collect.Lists;
+
+import ij.IJ;
 
 public abstract class MultiRunModule extends AbstractModule{
 	
@@ -110,14 +113,13 @@ public abstract class MultiRunModule extends AbstractModule{
 		if (!outputs.isEmpty()) { // only output
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = processData(null);
 				newOutput(data);
 			}
 			afterRun();
 			return;
 		}
+		IJ.error("No inputs or outputs!");
 		return;
 	}
 
@@ -125,6 +127,9 @@ public abstract class MultiRunModule extends AbstractModule{
 	}
 
 	protected void beforeRun() {
+		if(service == null)
+			service = Executors.newCachedThreadPool();
 		start = System.currentTimeMillis();
+		running = true;
 	}
 }

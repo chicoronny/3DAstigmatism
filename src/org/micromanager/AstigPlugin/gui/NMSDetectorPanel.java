@@ -51,7 +51,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 				fireChanged( CHANGE_EVENT );
 			}
 		}));
-		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
+		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(15), new Integer(1), null, new Integer(1)));
 		GroupLayout gl_panelPeakDet = new GroupLayout(this);
 		gl_panelPeakDet.setHorizontalGroup(
 			gl_panelPeakDet.createParallelGroup(Alignment.LEADING)

@@ -29,7 +29,6 @@ public class EllipticalGaussianZ implements OptimizationData {
 	public static int INDEX_Bg = 4;
 	public static int PARAM_LENGTH = 5;
 	
-	//static double defaultSigma = 1.5;
 	private static double sqrt2 = FastMath.sqrt(2);
 	private static double sqrtPI = FastMath.sqrt(FastMath.PI);
 	
@@ -85,17 +84,12 @@ public class EllipticalGaussianZ implements OptimizationData {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
   
-	    final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
-	    double[] centroid = cf.fit();
-	    
 	    initialGuess[INDEX_X0] = x;
 	    initialGuess[INDEX_Y0] = y;
 	    initialGuess[INDEX_Z0] = z0;
 	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
 	    initialGuess[INDEX_Bg] = 0;
-	    
-	    //System.out.println(initialGuess[0]+","+initialGuess[1]+","+initialGuess[2]+","+initialGuess[3]+","+initialGuess[4]);
-	    
+	    	    
 		return initialGuess;
 	}
 

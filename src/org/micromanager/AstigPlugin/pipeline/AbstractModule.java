@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
@@ -24,8 +23,13 @@ public abstract class AbstractModule implements Runnable {
 	
 	
 	public AbstractModule(){
-		if(service == null)
-			service = Executors.newCachedThreadPool();
+	}
+	
+	public void reset(){
+		inputs.clear();
+		outputs.clear();
+		running = true;
+		iterator = null;
 	}
 	
 	protected void setService(ExecutorService service){

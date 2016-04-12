@@ -64,9 +64,10 @@ public class LocalizationAllParameters extends Localization{
 	public double getYdetect(){
 		return ydetect;
 	}
-	
+
 	@Override
 	public String toString(){
-		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + getIntensity() +"\t" + getBg()+  "\t"+ getXdetect()+ "\t" + getYdetect()+"\t" + getRMS()+ "\t" + getIter()+ "\t" + getEval()+ "\t"  + getFrame();
+		//return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + getIntensity() +"\t" + getBg()+  "\t"+ getXdetect()+ "\t" + getYdetect()+"\t" + getRMS()+ "\t" + getIter()+ "\t" + getEval()+ "\t"  + getFrame();
+		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + getIntensity()+ "\t" + getFrame();
 	}
 }

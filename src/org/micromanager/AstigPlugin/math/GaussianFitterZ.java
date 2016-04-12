@@ -117,16 +117,15 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			return null;
 		}
         
-		double[] result = new double[10];
-		//double[] error = get3DError(fittedEG, eg);
+		double[] result = new double[11];
 		result[INDEX_X0] = fittedEG[INDEX_X0]; // X								
 		result[INDEX_Y0] = fittedEG[INDEX_Y0]; // Y
 		result[INDEX_Z0] = fittedEG[INDEX_Z0]; // Z
 		result[INDEX_I0] = fittedEG[INDEX_I0]; // I0
-		result[INDEX_Bg] = fittedEG[INDEX_Bg]; // I0
-		result[INDEX_Sx] = get2DErrorX(fittedEG,eg); // Sy
-		result[INDEX_Sy] = get2DErrorY(fittedEG,eg);
-		result[INDEX_Sz] = 0;//sigmas[2]; // Sz
+		result[INDEX_Bg] = fittedEG[INDEX_Bg]; // Bg
+		result[INDEX_Sx] = get2DErrorX(fittedEG,eg); // Sx
+		result[INDEX_Sy] = get2DErrorY(fittedEG,eg); // Sy
+		result[INDEX_Sz] = 30; // Sz
 		result[INDEX_RMS] = RMS;
 		result[INDEX_Iter] = iter;
 		result[INDEX_Eval] = eval;
@@ -158,22 +157,21 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		
 		return Math.sqrt(errory2);
 	}	
-	/*
-	private double get3DErrorZ(double[] fittedEG, EllipticalGaussianZ eg) {
+	
+	private double get3DError(double[] fittedEG, EllipticalGaussianZ eg) {		/// test later if that makes sense since this is not localization error 
 		double sy = eg.Sy(fittedEG[INDEX_Z0]);
-		double sigma2=2*sy*sy;
-		double N = fittedEG[INDEX_I0];
-		double b = fittedEG[INDEX_Bg];
-		double a2 = pixelSize*pixelSize;
-		
-		
-		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
-		
-		double errorz = (sigma2+a2/12)*(16/9+4*t)/N;
-		
-		
-		return errorz;
-	}	*/
+		double sx = eg.Sx(fittedEG[INDEX_Z0]);
+		int r =0;
+		double[] knots = (double[]) params.get("zgrid");
+		for (r=0; r<knots.length;++r)
+			if(fittedEG[INDEX_Z0]<knots[r]) break;
+		r = Math.max(1, r);
+		r = Math.min(r, knots.length-1);
+		double hx = (knots[r]-knots[r-1])/24*sx;
+		double hy = (knots[r]-knots[r-1])/24*sy;
+
+		return (hx+hy)*pixelSize;
+	}
 
 	// Convergence Checker
 	private class ConvChecker3DGauss implements ConvergenceChecker<PointVectorValuePair> {
@@ -208,12 +206,17 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 
 		@Override
 		public RealVector validate(RealVector arg) {
-			if (arg.getEntry(INDEX_I0) < 0) {
+			/*if (arg.getEntry(INDEX_I0) < 0) {
 				arg.setEntry(INDEX_I0, 0);
 			}
 			if (arg.getEntry(INDEX_Bg) < 0) {
 				arg.setEntry(INDEX_Bg, 0);
 			}
+			if (arg.getEntry(INDEX_Z0) < 0) {
+				arg.setEntry(INDEX_Z0, 0);
+			}*/
+			
+			
 			return arg;
 		}
 	}

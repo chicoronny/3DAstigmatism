@@ -1,6 +1,7 @@
 package org.micromanager.AstigPlugin.plugins;
 
 import ij.IJ;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +16,12 @@ import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.interfaces.Element;
-import org.micromanager.AstigPlugin.math.BSplines;
 import org.micromanager.AstigPlugin.math.GaussianFitterZ;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.Localization;
-import org.micromanager.AstigPlugin.pipeline.LocalizationAllParameters;
+//import org.micromanager.AstigPlugin.pipeline.LocalizationAllParameters;
+import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
 
 public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
@@ -35,7 +37,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 	private final Map<String, Object> params;
 	
 	public AstigFitter(final int windowSize, final Map<String,Object> params) {
-		super(windowSize);
+		super((windowSize-1)/2);
 		this.params=params;
 	}
 	
@@ -46,24 +48,24 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		int halfKernel = size;
 		long[] imageMax = new long[2];
 		long[] imageMin = new long[2];
+		double[] result = null;
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			pixels.min(imageMin);
 			pixels.max(imageMax);
-			long xdetect = (long) loc.getX();
-			long ydetect = (long) loc.getY();
+			long xdetect = (long) (loc.getX()/pixelsize);
+			long ydetect = (long) (loc.getY()/pixelsize);
 			Interval roi = cropInterval(imageMin,imageMax,new long[]{xdetect - halfKernel,ydetect - halfKernel},new long[]{xdetect + halfKernel,ydetect + halfKernel});
-			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), xdetect, ydetect, 1000, 1000, pixelsize, params);
-			double[] result = null;
+			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), xdetect, ydetect, 200, 200, pixelsize, params);
 			result = gf.fit();
 			if (result != null){
-				if(Math.abs(loc.getX()-result[0])<3 && Math.abs(loc.getY()-result[1])<3){
+				// bounds check: max deviation equals two pixels
+				if(Math.abs(xdetect-result[0])<2 && Math.abs(ydetect-result[1])<2 && result[2]>0 && result[3]>0 && result[4]>0){
 					result[0] *= pixelsize; // x
 					result[1] *= pixelsize; // y
-					xdetect *=  pixelsize;
-					ydetect *=  pixelsize;
-				
-					found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], result[9], result[10], xdetect, ydetect, loc.getFrame()));
+	
+					
+					found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[6], result[7], result[3], loc.getFrame()));
 				}
 			}			
 		}
@@ -113,7 +115,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 				return null;
 			}
 			
-			Map<String,Object> param = BSplines.readCSV(calibFileName);
+			Map<String,Object> param = LemmingUtils.readCSV(calibFileName);
 			if (param.isEmpty()){ 
 				IJ.error("Reading calibration file failed!");
 				return null;

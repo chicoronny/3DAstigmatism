@@ -13,6 +13,7 @@ import org.micromanager.AstigPlugin.pipeline.Manager;
 import org.micromanager.AstigPlugin.pipeline.SaveLocalizations;
 import org.micromanager.AstigPlugin.plugins.AstigFitter;
 import org.micromanager.AstigPlugin.plugins.NMSDetector;
+import org.micromanager.AstigPlugin.plugins.NMSFastMedian;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
@@ -29,7 +30,11 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	private ImagePlus loc_im;
 	
 	private void setUp() {
-		final File file = new File("/media/backup/ownCloud/set1.tif");
+		String sim = "C:/Users/Ries/Documents/PluginTest/MT3d/2k";
+		String scal = "C:/Users/Ries/Documents/PluginTest/MT3d/cal.csv";
+		String sres = "C:/Users/Ries/Documents/PluginTest/MT3d/2k.txt.txt";
+		
+		final File file = new File(sim);
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -44,15 +49,11 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	    if (loc_im==null)
 		    return;
 		
-		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings(System.getProperty("user.home")+"camera.props"));
+		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings("C:/Users/Ries/git/3DAstigmatism2/camera.props"));
+		final NMSFastMedian<T> peak = new NMSFastMedian<T>(50, false, 2,15);
+		final Fitter<T> fitter = new AstigFitter<T>(15, LemmingUtils.readCSV(scal));
 
-		final NMSDetector<T> peak = new NMSDetector<T>(50,10);
-		//Fitter fitter = new QuadraticFitter(10);
-		//@SuppressWarnings("unchecked")
-		//final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calib.csv").get("param"));
-		final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calb.csv"));
-
-		final SaveLocalizations saver = new SaveLocalizations(new File("/media/backup/ownCloud/set1-b.csv"));
+		final SaveLocalizations saver = new SaveLocalizations(new File(sres));
 		
 		pipe = new Manager(Executors.newCachedThreadPool());
 		pipe.add(tif);

@@ -65,6 +65,8 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 		frameList.add(frame);
 		counter++;
 
+		System.out.println("NMS fast median "+counter);
+		
 		if (frame.isLast()) {// process the rest;
 			Queue<Frame<T>> transferList = new ArrayDeque<Frame<T>>();
 			transferList.addAll(frameList);

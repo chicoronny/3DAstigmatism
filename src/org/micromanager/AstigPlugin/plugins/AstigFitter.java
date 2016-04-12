@@ -59,13 +59,12 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 			result = gf.fit();
 			if (result != null){
 				// bounds check: max deviation equals two pixels
-				if(Math.abs(xdetect-result[0])<2 && Math.abs(ydetect-result[1])<2 /*&& result[9]<30 && result[10]<30*/){
+				if(Math.abs(xdetect-result[0])<2 && Math.abs(ydetect-result[1])<2 && result[2]>0 && result[3]>0 && result[4]>0){
 					result[0] *= pixelsize; // x
 					result[1] *= pixelsize; // y
-					//xdetect *=  pixelsize;
-					//ydetect *=  pixelsize;
+	
+					
 					found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[6], result[7], result[3], loc.getFrame()));
-					//found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], result[9], result[10], xdetect, ydetect, loc.getFrame()));
 				}
 			}			
 		}

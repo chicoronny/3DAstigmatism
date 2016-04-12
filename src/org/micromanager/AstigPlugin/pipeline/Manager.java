@@ -45,7 +45,7 @@ public class Manager{
 	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs, int maxElements){
 		Store s = null;
 		if (noInputs){
-			int n = (int) Math.min(Runtime.getRuntime().freeMemory()/Math.pow(2,17), maxElements*0.5); // performance tweak
+			int n = (int) Math.min(Runtime.getRuntime().freeMemory()/Math.pow(2,17), maxElements*2); // performance tweak
 			System.out.println("Manager starts with maximal "+n+" elements" );
 			s = new ArrayListStore(n);
 		} else {

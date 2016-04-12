@@ -22,13 +22,20 @@ public class ArrayListStore implements Store {
 
 	@Override
 	public void put(Element element) {
-		while(!q.offer(element))
+		while(!q.offer(element)){
+			//System.out.println("Queue "+this.hashCode()+" is full "+this.getLength());
 			pause(10);
+		}
 	}
 
 	@Override
 	public Element get() {
-		return q.poll();
+		Element e = q.poll();
+		if(e==null){
+			pause(1);
+			//System.out.println("Queue "+this.hashCode()+" is empty "+this.getLength());
+		}
+		return e;
 	}
 
 	@Override

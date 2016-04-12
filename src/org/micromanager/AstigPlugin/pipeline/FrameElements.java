@@ -14,6 +14,8 @@ public class FrameElements<T> implements Element {
 	public FrameElements(List<Element> list_, Frame<T> f) {
 		list = list_;
 		frame = f;
+		
+		setLast(f.isLast());
 	}
 
 	@Override
@@ -29,8 +31,9 @@ public class FrameElements<T> implements Element {
 	public Frame<T> getFrame(){
 		return frame;
 	}
-	
+
 	public List<Element> getList(){
 		return list;
 	}
+	
 }

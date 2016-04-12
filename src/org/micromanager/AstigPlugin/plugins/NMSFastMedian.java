@@ -38,7 +38,8 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 	private int nFrames;
 	private boolean interpolating;
 	private Queue<Frame<T>> frameList = new ArrayDeque<Frame<T>>();
-	private int counter = 0;
+	private int counterLocs = 0;
+	private int counterFrames = 0;
 	private int lastListSize = 0;
 	private Frame<T> frameA = null;
 	private Frame<T> frameB = null;
@@ -63,11 +64,11 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 		final Frame<T> frame = (Frame<T>) data;
 
 		frameList.add(frame);
-		counter++;
+		counterFrames++;
 
-		System.out.println("NMS fast median "+counter);
 		
 		if (frame.isLast()) {// process the rest;
+			
 			Queue<Frame<T>> transferList = new ArrayDeque<Frame<T>>();
 			transferList.addAll(frameList);
 			frameB = process(transferList, true);
@@ -81,7 +82,8 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 			return null;
 		}
 
-		if (counter % nFrames == 0) {// make a new list for each Callable
+		if (counterFrames % nFrames == 0) {// make a new list for each Callable
+						
 			final Queue<Frame<T>> transferList = new ArrayDeque<Frame<T>>();
 			transferList.addAll(frameList);
 			frameB = process(transferList, false);
@@ -92,8 +94,9 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 				frameA = frameB;
 			} else {
 				for (int i = 0; i < nFrames; i++) {
-					final Frame<T> filtered = substract(transferList.poll(), frameB);
-					newOutput(detect(filtered));
+					final Frame<T> raw = transferList.poll();
+					final Frame<T> filtered = substract(raw, frameB);
+					newOutput(detect(filtered,raw));
 				}
 			}
 			frameList.clear();
@@ -228,28 +231,32 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 				outCursor.get().setReal(newValue);
 			}
 
+			final Frame<T> raw = transferList.poll();
 			final Frame<T> filtered = substract(
-				transferList.poll(), new ImgLib2Frame<T>(
+				raw, new ImgLib2Frame<T>(
 					frameA.getFrameNumber() + i, frameA.getWidth(), frameA.getHeight(), frameA.getPixelDepth(), outFrame));
 
-			newOutput(detect(filtered));
+			newOutput(detect(filtered,raw));
 		}
 	}
 
 	private void lastFrames(Queue<Frame<T>> transferList) {
 		// handle the last frames
 		for (int i = 0; i < lastListSize; i++) {
-			final Frame<T> filtered = substract(transferList.poll(), frameB);
-			newOutput(detect(filtered));
+			final Frame<T> raw = transferList.poll();
+			final Frame<T> filtered = substract(raw, frameB);
+			newOutput(detect(filtered,raw));
 		}
 
 		// create last frame
-		Frame<T> lastFrame = substract(transferList.poll(), frameB);
+		final Frame<T> raw = transferList.poll();
+		Frame<T> lastFrame = substract(raw, frameB);
 		lastFrame.setLast(true);
-		newOutput(detect(lastFrame));
+
+		newOutput(detect(lastFrame,raw));
 	}
 
-	public FrameElements<T> detect(Frame<T> frame) {
+	public FrameElements<T> detect(Frame<T> frame, Frame<T> raw) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		final RandomAccess<T> ra = interval.randomAccess();
 
@@ -304,7 +311,70 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 					if (value.getRealDouble() > threshold_) {
 						found.add(new Localization(mi * frame.getPixelDepth(), mj * frame.getPixelDepth(), value.getRealDouble(), frame
 							.getFrameNumber()));
-						counter++;
+						counterLocs++;
+					}
+				}
+			}
+		}
+
+		return new FrameElements<T>(found, raw);
+	}
+	public FrameElements<T> detectPreview(Frame<T> frame) {
+		final RandomAccessibleInterval<T> interval = frame.getPixels();
+		final RandomAccess<T> ra = interval.randomAccess();
+
+		// compute max of the Image
+		final T max = LemmingUtils.computeMax(Views.iterable(interval));
+		double threshold_ = max.getRealDouble() / 100.0 * threshold;
+
+		int i, j, ii, jj, ll, kk;
+		int mi, mj;
+		boolean failed = false;
+		long width_ = interval.dimension(0);
+		long height_ = interval.dimension(1);
+		List<Element> found = new ArrayList<Element>();
+
+		for (i = 0; i <= width_ - 1 - n_; i += n_ + 1) { // Loop over (n+1)x(n+1)
+			for (j = 0; j <= height_ - 1 - n_; j += n_ + 1) {
+				mi = i;
+				mj = j;
+				for (ii = i; ii <= i + n_; ii++) {
+					for (jj = j; jj <= j + n_; jj++) {
+						ra.setPosition(new int[] { ii, jj });
+						final T first = ra.get().copy();
+						ra.setPosition(new int[] { mi, mj });
+						final T second = ra.get().copy();
+						if (first.compareTo(second) > 0) {
+							mi = ii;
+							mj = jj;
+						}
+					}
+				}
+				failed = false;
+
+				Outer: for (ll = mi - n_; ll <= mi + n_; ll++) {
+					for (kk = mj - n_; kk <= mj + n_; kk++) {
+						if ((ll < i || ll > i + n_) || (kk < j || kk > j + n_)) {
+							if (ll < width_ && ll > 0 && kk < height_ && kk > 0) {
+								ra.setPosition(new int[] { ll, kk });
+								T first = ra.get().copy();
+								ra.setPosition(new int[] { mi, mj });
+								T second = ra.get().copy();
+								if (first.compareTo(second) > 0) {
+									failed = true;
+									break Outer;
+								}
+							}
+						}
+					}
+				}
+				if (!failed) {
+					ra.setPosition(new int[] { mi, mj });
+					T value = ra.get().copy();
+					if (value.getRealDouble() > threshold_) {
+						found.add(new Localization(mi * frame.getPixelDepth(), mj * frame.getPixelDepth(), value.getRealDouble(), frame
+							.getFrameNumber()));
+						counterLocs++;
 					}
 				}
 			}
@@ -344,15 +414,15 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 		if (origFrame==null) origFrame=list.peek();
 		Frame<T> result = process(list,true);
 		
-		return detect(substract(origFrame,result));
+		return detectPreview(substract(origFrame,result));
 	}	
 	
 	@Override
 	protected void afterRun() {
 		System.out.println("Detector found "
-				+ counter + " peaks in "
+				+ counterLocs + " peaks in "
 				+ (System.currentTimeMillis() - start) + "ms.");
 		
-		counter=0;
+		counterLocs=0;
 	}
 }

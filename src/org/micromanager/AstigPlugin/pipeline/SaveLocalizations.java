@@ -66,6 +66,8 @@ public class SaveLocalizations extends SingleRunModule {
 	@Override
 	public Element processData(Element data) {
 		if (data.isLast()) {
+			System.out.println("------- Saveloc is last");
+
 			if (inputs.get(iterator).isEmpty()) {
 				cancel();
 				return null;

@@ -27,7 +27,7 @@ public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 	@Override
 	public Element processData(Element data) {
 		FrameElements<T> fe = (FrameElements<T>) data;
-
+		
 		if (fe.isLast()) {
 			cancel();
 			process1(fe);	

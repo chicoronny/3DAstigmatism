@@ -42,6 +42,7 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 
 	@Override
 	public Element processData(Element data) {
+			
 		final Object ip = img.getPixels(++curSlice);
 		double adu, im2phot;
 		final Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});

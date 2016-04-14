@@ -89,6 +89,8 @@ public class AbstractProvider< K extends PluginInterface > {
 				log.error("Could not instantiate " + info.getClassName(), e);
 			}
 		}
+		Collections.reverse(keys);
+		Collections.reverse(visibleKeys);
 	}
 	
 	public List< String > getKeys()

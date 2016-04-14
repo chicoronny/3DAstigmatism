@@ -8,25 +8,36 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import javax.swing.SwingWorker;
 
 import org.micromanager.AstigPlugin.interfaces.Store;
 
-public class Manager extends SwingWorker<Void,Void> {
+public class Manager{
 	
+	public static final int STATE_DONE = 1;
 	private Map<Integer,Store> storeMap = new LinkedHashMap<Integer, Store>();
 	private Map<Integer,AbstractModule> modules = new LinkedHashMap<Integer, AbstractModule>();
-	private final ExecutorService service = Executors.newCachedThreadPool();
+	private ExecutorService service;
 	private volatile boolean done = false;
 	private int maximum = 1;
+	private int progress;
+	private final List< PropertyChangeListener > changeListeners = new ArrayList< PropertyChangeListener >();
 
-	public Manager() {
+	public Manager(ExecutorService service) {
+		this.service = service;
 	}
 	
+	public void addPropertyChangeListener( final PropertyChangeListener listener ){
+		changeListeners.add( listener );
+	}
+	
+	public void firePropertyChanged(PropertyChangeEvent e) {
+		for ( final PropertyChangeListener cl : changeListeners )
+			cl.propertyChange( e );
+	}
+
 	public void add(AbstractModule module){		
 		modules.put(module.hashCode(),module);		
 	}
@@ -64,63 +75,85 @@ public class Manager extends SwingWorker<Void,Void> {
 		return storeMap;
 	}
 	
-	@Override
-	protected Void doInBackground() throws Exception {
-		if (modules.isEmpty()) return null;
-		StoreMonitor sm = new StoreMonitor();
-		sm.addPropertyChangeListener(new PropertyChangeListener(){
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("progress")) 
-					setProgress((Integer) evt.getNewValue());
-			}});
-		service.execute(sm);
-		final List<Future<?>> threads= new ArrayList<Future<?>>();
-		
+	public Map<Integer, AbstractModule> getModules(){
+		return modules;
+	}
+	
+	public void reset(){
 		for(AbstractModule starter:modules.values()){
-			if (!starter.check()) {
-				IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
-				break;
-			}		
-			starter.setService(service);
-			threads.add(service.submit(starter));
-			
-			try {
-				Thread.sleep(10); 						// HACK : give the module some time to start working
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			starter.iterator=null;
 		}
-		try {
-			for(Future<?> joiner:threads)
-				joiner.get();
-		} catch (InterruptedException e) {
-			System.err.println(e.getMessage());
-		}
-		done = true;
-		sm.cancel(true);
-		return null;
-	}
-	
-	@Override
-	public void done(){
-		setProgress(0);
-		service.shutdown();
-	}
-
-	public void reset() {
-		modules.clear();
 		storeMap.clear();
+		modules.clear();
+		done = false;			
+		setProgress(0);
 	}
 	
-	
-	class StoreMonitor extends SwingWorker<Void,Void> {
-
-		public StoreMonitor() {
+	public void startAndJoin() {
+		final Runner r = new Runner();
+		r.start();
+		try {
+			r.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+	}
+	
+	private void setProgress(int i) {
+		final PropertyChangeEvent EVENT_PROGRESS = new PropertyChangeEvent(this, "progress", progress, i);
+		firePropertyChanged(EVENT_PROGRESS);
+		progress=i;
+	}
+
+	
+	private class Runner extends Thread{ 
+		@Override
+		public void run() {
+			if (modules.isEmpty()) return;
+			StoreMonitor sm = new StoreMonitor();
+			sm.start();
+			final List<Future<?>> threads= new ArrayList<Future<?>>();
+			
+			for(AbstractModule starter:modules.values()){
+				if (!starter.check()) {
+					IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
+					break;
+				}
+				starter.setService(service);
+				threads.add(service.submit(starter));
+				
+				try {
+					Thread.sleep(10); 						// HACK : give the module some time to start working
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				for(Future<?> joiner:threads){
+					joiner.get(); 
+					while(!joiner.isDone()) Thread.sleep(10);
+				}
+			} catch (InterruptedException e) {
+				System.err.println(e.getMessage());
+			} catch (ExecutionException e) {
+				System.err.println(e.getMessage());
+			}
+			setProgress(100);
+			done = true;
+			try {
+	            sm.join(200);
+	        } catch (InterruptedException ignore) {}
+			
+			final PropertyChangeEvent EVENT_DONE = new PropertyChangeEvent(this, "state", 0, STATE_DONE);
+			firePropertyChanged(EVENT_DONE);
+			return;
+		}
+	}
+	
+	private class StoreMonitor extends Thread{
 
 		@Override
-		protected Void doInBackground() throws Exception {
+		public void run() {
 			while(!done){
 				try {
 	                Thread.sleep(200);
@@ -135,8 +168,7 @@ public class Manager extends SwingWorker<Void,Void> {
 					maximum = max;
 				
 				setProgress(Math.round(100-(float)max/maximum*100));
-				}
-			return null;
+			}
 		}
 	}
 }

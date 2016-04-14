@@ -25,9 +25,17 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 	public static final int INDEX_Z0 = 2;
 	public static final int INDEX_I0 = 3;
 	public static final int INDEX_Bg = 4;
+	public static final int INDEX_Sx = 5;
+	public static final int INDEX_Sy = 6;
+	public static final int INDEX_Sz = 7;
+	public static final int INDEX_RMS = 8;
+	public static final int INDEX_Iter = 9;
+	public static final int INDEX_Eval = 10;
 	
 	private int maxIter;
 	private int maxEval;
+	private double xdetect;
+	private double ydetect;
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
@@ -35,12 +43,14 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 	private double pixelSize;
 	private IntervalView<T> interval;
 
-	public GaussianFitterZ(final IntervalView<T> interval_, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
+	public GaussianFitterZ(final IntervalView<T> interval_, double x, double y, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
 		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 		params = params_;
 		pixelSize = pixelSize_;
+		xdetect = x;
+		ydetect = y;
 	}
 	
 	private static LeastSquaresBuilder builder(EllipticalGaussianZ eg){
@@ -80,7 +90,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);
-		double[] initialGuess = eg.getInitialGuess(interval);
+		double[] initialGuess = eg.getInitialGuess(interval, xdetect, ydetect);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		double RMS;
@@ -107,44 +117,54 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			return null;
 		}
         
-		double[] result = new double[10];
-		//double[] error = get3DError(fittedEG, eg);
-		result[0] = fittedEG[0]; // X								
-		result[1] = fittedEG[1]; // Y
-		result[2] = fittedEG[2]; // Z
-		result[3] = get2DErrorX(fittedEG,eg); // Sy
-		result[4] = get2DErrorY(fittedEG,eg); // Sx
-		result[5] = 0;//sigmas[2]; // Sz
-		result[6] = fittedEG[3]; // I0
-		result[7] = RMS;
-		result[8] = iter;
-		result[9] = eval;
+		double[] result = new double[11];
+		double[] error = get3DError(fittedEG, eg);
+		result[INDEX_X0] = fittedEG[INDEX_X0]; // X								
+		result[INDEX_Y0] = fittedEG[INDEX_Y0]; // Y
+		result[INDEX_Z0] = fittedEG[INDEX_Z0]; // Z
+		result[INDEX_I0] = fittedEG[INDEX_I0]; // I0
+		result[INDEX_Bg] = fittedEG[INDEX_Bg]; // Bg
+		result[INDEX_Sx] = error[0]; // Sx
+		result[INDEX_Sy] = error[1]; // Sy
+		result[INDEX_Sz] = error[2]; // Sz
+		result[INDEX_RMS] = RMS;
+		result[INDEX_Iter] = iter;
+		result[INDEX_Eval] = eval;
+	
+		
 		return result;
 	}
 	
-	private double get2DErrorX(double[] fittedEG, EllipticalGaussianZ eg) {
-		double sx = eg.Sx(fittedEG[INDEX_Z0]);
-		double sigma2=2*sx*sx;
+	private double[] get3DError(double[] fittedEG, EllipticalGaussianZ eg) {
+		// see thunderstorm corrections
+		double[] error3d = new double[3];
+		
+		double sx,sy, dx2, dy2;
+		int r=0, g=2;
 		double N = fittedEG[INDEX_I0];
 		double b = fittedEG[INDEX_Bg];
 		double a2 = pixelSize*pixelSize;
-		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
-		double errorx2 = (sigma2+a2/12)*(16/9+4*t)/N;
+		sx = eg.Sx(fittedEG[INDEX_Z0]);
+		sy = eg.Sy(fittedEG[INDEX_Z0]);
+		double sigma2 = a2*sx*sy;
+		double tau = 2*Math.PI*(b*b+r)*(sigma2+a2/12)/(N*a2);
 		
-		return Math.sqrt(errorx2);
+		dx2 = (g*sx*sx+a2/12)*(16/9+4*tau)/N;
+		dy2 = (g*sy*sy+a2/12)*(16/9+4*tau)/N;
+		error3d[0] = Math.sqrt(dx2);
+		error3d[1] = Math.sqrt(dy2);
+		
+		double[] knots = (double[]) params.get("zgrid");
+		for (r=0; r<knots.length;++r)
+			if(fittedEG[INDEX_Z0]<knots[r]) break;
+		r = Math.max(1, r);
+		r = Math.min(r, knots.length-1);
+		double hx = (knots[r]-knots[r-1])/24*sx;
+		double hy = (knots[r]-knots[r-1])/24*sy;
+		error3d[2] = hx+hy;
+
+		return error3d;
 	}
-	
-	private double get2DErrorY(double[] fittedEG, EllipticalGaussianZ eg) {
-		double sy = eg.Sy(fittedEG[INDEX_Z0]);
-		double sigma2=2*sy*sy;
-		double N = fittedEG[INDEX_I0];
-		double b = fittedEG[INDEX_Bg];
-		double a2 = pixelSize*pixelSize;
-		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
-		double errory2 = (sigma2+a2/12)*(16/9+4*t)/N;
-		
-		return Math.sqrt(errory2);
-	}	
 
 	// Convergence Checker
 	private class ConvChecker3DGauss implements ConvergenceChecker<PointVectorValuePair> {
@@ -184,6 +204,9 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			}
 			if (arg.getEntry(INDEX_Bg) < 0) {
 				arg.setEntry(INDEX_Bg, 0);
+			}
+			if (arg.getEntry(INDEX_Z0) < 0) {
+				arg.setEntry(INDEX_Z0, 0);
 			}
 			return arg;
 		}

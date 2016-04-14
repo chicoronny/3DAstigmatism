@@ -15,7 +15,7 @@ public class CalibrationTest {
 	private Calibrator calibrator;
 	
 	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("D:/ownCloud/z-stack_1.tif");
+		ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/z-stack_1.tif");
 		calibWindow = new StackWindow(calibImage);
 		calibImage.setRoi(45, 95, 21, 21);
 	}
@@ -36,11 +36,9 @@ public class CalibrationTest {
 			calibRoi = new Roi(0, 0, calibWindow.getImagePlus().getWidth(), calibWindow.getImagePlus().getHeight());
 		}
 
-		final int zstep = 50; // set
+		final int zstep = 10; // set
 		calibrator = new Calibrator(calibWindow.getImagePlus(), LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"), zstep, calibRoi);
 		calibrator.fitStack();
-		//final double[] zgrid = calibrator.getCalibration().getZgrid();
-		//Arrays.sort(zgrid);
 
 		calibWindow.close();
 		return true;
@@ -54,7 +52,7 @@ public class CalibrationTest {
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("D:/ownCloud/set1-calb.csv");
+		calibrator.saveCalib(System.getProperty("user.home")+"/ownCloud/set1-calb.csv");
 		//calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}

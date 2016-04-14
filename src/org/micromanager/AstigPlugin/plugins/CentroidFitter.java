@@ -37,7 +37,7 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 	private double threshold;
 
 	public CentroidFitter(int windowSize, double threshold_) {
-		super(windowSize);
+		super((int) ((windowSize-1)/2.0));
 		threshold = threshold_;
 	}
 

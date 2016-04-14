@@ -110,35 +110,33 @@ public class Calibrator<T extends RealType<T> & NativeType<T>> {
 		return zgrid;
 	}
 	
-	public void fitBSplines(final int rStart, final int rEnd){
+	public void fitBSplines(final int rStart, final int rEnd) {
 		calculateRange(rStart, rEnd);
-		int arraySize = rangeEnd-rangeStart+1;
+		int arraySize = rangeEnd - rangeStart + 1;
 		final double[] rangedZ = new double[arraySize];
-    	final double[] rangedWx = new double[arraySize];
-    	final double[] rangedWy = new double[arraySize];
-    	
-    	System.arraycopy(zgrid, rangeStart, rangedZ, 0, arraySize);
-    	System.arraycopy(Wx, rangeStart, rangedWx, 0, arraySize);
-    	System.arraycopy(Wy, rangeStart, rangedWy, 0, arraySize); 
-    	
-    	double maxz = zgrid[zgrid.length-1];
-    	
-       Thread t = new Thread(new Runnable() {
+		final double[] rangedWx = new double[arraySize];
+		final double[] rangedWy = new double[arraySize];
 
-				@Override
-	            public void run() {
-			    	b.init(rangedZ, rangedWx, rangedWy);
-				
-					// Display result
-					b.plotWxWyFitCurves();
-	            }
-	        });
-		    t.start();
-		    try {
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		System.arraycopy(zgrid, rangeStart, rangedZ, 0, arraySize);
+		System.arraycopy(Wx, rangeStart, rangedWx, 0, arraySize);
+		System.arraycopy(Wy, rangeStart, rangedWy, 0, arraySize);
+
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				b.init(rangedZ, rangedWx, rangedWy);
+
+				// Display result
+				b.plotWxWyFitCurves();
 			}
+		});
+		t.start();
+		try {
+			t.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//////////////////////////////////////////////////////////////

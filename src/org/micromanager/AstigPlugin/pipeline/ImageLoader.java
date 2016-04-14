@@ -10,9 +10,9 @@ import ij.ImageStack;
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.RealType;
 
-public class ImageLoader<T extends IntegerType<T> & NativeType<T>> extends SingleRunModule{
+public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice = 0;
 	private ImageStack img;

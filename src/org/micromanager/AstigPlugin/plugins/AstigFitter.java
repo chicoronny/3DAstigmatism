@@ -15,11 +15,12 @@ import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.interfaces.Element;
-import org.micromanager.AstigPlugin.math.BSplines;
 import org.micromanager.AstigPlugin.math.GaussianFitterZ;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.Localization;
-import org.micromanager.AstigPlugin.pipeline.LocalizationAllParameters;
+//import org.micromanager.AstigPlugin.pipeline.LocalizationAllParameters;
+import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
 
 public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
@@ -35,34 +36,37 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 	private final Map<String, Object> params;
 	
 	public AstigFitter(final int windowSize, final Map<String,Object> params) {
-		super(windowSize);
+		super((windowSize-1)/2);
 		this.params=params;
 	}
 	
 	@Override
-	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelDepth) {
+	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, double pixelsize) {
+		
 		List<Element> found = new ArrayList<Element>();
 		int halfKernel = size;
 		long[] imageMax = new long[2];
 		long[] imageMin = new long[2];
+		double[] result = null;
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			long x = Math.round(loc.getX()/pixelDepth);
-			long y = Math.round(loc.getY()/pixelDepth);
 			pixels.min(imageMin);
 			pixels.max(imageMax);
-			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), 1000, 1000, pixelDepth, params);
-			double[] result = null;
+			long xdetect = (long) (loc.getX()/pixelsize);
+			long ydetect = (long) (loc.getY()/pixelsize);
+			Interval roi = cropInterval(imageMin,imageMax,new long[]{xdetect - halfKernel,ydetect - halfKernel},new long[]{xdetect + halfKernel,ydetect + halfKernel});
+			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), xdetect, ydetect, 200, 200, pixelsize, params);
 			result = gf.fit();
 			if (result != null){
-				result[0] *= pixelDepth;
-				result[1] *= pixelDepth;
-			//	result[2] *= (Double)params.get("zStep");
-				result[3] *= pixelDepth;
-				result[4] *= pixelDepth;
-			//	result[5] *= (Double)params.get("zStep");
-				found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], loc.getFrame()));
+				// bounds check: max deviation equals two pixels
+				if(Math.abs(xdetect-result[0])<2 && Math.abs(ydetect-result[1])<2 /*&& result[9]<30 && result[10]<30*/){
+					result[0] *= pixelsize; // x
+					result[1] *= pixelsize; // y
+					//xdetect *=  pixelsize;
+					//ydetect *=  pixelsize;
+					found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[6], result[7], result[3], loc.getFrame()));
+					//found.add(new LocalizationAllParameters(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], result[9], result[10], xdetect, ydetect, loc.getFrame()));
+				}
 			}			
 		}
 		return found;
@@ -105,13 +109,13 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		@Override
 		public Fitter getFitter() {
 			final int windowSize = (Integer) settings.get( PanelKeys.KEY_WINDOWSIZE );
-			final String calibFileName = (String) settings.get( PanelKeys.KEY_CALIBRATION_FILENAME );
+			final String calibFileName = (String) settings.get( PanelKeys.KEY_CALIBRATION_FILENAME );										///////////////// here creates error when just calibrated and start localizing
 			if (calibFileName == null){ 
 				IJ.error("No Calibration File!");
 				return null;
 			}
 			
-			Map<String,Object> param = BSplines.readCSV(calibFileName);
+			Map<String,Object> param = LemmingUtils.readCSV(calibFileName);
 			if (param.isEmpty()){ 
 				IJ.error("Reading calibration file failed!");
 				return null;

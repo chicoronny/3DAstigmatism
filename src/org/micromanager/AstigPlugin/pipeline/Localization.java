@@ -9,11 +9,11 @@ public class Localization implements LocalizationInterface {
 	static private long curID = 0;
 	private boolean isLast;
 	final private long frame;
-	final private double intensity;
+	final private double photons;
 	
 	
 	public Localization(double x, double y, double intensity, long frame) {
-		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false; this.intensity = intensity;
+		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false; this.photons = intensity;
 	}
 	
 	@Override
@@ -46,7 +46,7 @@ public class Localization implements LocalizationInterface {
 	
 	@Override
 	public double getIntensity() {
-		return intensity;
+		return photons;
 	}
 
 	@Override

@@ -1,12 +1,8 @@
 package org.micromanager.AstigPlugin.tests;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
-import java.util.Map;
 import java.util.concurrent.Executors;
 
-import org.micromanager.AstigPlugin.interfaces.Store;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
 import org.micromanager.AstigPlugin.pipeline.ImageLoader;
 import org.micromanager.AstigPlugin.pipeline.Manager;
@@ -24,7 +20,6 @@ import net.imglib2.type.numeric.RealType;
 public class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 	
 	private Manager pipe;
-	private Map<Integer, Store> storeMap;
 	private ImagePlus loc_im;
 	
 	private void setUp() {
@@ -57,7 +52,6 @@ public class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
 		pipe.linkModules(peak,fitter);
 		pipe.linkModules(fitter,saver);
-		storeMap = pipe.getMap();
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -65,8 +59,6 @@ public class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 		AstigFitterTest mt = new AstigFitterTest();
 		mt.setUp();
 		mt.pipe.startAndJoin();
-		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
-		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
 	}
 
 }

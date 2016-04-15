@@ -13,28 +13,22 @@ import org.micromanager.AstigPlugin.pipeline.Manager;
 import org.micromanager.AstigPlugin.pipeline.SaveLocalizations;
 import org.micromanager.AstigPlugin.plugins.AstigFitter;
 import org.micromanager.AstigPlugin.plugins.NMSDetector;
-import org.micromanager.AstigPlugin.plugins.NMSFastMedian;
 import org.micromanager.AstigPlugin.tools.FileInfoVirtualStack;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 import ij.ImagePlus;
 import ij.plugin.FolderOpener;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 
-public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType<T>> {
+public class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 	
 	private Manager pipe;
 	private Map<Integer, Store> storeMap;
 	private ImagePlus loc_im;
 	
 	private void setUp() {
-		String sim = "C:/Users/Ries/Documents/PluginTest/MT3d/150";
-		String scal = "C:/Users/Ries/Documents/PluginTest/MT3d/cal.csv";
-		String sres = "C:/Users/Ries/Documents/PluginTest/MT3d/150-fitonraw.txt";
-		
-		final File file = new File(sim);
+		final File file = new File("/media/backup/ownCloud/set1.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -49,11 +43,10 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 	    if (loc_im==null)
 		    return;
 		
-		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings("C:/Users/Ries/git/3DAstigmatism2/camera.props"));
-		final NMSFastMedian<T> peak = new NMSFastMedian<T>(50, false, 2,15);
-		final Fitter<T> fitter = new AstigFitter<T>(15, LemmingUtils.readCSV(scal));
-
-		final SaveLocalizations saver = new SaveLocalizations(new File(sres));
+		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings(System.getProperty("user.home")+"camera.props"));
+		final NMSDetector<T> peak = new NMSDetector<T>(50,10);
+		final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calb.csv"));
+		final SaveLocalizations saver = new SaveLocalizations(new File("/media/backup/ownCloud/set1-b.csv"));
 		
 		pipe = new Manager(Executors.newCachedThreadPool());
 		pipe.add(tif);
@@ -72,8 +65,8 @@ public class AstigFitterTest<T extends IntegerType<T> & NativeType<T> & RealType
 		AstigFitterTest mt = new AstigFitterTest();
 		mt.setUp();
 		mt.pipe.startAndJoin();
-	//	assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
-	//	assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
+		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
+		assertEquals(true,((Store) mt.storeMap.values().iterator().next()).isEmpty());
 	}
 
 }

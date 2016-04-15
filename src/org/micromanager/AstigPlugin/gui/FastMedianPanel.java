@@ -39,6 +39,12 @@ public class FastMedianPanel extends ConfigurationPanel {
 		spinnerFrames = new JSpinner();
 		spinnerFrames.setToolTipText("frames used for background substraction");
 		spinnerFrames.setModel(new SpinnerNumberModel(new Integer(50), null, null, new Integer(1)));
+		spinnerFrames.addChangeListener(new WaitForChangeListener(500, new Runnable() {
+			@Override
+			public void run() {
+				fireChanged( CHANGE_EVENT );
+			}
+		}));
 		
 		JLabel labelThreshold = new JLabel("Threshold [%]");
 		

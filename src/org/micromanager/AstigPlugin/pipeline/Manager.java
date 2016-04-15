@@ -80,6 +80,9 @@ public class Manager{
 	}
 	
 	public void reset(){
+		for(AbstractModule starter:modules.values()){
+			starter.iterator=null;
+		}
 		storeMap.clear();
 		modules.clear();
 		done = false;			

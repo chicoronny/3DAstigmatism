@@ -625,9 +625,6 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 	
 	private void resetManager(){
 		manager.reset();
-		if (tif != null) tif.reset();
-		if (detector != null) detector.reset();
-		if (fitter !=null) fitter.reset();
 		saver = null;
 	}
 

@@ -118,14 +118,15 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		}
         
 		double[] result = new double[11];
+		double[] error = get3DError(fittedEG, eg);
 		result[INDEX_X0] = fittedEG[INDEX_X0]; // X								
 		result[INDEX_Y0] = fittedEG[INDEX_Y0]; // Y
 		result[INDEX_Z0] = fittedEG[INDEX_Z0]; // Z
 		result[INDEX_I0] = fittedEG[INDEX_I0]; // I0
 		result[INDEX_Bg] = fittedEG[INDEX_Bg]; // Bg
-		result[INDEX_Sx] = get2DErrorX(fittedEG,eg); // Sx
-		result[INDEX_Sy] = get2DErrorY(fittedEG,eg); // Sy
-		result[INDEX_Sz] = 30; // Sz
+		result[INDEX_Sx] = error[0]; // Sx
+		result[INDEX_Sy] = error[1]; // Sy
+		result[INDEX_Sz] = error[2]; // Sz
 		result[INDEX_RMS] = RMS;
 		result[INDEX_Iter] = iter;
 		result[INDEX_Eval] = eval;
@@ -134,34 +135,25 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		return result;
 	}
 	
-	private double get2DErrorX(double[] fittedEG, EllipticalGaussianZ eg) {
-		double sx = eg.Sx(fittedEG[INDEX_Z0])*pixelSize;
-		double sigma2=2*sx*sx;
+	private double[] get3DError(double[] fittedEG, EllipticalGaussianZ eg) {
+		// see thunderstorm corrections
+		double[] error3d = new double[3];
+		
+		double sx,sy, dx2, dy2;
+		int r=0, g=2;
 		double N = fittedEG[INDEX_I0];
 		double b = fittedEG[INDEX_Bg];
 		double a2 = pixelSize*pixelSize;
-		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
-		double errorx2 = (sigma2+a2/12)*(16/9+4*t)/N;
+		sx = eg.Sx(fittedEG[INDEX_Z0]);
+		sy = eg.Sy(fittedEG[INDEX_Z0]);
+		double sigma2 = a2*sx*sy;
+		double tau = 2*Math.PI*(b*b+r)*(sigma2+a2/12)/(N*a2);
 		
-		return Math.sqrt(errorx2);
-	}
-	
-	private double get2DErrorY(double[] fittedEG, EllipticalGaussianZ eg) {
-		double sy = eg.Sy(fittedEG[INDEX_Z0])*pixelSize;
-		double sigma2=2*sy*sy;
-		double N = fittedEG[INDEX_I0];
-		double b = fittedEG[INDEX_Bg];
-		double a2 = pixelSize*pixelSize;
-		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
-		double errory2 = (sigma2+a2/12)*(16/9+4*t)/N;
+		dx2 = (g*sx*sx+a2/12)*(16/9+4*tau)/N;
+		dy2 = (g*sy*sy+a2/12)*(16/9+4*tau)/N;
+		error3d[0] = Math.sqrt(dx2);
+		error3d[1] = Math.sqrt(dy2);
 		
-		return Math.sqrt(errory2);
-	}	
-	
-	private double get3DError(double[] fittedEG, EllipticalGaussianZ eg) {		/// test later if that makes sense since this is not localization error 
-		double sy = eg.Sy(fittedEG[INDEX_Z0]);
-		double sx = eg.Sx(fittedEG[INDEX_Z0]);
-		int r =0;
 		double[] knots = (double[]) params.get("zgrid");
 		for (r=0; r<knots.length;++r)
 			if(fittedEG[INDEX_Z0]<knots[r]) break;
@@ -169,8 +161,9 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		r = Math.min(r, knots.length-1);
 		double hx = (knots[r]-knots[r-1])/24*sx;
 		double hy = (knots[r]-knots[r-1])/24*sy;
+		error3d[2] = hx+hy;
 
-		return (hx+hy)*pixelSize;
+		return error3d;
 	}
 
 	// Convergence Checker
@@ -206,7 +199,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 
 		@Override
 		public RealVector validate(RealVector arg) {
-			/*if (arg.getEntry(INDEX_I0) < 0) {
+			if (arg.getEntry(INDEX_I0) < 0) {
 				arg.setEntry(INDEX_I0, 0);
 			}
 			if (arg.getEntry(INDEX_Bg) < 0) {
@@ -214,9 +207,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			}
 			if (arg.getEntry(INDEX_Z0) < 0) {
 				arg.setEntry(INDEX_Z0, 0);
-			}*/
-			
-			
+			}
 			return arg;
 		}
 	}

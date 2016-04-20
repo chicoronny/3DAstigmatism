@@ -26,14 +26,14 @@ import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 import ij.IJ;
 
-public class BSplines {
+class BSplines {
 
 	private PolynomialSplineFunction fwx;
 	private PolynomialSplineFunction fwy;
 	private double[] zgrid;
 	private double[] Wx;
 	private double[] Wy;
-	private JFrame plotWindow;
+	private final JFrame plotWindow;
 	private int numKnots;
 	
 	public BSplines(){
@@ -98,12 +98,12 @@ public class BSplines {
 		try {
 			FileWriter w = new FileWriter(new File(path));
 			w.write(LemmingUtils.doubleArrayToString(knotsX)+"\n");
-			for (int i=0; i<polynomsX.length;i++)
-				w.write(LemmingUtils.doubleArrayToString(polynomsX[i].getCoefficients())+"\n");
+			for (PolynomialFunction aPolynomsX : polynomsX)
+				w.write(LemmingUtils.doubleArrayToString(aPolynomsX.getCoefficients()) + "\n");
 			w.write("--\n");
 			w.write(LemmingUtils.doubleArrayToString(knotsY)+"\n");
-			for (int i=0; i<polynomsY.length;i++)
-				w.write(LemmingUtils.doubleArrayToString(polynomsY[i].getCoefficients())+"\n");
+			for (PolynomialFunction aPolynomsY : polynomsY)
+				w.write(LemmingUtils.doubleArrayToString(aPolynomsY.getCoefficients()) + "\n");
 			w.write("--\n");
 			w.write(Double.toString(findIntersection())+"\n");
 			w.write(Double.toString(zStep)+"\n");
@@ -170,13 +170,12 @@ public class BSplines {
 		/* SETUP SCATTER */
 
 		// Create the scatter data, renderer, and axis
-		XYDataset collection = xy;
 		XYItemRenderer renderer = new XYLineAndShapeRenderer(false, true);   // Shapes only
 		ValueAxis domain = new NumberAxis(domainName);
 		ValueAxis range = new NumberAxis(rangeName);
 
 		// Set the scatter data, renderer, and axis into plot
-		plot.setDataset(0, collection);
+		plot.setDataset(0, xy);
 		plot.setRenderer(0, renderer);
 		plot.setDomainAxis(0, domain);
 		plot.setRangeAxis(0, range);
@@ -194,13 +193,12 @@ public class BSplines {
 		/* SETUP SCATTER */
 
 		// Create the scatter data, renderer, and axis
-		XYDataset collection1 = dataset2;
 		XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);   // Lines only
 		ValueAxis domain1 = new NumberAxis(domainName);
 		ValueAxis range1 = new NumberAxis(rangeName);
 
 		// Set the scatter data, renderer, and axis into plot
-		plot.setDataset(0, collection1);
+		plot.setDataset(0, dataset2);
 		plot.setRenderer(0, renderer1);
 		plot.setDomainAxis(0, domain1);
 		plot.setRangeAxis(0, range1);
@@ -212,11 +210,10 @@ public class BSplines {
 		/* SETUP LINE */
 
 		// Create the line data, renderer, and axis
-		XYDataset collection2 = dataset1;
 		XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false, true);   // Shapes only
 
 		// Set the line data, renderer, and axis into plot
-		plot.setDataset(1, collection2);
+		plot.setDataset(1, dataset1);
 		plot.setRenderer(1, renderer2);
 		//plot.setDomainAxis(1, domain1);
 		//plot.setRangeAxis(1, range1);

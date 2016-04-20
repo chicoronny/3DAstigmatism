@@ -9,12 +9,12 @@ import ij.gui.Roi;
 import ij.gui.StackWindow;
 
 @SuppressWarnings("rawtypes")
-public class CalibrationTest {
+class CalibrationTest {
 	
-	private StackWindow calibWindow;
+	private final StackWindow calibWindow;
 	private Calibrator calibrator;
 	
-	public CalibrationTest(){
+	private CalibrationTest(){
 		ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/z-stack_1.tif");
 		calibWindow = new StackWindow(calibImage);
 		calibImage.setRoi(45, 95, 21, 21);
@@ -23,7 +23,7 @@ public class CalibrationTest {
 	@SuppressWarnings("unchecked")
 	private boolean fitbeads() {
 		final Roi roitemp = calibWindow.getImagePlus().getRoi();
-		Roi calibRoi = null;
+		Roi calibRoi;
 		try {
 			final double w = roitemp.getFloatWidth();
 			final double h = roitemp.getFloatHeight();

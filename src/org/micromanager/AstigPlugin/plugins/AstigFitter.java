@@ -25,11 +25,11 @@ import org.scijava.plugin.Plugin;
 
 public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 	
-	public static final String NAME = "Astigmatism Fitter";
+	private static final String NAME = "Astigmatism Fitter";
 
 	public static final String KEY = "ASTIGFITTER";
 
-	public static final String INFO_TEXT = "<html>"
+	private static final String INFO_TEXT = "<html>"
 			+ "Astigmatism Fitter Plugin"
 			+ "</html>";
 	
@@ -47,7 +47,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		int halfKernel = size;
 		long[] imageMax = new long[2];
 		long[] imageMin = new long[2];
-		double[] result = null;
+		double[] result;
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			pixels.min(imageMin);
@@ -76,7 +76,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 	public static class Factory implements FitterFactory{
 
 		
-		private Map<String, Object> settings = new HashMap<String, Object>();
+		private final Map<String, Object> settings = new HashMap<String, Object>();
 		private ConfigurationPanel configPanel;
 
 		@Override
@@ -100,9 +100,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 			if(settings==null) return false;
 			this.settings.putAll(settings);
 			configPanel.setSettings(settings);
-			if(settings.get(PanelKeys.KEY_CALIBRATION_FILENAME) != null)
-				return true;
-			return false;
+			return settings.get(PanelKeys.KEY_CALIBRATION_FILENAME) != null;
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })

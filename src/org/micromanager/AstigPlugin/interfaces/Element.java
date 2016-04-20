@@ -4,7 +4,7 @@ public interface Element{
 	/**
 	 * @return checks if Element is the last in the queue.
 	 */
-	public boolean isLast();
+	boolean isLast();
 	
-	public void setLast(boolean b);
+	void setLast(boolean b);
 }

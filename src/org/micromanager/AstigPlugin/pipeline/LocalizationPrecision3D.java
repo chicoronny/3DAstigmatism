@@ -19,15 +19,15 @@ public class LocalizationPrecision3D extends Localization{
 		return Z;
 	}
 	
-	public double getsX(){
+	private double getsX(){
 		return sX;
 	}
 	
-	public double getsY(){
+	private double getsY(){
 		return sY;
 	}
 	
-	public double getsZ(){
+	private double getsZ(){
 		return sZ;
 	}
 	

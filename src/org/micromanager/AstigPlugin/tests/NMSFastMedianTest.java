@@ -17,7 +17,7 @@ import ij.process.FloatPolygon;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-public class NMSFastMedianTest<T extends NativeType<T> & RealType<T>> {
+class NMSFastMedianTest<T extends NativeType<T> & RealType<T>> {
 		
 	private void setUp() {
 		final File file = new File(System.getProperty("user.home")+"/ownCloud/exp-images.tif");

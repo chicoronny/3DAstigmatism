@@ -10,16 +10,16 @@ import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class HistogramRenderer extends Renderer {
 
-	private int xBins;
-	private double xmin;
-	private double ymin;
-	private double xwidth;
-	private double ywidth;
+	private final int xBins;
+	private final double xmin;
+	private final double ymin;
+	private final double xwidth;
+	private final double ywidth;
 	private volatile byte[] values; // volatile keyword keeps the array on the heap available
-	private double xmax;
-	private double ymax;
-	private double zmin;
-	private double zmax;
+	private final double xmax;
+	private final double ymax;
+	private final double zmin;
+	private final double zmax;
 
 	public HistogramRenderer() {
 		this(256, 256, 0, 256, 0, 256, 0, 255);

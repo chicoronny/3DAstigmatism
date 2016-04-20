@@ -18,7 +18,7 @@ import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-public class NMSTest<T extends NativeType<T> & RealType<T>> {
+class NMSTest<T extends NativeType<T> & RealType<T>> {
 		
 	@SuppressWarnings("unchecked")
 	private void setUp() {
@@ -40,7 +40,7 @@ public class NMSTest<T extends NativeType<T> & RealType<T>> {
 		img.setDisplayRange(0, 8000);
 		NMSDetector<T> detector =  new NMSDetector<T>(15, 5);
 		
-		Img<T> curImage = LemmingUtils.wrap(img.getStack().getProcessor(150).getPixels(), new long[]{img.getWidth(), img.getHeight()});
+		Img<T> curImage = LemmingUtils.wrap(img.getStack().getProcessor(150), new long[]{img.getWidth(), img.getHeight()});
 		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<T>(
 				150, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 		FrameElements<T> detResults = (FrameElements<T>) detector.preview(curFrame);

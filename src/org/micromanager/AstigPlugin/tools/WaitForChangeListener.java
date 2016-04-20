@@ -10,9 +10,9 @@ import javax.swing.event.ChangeListener;
 
 public class WaitForChangeListener implements ChangeListener {
 
-	private long delay;
-	private Runnable command;
-	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private final long delay;
+	private final Runnable command;
+	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture< ? > future;
 	
 

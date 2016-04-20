@@ -16,7 +16,7 @@ import ij.IJ;
 
 public class StoreSaver extends SingleRunModule {
 	
-	private File file;
+	private final File file;
 	private BufferedWriter br;
 	private Locale curLocale;
 	private Map<String,Object> metaData;
@@ -51,7 +51,7 @@ public class StoreSaver extends SingleRunModule {
 	@Override
 	public Element processData(Element data) { // data not used here
 		
-		String converted = new String();
+		String converted = "";
 		if (data instanceof ElementMap){
 			ElementMap me = (ElementMap) data;
 			for (Entry<String, Number> entry : me.entrySet()){

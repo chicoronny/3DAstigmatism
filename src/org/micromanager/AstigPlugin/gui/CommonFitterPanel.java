@@ -24,18 +24,17 @@ public class CommonFitterPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 3081886846323191618L;
-	private JButton btnCalibration;
-	private JLabel lblCalibration;
+	private final JLabel lblCalibration;
 	private File calibFile;
-	private ChangeEvent CHANGE_EVENT = new ChangeEvent(this);
+	private final ChangeEvent CHANGE_EVENT = new ChangeEvent(this);
 
 	public CommonFitterPanel() {
 		setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 205)), "Astigmatism Fitter", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205)));
 		
 		lblCalibration = new JLabel("File");
 		lblCalibration.setAlignmentX(0.5f);
-		
-		btnCalibration = new JButton("Calib. File");
+
+		JButton btnCalibration = new JButton("Calib. File");
 		btnCalibration.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				loadCalibrationFile();
@@ -68,14 +67,12 @@ public class CommonFitterPanel extends ConfigurationPanel {
 		try{
 			calibFile = (File) settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
 			lblCalibration.setText(calibFile.getName());
-		} catch (Exception e){}
+		} catch (Exception e){e.printStackTrace();}
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
 		final Map< String, Object > settings = new HashMap<String, Object>( 4 );
-		try{
-		} catch (Exception ex){}
 		if (calibFile == null){
 			return settings;
 		}
@@ -83,7 +80,7 @@ public class CommonFitterPanel extends ConfigurationPanel {
 		return settings;
 	}
 	
-	protected void loadCalibrationFile(){
+	void loadCalibrationFile(){
 		JFileChooser fc = new JFileChooser(Controller.lastDir);
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setDialogTitle("Import Calibration File");

@@ -17,12 +17,10 @@ import net.imglib2.type.numeric.RealType;
 public class AstigPlugin <T extends NativeType<T> & RealType<T>> implements MMPlugin{
 	
 	public static String menuName = "3DAstigmatism";
-	public static String tooltipDescription = "3DAstigmatism calibration and fit";
+	public static final String tooltipDescription = "3DAstigmatism calibration and fit";
 	
 	private Controller<T> frame;
-	
-	private ScriptInterface app_;
-	private CMMCore core_;
+
 	private Locale curLocale;
 
 
@@ -58,8 +56,8 @@ public class AstigPlugin <T extends NativeType<T> & RealType<T>> implements MMPl
 
 	@Override
 	public void setApp(ScriptInterface app) {
-		 app_ =  app;
-	     core_ = app.getMMCore();
+		ScriptInterface app_ = app;
+		CMMCore core_ = app.getMMCore();
 	     this.curLocale = Locale.getDefault();
 		 final Locale usLocale = new Locale("en", "US"); // setting us locale
 		 Locale.setDefault(usLocale);

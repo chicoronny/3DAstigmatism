@@ -25,9 +25,9 @@ import javax.swing.JTextField;
 public class FastMedianPanel extends ConfigurationPanel {
 
 	private static final long serialVersionUID = 1L;
-	private JSpinner spinnerFrames;
-	private JTextField textFieldThreshold;
-	private JSpinner spinnerWindowSize;
+	private final JSpinner spinnerFrames;
+	private final JTextField textFieldThreshold;
+	private final JSpinner spinnerWindowSize;
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 
 	public FastMedianPanel() {
@@ -38,7 +38,7 @@ public class FastMedianPanel extends ConfigurationPanel {
 		
 		spinnerFrames = new JSpinner();
 		spinnerFrames.setToolTipText("frames used for background substraction");
-		spinnerFrames.setModel(new SpinnerNumberModel(new Integer(50), null, null, new Integer(1)));
+		spinnerFrames.setModel(new SpinnerNumberModel(50, null, null, 1));
 		spinnerFrames.addChangeListener(new WaitForChangeListener(500, new Runnable() {
 			@Override
 			public void run() {
@@ -61,7 +61,7 @@ public class FastMedianPanel extends ConfigurationPanel {
 		JLabel labelWindowSize = new JLabel("WindowSize");
 		
 		spinnerWindowSize = new JSpinner();
-		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(15), new Integer(1), null, new Integer(1)));
+		spinnerWindowSize.setModel(new SpinnerNumberModel(15, 1, null, 1));
 		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable() {
 			@Override
 			public void run() {

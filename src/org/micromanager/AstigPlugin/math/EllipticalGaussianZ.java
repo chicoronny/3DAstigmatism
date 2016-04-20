@@ -9,21 +9,22 @@ import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.util.FastMath;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
-public class EllipticalGaussianZ implements OptimizationData {
+class EllipticalGaussianZ implements OptimizationData {
 	
-	private int[] xgrid, ygrid;
-	private PolynomialSplineFunction psx;
-	private PolynomialSplineFunction psy;
+	private final int[] xgrid;
+	private final int[] ygrid;
+	private final PolynomialSplineFunction psx;
+	private final PolynomialSplineFunction psy;
 
-	public static int INDEX_X0 = 0;
-	public static int INDEX_Y0 = 1;
-	public static int INDEX_Z0 = 2;
-	public static int INDEX_I0 = 3;
-	public static int INDEX_Bg = 4;
-	public static int PARAM_LENGTH = 5;
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_Z0 = 2;
+	private static final int INDEX_I0 = 3;
+	private static final int INDEX_Bg = 4;
+	private static final int PARAM_LENGTH = 5;
 	
-	private static double sqrt2 = FastMath.sqrt(2);
-	private static double sqrtPI = FastMath.sqrt(FastMath.PI);
+	private static final double sqrt2 = FastMath.sqrt(2);
+	private static final double sqrtPI = FastMath.sqrt(FastMath.PI);
 	
 	public EllipticalGaussianZ(int[] xgrid, int[] ygrid, Map<String,Object> params){
 		this.xgrid = xgrid;
@@ -32,7 +33,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 		psy = (PolynomialSplineFunction) params.get("psy");
 	}
 	
-    public double getValue(double[] parameter, double x, double y) {
+    private double getValue(double[] parameter, double x, double y) {
         return parameter[INDEX_I0]*Ex(x,parameter)*Ey(y,parameter)+parameter[INDEX_Bg];
     }
     
@@ -82,35 +83,35 @@ public class EllipticalGaussianZ implements OptimizationData {
 		return 2 * FastMath.exp(-x * x) / sqrtPI;
 	}
 
-	public double Ex(double x, double[] variables) {
+	private double Ex(double x, double[] variables) {
 		double tsx = sqrt2 * Sx(variables[INDEX_Z0]);
 		double xm = x - variables[INDEX_X0] - 0.5;
 		double xp = x - variables[INDEX_X0] + 0.5;
 		return 0.5 * erf(xp / tsx) - 0.5 * erf(xm / tsx);
 	}
 
-	public double Ey(double y, double[] variables) {
+	private double Ey(double y, double[] variables) {
 		double tsy = sqrt2 * Sy(variables[INDEX_Z0]);
 		double ym = y - variables[INDEX_Y0] - 0.5;
 		double yp = y - variables[INDEX_Y0] + 0.5;
 		return 0.5 * erf(yp / tsy) - 0.5 * erf(ym / tsy);
 	}
 
-	public double dEx(double x, double[] variables) {
+	private double dEx(double x, double[] variables) {
 		double xm = x - variables[INDEX_X0] - 0.5;
 		double xp = x - variables[INDEX_X0] + 0.5;
 		double tsx = sqrt2 * Sx(variables[INDEX_Z0]);
 		return 0.5 * (dErf(xm / tsx) - dErf(xp / tsx)) / tsx;
 	}
 
-	public double dEy(double y, double[] variables) {
+	private double dEy(double y, double[] variables) {
 		double ym = y - variables[INDEX_Y0] - 0.5;
 		double yp = y - variables[INDEX_Y0] + 0.5;
 		double tsy = sqrt2 * Sy(variables[INDEX_Z0]);
 		return 0.5 * (dErf(ym / tsy) - dErf(yp / tsy)) / tsy;
 	}
 
-	public double dEsx(double x, double[] variables) {
+	private double dEsx(double x, double[] variables) {
 		double tsx = sqrt2 * Sx(variables[INDEX_Z0]);
 		double xm = x - variables[INDEX_X0] - 0.5;
 		double xp = x - variables[INDEX_X0] + 0.5;
@@ -118,7 +119,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 				/ Sx(variables[INDEX_Z0]) / tsx;
 	}
 
-	public double dEsy(double y, double[] variables) {
+	private double dEsy(double y, double[] variables) {
 		double tsy = sqrt2 * Sy(variables[INDEX_Z0]);
 		double ym = y - variables[INDEX_Y0] - 0.5;
 		double yp = y - variables[INDEX_Y0] + 0.5;
@@ -140,14 +141,14 @@ public class EllipticalGaussianZ implements OptimizationData {
 		return valuey;
 	}
 
-	public double dSx(double z) {
+	private double dSx(double z) {
 		double value = 1.;
 		if(psx.isValidPoint(z))
 			value = psx.derivative().value(z);
 		return value;
 	}
 
-	public double dSy(double z) {
+	private double dSy(double z) {
 		double value = 1.;
 		if(psy.isValidPoint(z))
 			value = psy.derivative().value(z);

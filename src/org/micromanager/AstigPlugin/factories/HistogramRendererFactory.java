@@ -9,14 +9,14 @@ import org.micromanager.AstigPlugin.pipeline.Renderer;
 import org.micromanager.AstigPlugin.plugins.HistogramRenderer;
 
 public class HistogramRendererFactory {
-	public static final String NAME = "Histogram Renderer";
+	private static final String NAME = "Histogram Renderer";
 	public static final String KEY = "HISTOGRAMRENDERER";
-	public static final String INFO_TEXT = "<html>"
+	private static final String INFO_TEXT = "<html>"
 											+ "Histogram Renderer Plugin"
 											+ "</html>";
 	
-	private HistogramRendererPanel configPanel;
-	private Map<String, Object> settings;
+	private final HistogramRendererPanel configPanel;
+	private final Map<String, Object> settings;
 	
 	public HistogramRendererFactory(){
 		configPanel = new HistogramRendererPanel();

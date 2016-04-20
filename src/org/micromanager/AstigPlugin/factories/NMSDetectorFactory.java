@@ -10,16 +10,16 @@ import org.micromanager.AstigPlugin.pipeline.AbstractModule;
 import org.micromanager.AstigPlugin.plugins.NMSDetector;
 
 public class NMSDetectorFactory {
-	public static final String NAME = "NMS Detector";
+	private static final String NAME = "NMS Detector";
 
-	public static final String KEY = "NMSDETECTOR";
+	private static final String KEY = "NMSDETECTOR";
 
-	public static final String INFO_TEXT = "<html>"
+	private static final String INFO_TEXT = "<html>"
 			+ "NMS Detector Plugin"
 			+ "</html>";
 	
-	private Map<String, Object> settings = new HashMap<String, Object>();
-	private ConfigurationPanel configPanel = new NMSDetectorPanel();
+	private final Map<String, Object> settings = new HashMap<String, Object>();
+	private final ConfigurationPanel configPanel = new NMSDetectorPanel();
 
 	public String getInfoText() {
 		return INFO_TEXT;

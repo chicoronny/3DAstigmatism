@@ -22,12 +22,12 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	 */
 	private static final long serialVersionUID = -3031663211936690561L;
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
-	private JTextField textXBins;
-	private JTextField textYBins;
-	private JLabel lblX;
-	private JLabel lblY;
-	private JLabel labelX2;
-	private JLabel labelY2;
+	private final JTextField textXBins;
+	private final JTextField textYBins;
+	private final JLabel lblX;
+	private final JLabel lblY;
+	private final JLabel labelX2;
+	private final JLabel labelY2;
 	private double zmin,zmax;
 
 	public HistogramRendererPanel() {
@@ -123,10 +123,10 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 
 	@Override
 	public void setSettings(Map<String, Object> settings_) {
-		lblX.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_xmin)));
-		lblY.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_ymin)));
-		labelX2.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_xmax)));
-		labelY2.setText(String.format("%.4f",settings_.get(PanelKeys.KEY_ymax)));
+		lblX.setText(String.format("%.4f",(Double) settings_.get(PanelKeys.KEY_xmin)));
+		lblY.setText(String.format("%.4f",(Double) settings_.get(PanelKeys.KEY_ymin)));
+		labelX2.setText(String.format("%.4f",(Double) settings_.get(PanelKeys.KEY_xmax)));
+		labelY2.setText(String.format("%.4f",(Double) settings_.get(PanelKeys.KEY_ymax)));
 		textXBins.setText(String.valueOf(settings_.get(PanelKeys.KEY_xBins)));
 		textYBins.setText(String.valueOf(settings_.get(PanelKeys.KEY_yBins)));
 		zmin = (Double) settings_.get(PanelKeys.KEY_zmin);
@@ -149,14 +149,14 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	
 	public Map<String, Object> getInitialSettings(){
 		final Map<String, Object> settings = new HashMap<String, Object>(8);
-		settings.put(PanelKeys.KEY_xmin, new Double(0));
-		settings.put(PanelKeys.KEY_ymin, new Double(0));
-		settings.put(PanelKeys.KEY_xmax, new Double(100));
-		settings.put(PanelKeys.KEY_ymax, new Double(100));
-		settings.put(PanelKeys.KEY_xBins,new Integer(500));
-		settings.put(PanelKeys.KEY_yBins,new Integer(500));
-		settings.put(PanelKeys.KEY_zmin,new Double(0));
-		settings.put(PanelKeys.KEY_zmax,new Double(255));
+		settings.put(PanelKeys.KEY_xmin, 0d);
+		settings.put(PanelKeys.KEY_ymin, 0d);
+		settings.put(PanelKeys.KEY_xmax, 100d);
+		settings.put(PanelKeys.KEY_ymax, 100d);
+		settings.put(PanelKeys.KEY_xBins, 500);
+		settings.put(PanelKeys.KEY_yBins, 500);
+		settings.put(PanelKeys.KEY_zmin, 0d);
+		settings.put(PanelKeys.KEY_zmax, 255d);
 		return settings;
 	}
 	/**

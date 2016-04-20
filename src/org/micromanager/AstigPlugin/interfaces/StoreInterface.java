@@ -8,35 +8,35 @@ public interface StoreInterface<E extends Element> {
 	 * Adds the element el to the store.
 	 * @param el is the element to be put
 	 */
-	public void put(E element);
+	void put(E element);
 	
 	/**
 	 * Retrieves (and typically removes) an element from the store.
 	 * @return element 
 	 */
-	public E get();
+	E get();
 	
 	/**
 	 * Retrieves an element from the store without removing it.
 	 * @return element 
 	 */
-	public E peek();
+	E peek();
 	
 	/**
 	 * Checks if the store is empty. 
 	 * @return The store is empty.
 	 */
-	public boolean isEmpty();
+	boolean isEmpty();
 	
 	/**
 	 * Length of the store.
 	 * @return length.
 	 */
-	public int getLength();
+	int getLength();
 	
 	/**
 	 * Current view of store.
 	 * @return view.
 	 */
-	public Collection<Element> view();
+	Collection<Element> view();
 }

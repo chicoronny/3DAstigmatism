@@ -31,7 +31,7 @@ public abstract class ConfigurationPanel extends JPanel{
 	/**
 	 * Called when one of the Panel is changed by the user.
 	 */
-	public void fireChanged(ChangeEvent e) {
+	void fireChanged(ChangeEvent e) {
 		for ( final ChangeListener cl : changeListeners )
 		{
 			cl.stateChanged( e );

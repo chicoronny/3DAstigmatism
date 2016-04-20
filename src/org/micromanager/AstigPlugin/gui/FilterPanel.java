@@ -30,24 +30,20 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	 */
 	private static final long serialVersionUID = -2042228716255813527L;
 	public static final String KEY = "FILTER";
-	
-	private JButton btnAdd;
-	private JButton btnRemove;
-	private JScrollPane scrollPane;
-	private ExtendableTable table;
-	private Deque<HistogramPanel> panelStack = new ArrayDeque<HistogramPanel>();
+
+	private final ExtendableTable table;
+	private final Deque<HistogramPanel> panelStack = new ArrayDeque<HistogramPanel>();
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
-	private JPanel panelHolder;
-	private JPanel panelButtons;
-	
+	private final JPanel panelHolder;
+
 	public FilterPanel(ExtendableTable table) {
 		setBorder(null);
 		setMinimumSize(new Dimension(295, 315));
 		setPreferredSize(new Dimension(300, 340));
 		setName(KEY);
 		this.table = table;
-		
-		scrollPane = new JScrollPane();
+
+		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setPreferredSize(new Dimension(290, 300));
 		scrollPane.setOpaque(true);
 		scrollPane.setAutoscrolls(true);
@@ -58,12 +54,12 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		panelHolder = new JPanel();
 		scrollPane.setViewportView(panelHolder);
 		panelHolder.setLayout(new BoxLayout(panelHolder, BoxLayout.Y_AXIS));
-		
-		panelButtons = new JPanel();
+
+		JPanel panelButtons = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) panelButtons.getLayout();
 		flowLayout.setHgap(0);
-		
-		btnAdd = new JButton("Add");
+
+		JButton btnAdd = new JButton("Add");
 		panelButtons.add(btnAdd);
 		btnAdd.addActionListener(new ActionListener(){
 			@Override
@@ -72,8 +68,8 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 			}
 		});
 		btnAdd.setAlignmentY(Component.TOP_ALIGNMENT);
-		
-		btnRemove = new JButton("Remove");
+
+		JButton btnRemove = new JButton("Remove");
 		panelButtons.add(btnRemove);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		add(scrollPane);
@@ -86,7 +82,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		});
 	}
 
-	protected void removePanel() {
+	private void removePanel() {
 		if (!panelStack.isEmpty()){
 			HistogramPanel hPanel = panelStack.removeLast();
 			hPanel.removeChangeListener(this);
@@ -96,7 +92,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		}			
 	}
 
-	protected void addPanel() {
+	private void addPanel() {
 		if (table==null) return;
 		HistogramPanel hPanel = new HistogramPanel(table);
 		hPanel.addChangeListener(this);

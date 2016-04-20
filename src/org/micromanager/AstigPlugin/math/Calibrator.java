@@ -25,19 +25,20 @@ import net.imglib2.view.Views;
 
 public class Calibrator<T extends RealType<T> & NativeType<T>> {
 	
-	private double[] zgrid;									// z positions of the slices in the stack
-	private volatile double[] Wx, Wy; 
-	private int nSlice;
+	private final double[] zgrid;									// z positions of the slices in the stack
+	private final double[] Wx;
+	private final double[] Wy;
+	private final int nSlice;
 
-	private int zstep;
+	private final int zstep;
     private int rangeStart, rangeEnd;					// Both ends of the restricted z range and length of the restriction
-    private volatile Rectangle roi;
+    private final Rectangle roi;
     
-	private ImageStack is;
-	private BSplines b;	
-	private Double offset;
-	private Double em_gain;
-	private Double conversion;
+	private final ImageStack is;
+	private final BSplines b;
+	private final Double offset;
+	private final Double em_gain;
+	private final Double conversion;
    
 	public Calibrator(ImagePlus im, List<Double> cameraSettings, int zstep, Roi r){
 		this.is = im.getStack();
@@ -72,7 +73,7 @@ public class Calibrator<T extends RealType<T> & NativeType<T>> {
 				public void run() {
 					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
 						final ImageProcessor ip = is.getProcessor(i + 1);
-						final Img<T> theImage = LemmingUtils.wrap(ip.getPixels(), new long[]{is.getWidth(), is.getHeight()});
+						final Img<T> theImage = LemmingUtils.wrap(ip, new long[]{is.getWidth(), is.getHeight()});
 						final Cursor<T> it = theImage.cursor();
 						while(it.hasNext()){
 							it.fwd();

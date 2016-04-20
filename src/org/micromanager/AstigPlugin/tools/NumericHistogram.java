@@ -22,13 +22,13 @@ public class NumericHistogram {
     public int compareTo(Object other) {
       return Double.compare(x, ((Coord) other).x);
     }
-  };
+  }
 
   // Class variables
   private int nbins;
   private int nusedbins;
   private ArrayList<Coord> bins;
-  private Random prng;
+  private final Random prng;
 
   /**
    * Creates a new histogram object. Note that the allocate() or merge()
@@ -72,7 +72,7 @@ public class NumericHistogram {
   /**
    * Returns a particular histogram bin.
    */
-  public Coord getBin(int b) {
+  private Coord getBin(int b) {
     return bins.get(b);
   }
 
@@ -201,9 +201,8 @@ public class NumericHistogram {
         }
 
         csum -= bins.get(b).y;
-        double r = bins.get(b-1).x +
+        return bins.get(b-1).x +
           (q*sum - csum) * (bins.get(b).x - bins.get(b-1).x)/(bins.get(b).y);
-        return r;
       }
     }
     return -1; // for Xlint, code will never reach here

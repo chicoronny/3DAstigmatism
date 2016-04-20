@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit;
 public class WaitForKeyListener implements KeyListener {
 	
 	private long delay = 1000;
-	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture< ? > future;
-	private Runnable command;
+	private final Runnable command;
 
 
 	public WaitForKeyListener(long delay, Runnable command) {

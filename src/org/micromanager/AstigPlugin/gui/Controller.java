@@ -55,25 +55,19 @@ import org.micromanager.AstigPlugin.tools.LemmingUtils;
 public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	private JTabbedPane tabbedPane;
-	private JPanel panelLoc;
-	private JPanel panelRecon;
-	private JCheckBox chckbxPreprocessing;
-	private JButton btnPeakDet;
-	private JCheckBox chckbxROI;
-	private JLabel lblSkipFrames;
-	private JSpinner spinnerSkipFrames;
-	private JPanel panelMiddle;
+	private final JTabbedPane tabbedPane;
+	private final JCheckBox chckbxPreprocessing;
+	private final JButton btnPeakDet;
+	private final JCheckBox chckbxROI;
 	private JButton btnProcess;
 	private NMSDetectorFactory detectorFactory;
-	private JLabel lblFitter;
 	private FitterProvider fitterProvider;
-	private JComboBox comboBoxFitter;
-	private JCheckBox chkboxRenderer;
-	private JCheckBox chkboxFilter;
+	private final JComboBox comboBoxFitter;
+	private final JCheckBox chkboxRenderer;
+	private final JCheckBox chkboxFilter;
 	private FitterFactory fitterFactory;
 	private HistogramRendererFactory rendererFactory;
-	private JLabel lblFile;
+	private final JLabel lblFile;
 	private Manager manager;
 	private ExtendableTable table;
 	private Map<String, Object> settings;
@@ -88,34 +82,30 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 	private int widgetSelection = 0;
 	private boolean processed = false;
 	private ExtendableTable filteredTable = null;
-	private static int DETECTOR = 1;
-	private static int FITTER = 2;
-	private static int PREPROCESSOR = 3;
-	private JProgressBar progressBar;
-	private JButton btnReset;
+	private static final int DETECTOR = 1;
+	private static final int FITTER = 2;
+	private static final int PREPROCESSOR = 3;
+	private final JProgressBar progressBar;
+	private final JButton btnReset;
 	private JPanel panelFilter;
 	private ImageLoader<T> tif;
-	private JPanel panelCalibration;
-	private JLabel labelStepSize;
-	private JButton buttonFitBeads;
-	private JLabel labelRange;
-	private JButton buttonFitCurve;
-	private JButton buttonSaveCal;
-	private RangeSlider rangeSlider;
-	private JButton btnImagesCalibration;
-	private JSpinner spinnerStepSize;
+	private final JButton buttonFitBeads;
+	private final JButton buttonFitCurve;
+	private final JButton buttonSaveCal;
+	private final RangeSlider rangeSlider;
+	private final JButton btnImagesCalibration;
+	private final JSpinner spinnerStepSize;
 	private StackWindow calibWindow;
 	private Calibrator<T> calibrator;
-	private JLabel lblEta;
+	private final JLabel lblEta;
 	private long start;
 	private SaveLocalizations saver;
-	private CommonFitterPanel panelFitter;
-	private JSpinner spinnerSkipLastFrames;
+	private final CommonFitterPanel panelFitter;
 	private JPanel panelPeakDet;
 	private JLabel lblMinrange;
 	private JLabel lblMaxrange;
-	private JButton btnDataSource;
-	private Locale curLocale;
+	private final JButton btnDataSource;
+	private final Locale curLocale;
 	private List<Double> cameraProps;
 	private NMSFastMedianFactory<T> preProcessingFactory;
 	public static String lastDir = System.getProperty("user.home"); 
@@ -171,17 +161,17 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 			}
 		});
 
-		panelCalibration = new JPanel();
+		JPanel panelCalibration = new JPanel();
 		tabbedPane.addTab("Calibration", null, panelCalibration, null);
 
-		labelStepSize = new JLabel("Step Size");
+		JLabel labelStepSize = new JLabel("Step Size");
 
 		buttonFitBeads = new JButton("Fit beads");
 		buttonFitBeads.setToolTipText("Gaussian fitting of beads");
 		buttonFitBeads.setEnabled(false);
 		buttonFitBeads.addActionListener(this);
 
-		labelRange = new JLabel("Range");
+		JLabel labelRange = new JLabel("Range");
 
 		buttonFitCurve = new JButton("Fit curve");
 		buttonFitCurve.setToolTipText("Fit the two sigmas to obtain the calibration curve");
@@ -212,7 +202,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 
 		spinnerStepSize = new JSpinner();
 		spinnerStepSize.setToolTipText("Step size for calibration data");
-		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(0), null, new Integer(1)));
+		spinnerStepSize.setModel(new SpinnerNumberModel(10, 0, null, 1));
 
 		btnImagesCalibration = new JButton("Calibration Images");
 		btnImagesCalibration.setToolTipText("Load Images for 3D calibration");
@@ -280,7 +270,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		);
 		panelCalibration.setLayout(gl_panelCalibration);
 
-		panelLoc = new JPanel();
+		JPanel panelLoc = new JPanel();
 		panelLoc.setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
 		tabbedPane.addTab("Localize", null, panelLoc, null);
 		GridBagLayout gbl_panelLoc = new GridBagLayout();
@@ -306,7 +296,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		gbc_panelUpper.gridy = 0;
 		panelLoc.add(panelUpper, gbc_panelUpper);
 
-		lblFitter = new JLabel("Fitter");
+		JLabel lblFitter = new JLabel("Fitter");
 
 		comboBoxFitter = new JComboBox();
 		comboBoxFitter.setPreferredSize(new Dimension(32, 26));
@@ -353,7 +343,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		);
 		panelUpper.setLayout(gl_panelUpper);
 
-		panelMiddle = new JPanel();
+		JPanel panelMiddle = new JPanel();
 		GridBagConstraints gbc_panelMiddle = new GridBagConstraints();
 		gbc_panelMiddle.anchor = GridBagConstraints.WEST;
 		gbc_panelMiddle.gridx = 0;
@@ -364,14 +354,14 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		chckbxROI.setToolTipText("use only that region for further processing");
 		chckbxROI.addActionListener(this);
 
-		lblSkipFrames = new JLabel(" | Skip frames");
+		JLabel lblSkipFrames = new JLabel(" | Skip frames");
 
-		spinnerSkipFrames = new JSpinner();
+		JSpinner spinnerSkipFrames = new JSpinner();
 		spinnerSkipFrames.setToolTipText("skip frames at the beginning of the image stack");
 		spinnerSkipFrames.setPreferredSize(new Dimension(40, 28));
-		spinnerSkipFrames.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
+		spinnerSkipFrames.setModel(new SpinnerNumberModel(0, 0, null, 1));
 
-		spinnerSkipLastFrames = new JSpinner();
+		JSpinner spinnerSkipLastFrames = new JSpinner();
 		GroupLayout gl_panelMiddle = new GroupLayout(panelMiddle);
 		gl_panelMiddle.setHorizontalGroup(
 			gl_panelMiddle.createParallelGroup(Alignment.LEADING)
@@ -414,7 +404,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		gbc_panelFitter.gridy = 3;
 		panelLoc.add(panelFitter, gbc_panelFitter);
 
-		panelRecon = new JPanel();
+		JPanel panelRecon = new JPanel();
 		panelRecon.setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
 		tabbedPane.addTab("Reconstruct", null, panelRecon, null);
 		GridBagLayout gbl_panelRecon = new GridBagLayout();
@@ -884,7 +874,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 
 	private boolean fitbeads() {
 		final Roi roitemp = calibWindow.getImagePlus().getRoi();
-		Roi calibRoi = null;
+		Roi calibRoi;
 		try {
 			final double w = roitemp.getFloatWidth();
 			final double h = roitemp.getFloatHeight();
@@ -1003,7 +993,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 
-		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[] { ip.getWidth(), ip.getHeight() });
+		final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { ip.getWidth(), ip.getHeight() });
 		final Cursor<T> it = curImage.cursor();
 		while(it.hasNext()){
 			it.fwd();
@@ -1036,7 +1026,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		
 		settings.putAll(fitterSettings);
 		final Object calibFile = settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
-		if (calibFile == null && key == AstigFitter.KEY){
+		if (calibFile == null && key.equals(AstigFitter.KEY)){
 			panelFitter.loadCalibrationFile();
 			settings.put(PanelKeys.KEY_CALIBRATION_FILENAME, panelDown.getSettings().get(PanelKeys.KEY_CALIBRATION_FILENAME));
 		}
@@ -1066,7 +1056,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 		
-		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[] { ip.getWidth(), ip.getHeight() });
+		final Img<T> curImage = LemmingUtils.wrap(ip, new long[] { ip.getWidth(), ip.getHeight() });
 		final Cursor<T> it = curImage.cursor();
 		while(it.hasNext()){
 			it.fwd();
@@ -1154,7 +1144,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 						settings.put(PanelKeys.KEY_xBins, new_xbins);
 						settings.put(PanelKeys.KEY_yBins, new_ybins);
 						rendererShow(settings);
-					} catch (NullPointerException ne) {
+					} catch (NullPointerException ne) {ne.printStackTrace();
 					}
 				}
 			}
@@ -1329,7 +1319,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 
 	private class ToolTipRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 1L;
-		List<String> tooltips;
+		final List<String> tooltips;
 
 		public ToolTipRenderer(List<String> tooltips) {
 			this.tooltips = tooltips;

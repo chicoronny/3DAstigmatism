@@ -12,10 +12,10 @@ import org.micromanager.AstigPlugin.interfaces.Element;
 
 public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 
-	protected int size;
-	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
+	protected final int size;
+	private final ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
 
-	public Fitter(int windowSize) {
+	protected Fitter(int windowSize) {
 		this.size = windowSize;
 	}
 

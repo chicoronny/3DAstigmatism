@@ -10,8 +10,8 @@
     <property name="source" value="1.6"/>
     <import file="user.xml"/>
     <path id="JUnit 4.libraryclasspath">
-        <pathelement location="../../../../../../opt/eclipse/plugins/org.junit_4.12.0.v201504281640/junit.jar"/>
-        <pathelement location="../../../../../../opt/eclipse/plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
+        <pathelement location="../../../../../../home/ronny/.eclipse/org.eclipse.platform_4.4.1_939389857_linux_gtk_x86_64/plugins/org.junit_4.10.0.v4_10_0_v20120426-0900/junit.jar"/>
+        <pathelement location="../../../../../../home/ronny/.eclipse/org.eclipse.platform_4.4.1_939389857_linux_gtk_x86_64/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
     </path>
     <path id="3DAstigmatism.classpath">
         <pathelement location="bin"/>
@@ -77,27 +77,4 @@
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
-        <copy todir="${ant.library.dir}">
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </copy>
-        <unzip dest="${ant.library.dir}">
-            <patternset includes="jdtCompilerAdapter.jar"/>
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </unzip>
-    </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
-        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-        <antcall target="build"/>
-    </target>
-    <target name="CalibrationTest">
-        <java classname="org.micromanager.AstigPlugin.tests.CalibrationTest" failonerror="true" fork="yes">
-            <classpath refid="3DAstigmatism.classpath"/>
-        </java>
-    </target>
-    <target name="AstigPlugin">
-        <java classname="org.micromanager.AstigPlugin.AstigPlugin" failonerror="true" fork="yes">
-            <classpath refid="3DAstigmatism.classpath"/>
-        </java>
-    </target>
 </project>

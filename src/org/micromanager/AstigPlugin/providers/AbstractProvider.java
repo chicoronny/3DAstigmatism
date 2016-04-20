@@ -15,13 +15,13 @@ import org.scijava.plugin.PluginService;
 
 public class AbstractProvider< K extends PluginInterface > {
 
-	private Class<K> cl;
-	private ArrayList<String> keys;
-	private ArrayList<String> visibleKeys;
-	private ArrayList<String> disabled;
-	private HashMap<String, K> implementations;
+	private final Class<K> cl;
+	private final ArrayList<String> keys;
+	private final ArrayList<String> visibleKeys;
+	private final ArrayList<String> disabled;
+	private final HashMap<String, K> implementations;
 
-	public AbstractProvider( final Class< K > cl ) {
+	AbstractProvider(final Class<K> cl) {
 		this.cl = cl;
 		keys = new ArrayList<String>();
 		visibleKeys = new ArrayList<String>();
@@ -31,7 +31,7 @@ public class AbstractProvider< K extends PluginInterface > {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addModule(String className){
+	void addModule(String className){
 		try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 			K instance = (K) classLoader.loadClass(className).newInstance();
@@ -51,8 +51,8 @@ public class AbstractProvider< K extends PluginInterface > {
 		
 	}
 	
-	public void registerModules() {
-		Context context = null;
+	private void registerModules() {
+		Context context;
 		try{
 			context = new Context(LogService.class, PluginService.class);
 		} catch (Exception e){
@@ -93,7 +93,7 @@ public class AbstractProvider< K extends PluginInterface > {
 		Collections.reverse(visibleKeys);
 	}
 	
-	public List< String > getKeys()
+	private List< String > getKeys()
 	{
 		return new ArrayList<String>( keys );
 	}
@@ -103,7 +103,7 @@ public class AbstractProvider< K extends PluginInterface > {
 		return new ArrayList<String>( visibleKeys );
 	}
 
-	public List< String > getDisabled()
+	private List< String > getDisabled()
 	{
 		return new ArrayList<String>( disabled );
 	}
@@ -113,10 +113,10 @@ public class AbstractProvider< K extends PluginInterface > {
 		return implementations.get( key );
 	}
 	
-	public String echo()
+	String echo()
 	{
 		final StringBuilder str = new StringBuilder();
-		str.append( "Discovered modules for " + cl.getSimpleName() + ":\n" );
+		str.append("Discovered modules for ").append(cl.getSimpleName()).append(":\n");
 		str.append( "  Enabled & visible:" );
 		if ( getVisibleKeys().isEmpty() )
 		{
@@ -127,9 +127,9 @@ public class AbstractProvider< K extends PluginInterface > {
 			str.append( '\n' );
 			for ( final String key : getVisibleKeys() ){
 				if (getFactory( key ) == null)
-					str.append( "  - " + key + '\n' );
+					str.append("  - ").append(key).append('\n');
 				else
-					str.append( "  - " + key + "\t-->\t" + getFactory( key ).getName() + '\n' );
+					str.append("  - ").append(key).append("\t-->\t").append(getFactory(key).getName()).append('\n');
 			}
 		}
 		str.append( "  Enabled & not visible:" );
@@ -142,9 +142,9 @@ public class AbstractProvider< K extends PluginInterface > {
 			for ( final String key : invisibleKeys )
 			{
 				if (getFactory( key ) == null)
-					str.append( "  - " + key + '\n' );
+					str.append("  - ").append(key).append('\n');
 				else
-					str.append( "  - " + key + "\t-->\t" + getFactory( key ).getName() + '\n' );
+					str.append("  - ").append(key).append("\t-->\t").append(getFactory(key).getName()).append('\n');
 			}
 		}
 		str.append( "  Disabled:" );
@@ -157,7 +157,7 @@ public class AbstractProvider< K extends PluginInterface > {
 			str.append( '\n' );
 			for ( final String cn : getDisabled() )
 			{
-				str.append( "  - " + cn + '\n' );
+				str.append("  - ").append(cn).append('\n');
 			}
 		}
 		return str.toString();

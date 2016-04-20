@@ -26,17 +26,17 @@ import org.scijava.plugin.Plugin;
 
 public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 	
-	public static final String NAME = "Centroid Fitter";
+	private static final String NAME = "Centroid Fitter";
 
-	public static final String KEY = "CENTROIDFITTER";
+	private static final String KEY = "CENTROIDFITTER";
 
-	public static final String INFO_TEXT = "<html>"
+	private static final String INFO_TEXT = "<html>"
 			+ "Centroid Fitter Plugin"
 			+ "</html>";
 
-	private double threshold;
+	private final double threshold;
 
-	public CentroidFitter(int windowSize, double threshold_) {
+	private CentroidFitter(int windowSize, double threshold_) {
 		super((int) ((windowSize-1)/2.0));
 		threshold = threshold_;
 	}
@@ -81,7 +81,7 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 	@Plugin( type = FitterFactory.class, visible = true )
 	public static class Factory<T extends RealType<T>> implements FitterFactory{
 
-		private Map<String, Object> settings = new HashMap<String, Object>();
+		private final Map<String, Object> settings = new HashMap<String, Object>();
 		private ConfigurationPanel configPanel;
 
 		@Override

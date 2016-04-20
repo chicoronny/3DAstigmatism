@@ -14,7 +14,7 @@ import ij.IJ;
 
 public abstract class MultiRunModule extends AbstractModule{
 	
-	public MultiRunModule(){
+	protected MultiRunModule(){
 	}
 	
 	@Override
@@ -120,13 +120,12 @@ public abstract class MultiRunModule extends AbstractModule{
 			return;
 		}
 		IJ.error("No inputs or outputs!");
-		return;
 	}
 
 	protected void afterRun() {		
 	}
 
-	protected void beforeRun() {
+	private void beforeRun() {
 		if(service == null)
 			service = Executors.newCachedThreadPool();
 		start = System.currentTimeMillis();

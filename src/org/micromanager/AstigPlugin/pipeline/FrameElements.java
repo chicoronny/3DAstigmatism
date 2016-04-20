@@ -8,8 +8,8 @@ import org.micromanager.AstigPlugin.interfaces.Frame;
 public class FrameElements<T> implements Element {
 	
 	private boolean isLast;
-	private List<Element> list;
-	private Frame<T> frame;
+	private final List<Element> list;
+	private final Frame<T> frame;
 
 	public FrameElements(List<Element> list_, Frame<T> f) {
 		list = list_;

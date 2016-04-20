@@ -27,19 +27,19 @@ public class LocalizationAllParameters extends Localization{
 		this.ydetect = ydetect;
 	}
 
-	public double getZ(){
+	private double getZ(){
 		return Z;
 	}
 	
-	public double getsX(){
+	private double getsX(){
 		return sX;
 	}
 	
-	public double getsY(){
+	private double getsY(){
 		return sY;
 	}
 	
-	public double getsZ(){
+	private double getsZ(){
 		return sZ;
 	}
 

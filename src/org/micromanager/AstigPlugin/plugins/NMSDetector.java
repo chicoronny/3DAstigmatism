@@ -18,9 +18,9 @@ import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 public class NMSDetector <T extends RealType<T>> extends MultiRunModule {
 	
-	private double threshold;
-	private int n_;
-	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
+	private final double threshold;
+	private final int n_;
+	private final ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<Integer>();
 
 	public NMSDetector(final double threshold, final int size) {
 		this.threshold = threshold;
@@ -63,7 +63,7 @@ public class NMSDetector <T extends RealType<T>> extends MultiRunModule {
 		return inputs.size()==1 && outputs.size()>=1;
 	}
 		
-	public FrameElements<T> detect(Frame<T> frame) {
+	private FrameElements<T> detect(Frame<T> frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		final RandomAccess<T> ra = interval.randomAccess();
         
@@ -73,7 +73,7 @@ public class NMSDetector <T extends RealType<T>> extends MultiRunModule {
 		
 		int i,j,ii,jj,ll,kk;
 		int mi,mj;
-		boolean failed = false;
+		boolean failed;
 		long width_ = interval.dimension(0);
 		long height_ = interval.dimension(1);
 		List<Element> found = new ArrayList<Element>();

@@ -17,9 +17,9 @@ import org.micromanager.AstigPlugin.interfaces.Store;
 public class Manager{
 	
 	public static final int STATE_DONE = 1;
-	private Map<Integer,Store> storeMap = new LinkedHashMap<Integer, Store>();
-	private Map<Integer,AbstractModule> modules = new LinkedHashMap<Integer, AbstractModule>();
-	private ExecutorService service;
+	private final Map<Integer,Store> storeMap = new LinkedHashMap<Integer, Store>();
+	private final Map<Integer,AbstractModule> modules = new LinkedHashMap<Integer, AbstractModule>();
+	private final ExecutorService service;
 	private volatile boolean done = false;
 	private int maximum = 1;
 	private int progress;
@@ -33,7 +33,7 @@ public class Manager{
 		changeListeners.add( listener );
 	}
 	
-	public void firePropertyChanged(PropertyChangeEvent e) {
+	private void firePropertyChanged(PropertyChangeEvent e) {
 		for ( final PropertyChangeListener cl : changeListeners )
 			cl.propertyChange( e );
 	}
@@ -43,7 +43,7 @@ public class Manager{
 	}
 	
 	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs, int maxElements){
-		Store s = null;
+		Store s;
 		if (noInputs){
 			int n = (int) Math.min(Runtime.getRuntime().freeMemory()/Math.pow(2,17), maxElements*0.5); // performance tweak
 			System.out.println("Manager starts with maximal "+n+" elements" );
@@ -146,7 +146,6 @@ public class Manager{
 			
 			final PropertyChangeEvent EVENT_DONE = new PropertyChangeEvent(this, "state", 0, STATE_DONE);
 			firePropertyChanged(EVENT_DONE);
-			return;
 		}
 	}
 	
@@ -159,7 +158,7 @@ public class Manager{
 	                Thread.sleep(200);
 	            } catch (InterruptedException ignore) {break;}
 				int max = 0;
-				int n = 0;
+				int n;
 				for(Integer key : storeMap.keySet()){
 					n = storeMap.get(key).getLength();
 					max= Math.max(n, max);

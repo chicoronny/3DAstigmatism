@@ -2,6 +2,7 @@ package org.micromanager.AstigPlugin.pipeline;
 
 import java.util.List;
 
+import ij.process.ImageProcessor;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
@@ -16,12 +17,12 @@ import net.imglib2.type.numeric.RealType;
 public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice;
-	private ImageStack img;
-	private int stackSize;
-	private double pixelDepth;
-	private Double offset;
-	private Double em_gain;
-	private Double conversion;
+	private final ImageStack img;
+	private final int stackSize;
+	private final double pixelDepth;
+	private final Double offset;
+	private final Double em_gain;
+	private final Double conversion;
 	
 	public ImageLoader(ImagePlus loc_im, List<Double> cameraSettings) {
 		this.img = loc_im.getStack();
@@ -43,7 +44,7 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 	@Override
 	public Element processData(Element data) {
 			
-		final Object ip = img.getPixels(++curSlice);
+		final ImageProcessor ip = img.getProcessor(++curSlice);
 		double adu, im2phot;
 		final Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
 		final Cursor<T> it = theImage.cursor();

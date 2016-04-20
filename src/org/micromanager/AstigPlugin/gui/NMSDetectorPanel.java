@@ -23,8 +23,8 @@ import org.micromanager.AstigPlugin.tools.WaitForKeyListener;
 
 
 public class NMSDetectorPanel extends ConfigurationPanel {
-	private JTextField textFieldThreshold;
-	private JSpinner spinnerWindowSize;
+	private final JTextField textFieldThreshold;
+	private final JSpinner spinnerWindowSize;
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 
 	public NMSDetectorPanel() {
@@ -51,7 +51,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 				fireChanged( CHANGE_EVENT );
 			}
 		}));
-		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(15), new Integer(1), null, new Integer(1)));
+		spinnerWindowSize.setModel(new SpinnerNumberModel(15, 1, null, 1));
 		GroupLayout gl_panelPeakDet = new GroupLayout(this);
 		gl_panelPeakDet.setHorizontalGroup(
 			gl_panelPeakDet.createParallelGroup(Alignment.LEADING)

@@ -19,7 +19,7 @@ import org.jfree.util.PublicCloneable;
 public class LogHistogramDataset extends AbstractIntervalXYDataset implements PublicCloneable {
 	
 	private static final long serialVersionUID = 6012084169414194555L;
-	private List<Map<String,Object>> list;
+	private final List<Map<String,Object>> list;
 	private HistogramType type;
 	
 	public LogHistogramDataset(){
@@ -61,8 +61,8 @@ public class LogHistogramDataset extends AbstractIntervalXYDataset implements Pu
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("key", key);
         map.put("bins", binList);
-        map.put("values.length", new Integer(bins));
-        map.put("bin width", new Double(binWidth));
+        map.put("values.length", bins);
+        map.put("bin width", binWidth);
         this.list.add(map);
         fireDatasetChanged();
 	}
@@ -75,13 +75,13 @@ public class LogHistogramDataset extends AbstractIntervalXYDataset implements Pu
         double binWidth = getBinWidth(series);
 
         if (this.type == HistogramType.FREQUENCY) {
-            return new Double(Math.log(1+bin.getCount()));
+            return Math.log(1 + bin.getCount());
         }
         else if (this.type == HistogramType.RELATIVE_FREQUENCY) {
-            return new Double(bin.getCount() / total);
+            return bin.getCount() / total;
         }
         else if (this.type == HistogramType.SCALE_AREA_TO_1) {
-            return new Double(bin.getCount() / (binWidth * total));
+            return bin.getCount() / (binWidth * total);
         }
         else { // pretty sure this shouldn't ever happen
             throw new IllegalStateException();
@@ -98,14 +98,14 @@ public class LogHistogramDataset extends AbstractIntervalXYDataset implements Pu
 		 List<LogHistogramBin> bins = getBins(series);
 		 LogHistogramBin bin = bins.get(item);
          double x = (bin.getStartBoundary() + bin.getEndBoundary()) / 2.;
-         return new Double(x);
+         return x;
 	}
 
 	@Override
 	public Number getStartX(int series, int item) {
 		List<LogHistogramBin> bins = getBins(series);
 		LogHistogramBin bin = bins.get(item);
-        return new Double(bin.getStartBoundary());
+        return bin.getStartBoundary();
 
 	}
 
@@ -113,7 +113,7 @@ public class LogHistogramDataset extends AbstractIntervalXYDataset implements Pu
 	public Number getEndX(int series, int item) {
 		List<LogHistogramBin> bins = getBins(series);
 		LogHistogramBin bin = bins.get(item);
-        return new Double(bin.getEndBoundary());
+        return bin.getEndBoundary();
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public class LogHistogramDataset extends AbstractIntervalXYDataset implements Pu
 	
 	private int getTotal(int series) {
 		Map<String, Object> map = this.list.get(series);
-        return ((Integer) map.get("values.length")).intValue();
+        return (Integer) map.get("values.length");
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -150,7 +150,7 @@ public class LogHistogramDataset extends AbstractIntervalXYDataset implements Pu
 	
 	 private double getBinWidth(int series) {
 		Map<String, Object> map = this.list.get(series);
-		return ((Double) map.get("bin width")).doubleValue();
+		return (Double) map.get("bin width");
     }
 
 }

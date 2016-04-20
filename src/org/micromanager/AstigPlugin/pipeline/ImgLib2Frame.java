@@ -7,12 +7,12 @@ import net.imglib2.type.numeric.NumericType;
 
 public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 
-	private long frameNo;
-	private int width;
-	private int height;
-	private RandomAccessibleInterval<T> slice;
+	private final long frameNo;
+	private final int width;
+	private final int height;
+	private final RandomAccessibleInterval<T> slice;
 	private boolean isLast = false;
-	private double pixelDepth;
+	private final double pixelDepth;
 
 	/**
 	 * Creates a Frame with a reference to the appropriate (2D, although not

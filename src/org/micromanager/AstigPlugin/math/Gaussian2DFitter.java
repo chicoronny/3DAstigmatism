@@ -17,24 +17,23 @@ import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 
-public class Gaussian2DFitter<T extends RealType<T>> {
+class Gaussian2DFitter<T extends RealType<T>> {
 
-	private static int INDEX_X0 = 0;
-	private static int INDEX_Y0 = 1;
-	private static int INDEX_SX = 2;
-	private static int INDEX_SY = 3;
-	private static int INDEX_I0 = 4;
-	private static int INDEX_Bg = 5;
-	private static int PARAM_LENGTH = 6;
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_SX = 2;
+	private static final int INDEX_SY = 3;
+	private static final int INDEX_I0 = 4;
+	private static final int INDEX_Bg = 5;
 
-	private int maxIter;
-	private int maxEval;
+	private final int maxIter;
+	private final int maxEval;
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
-	private IntervalView<T> interval;
-	private T bg;
-	private T max;
+	private final IntervalView<T> interval;
+	private final T bg;
+	private final T max;
 	
 	public Gaussian2DFitter(final IntervalView<T> interval_, int maxIter_, int maxEval_) {
 		interval = interval_;
@@ -59,7 +58,8 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 		}
 	}
 	
-	public double[] getInitialGuess(IntervalView<T> interval) {
+	private double[] getInitialGuess(IntervalView<T> interval) {
+		int PARAM_LENGTH = 6;
 		double[] initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
    

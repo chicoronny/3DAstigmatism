@@ -19,10 +19,10 @@ import ij.IJ;
 public class SaveLocalizations extends SingleRunModule {
 
 	final private Locale curLocale;
-	private File file;
+	private final File file;
 	private FileWriter w;
 	private int counter = 0;
-	private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","photons","frame"}; 
+	private static final String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","photons","frame"};
 	//private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","N", "Bg", "xdetect", "ydetect", "RMS", "Iter", "Eval", "frame"}; 
 
 	public SaveLocalizations(File file) {
@@ -48,9 +48,9 @@ public class SaveLocalizations extends SingleRunModule {
 				}
 			}
 			String headline="";
-			for (int n=0; n<preferredOrder.length; n++){
-				if(headset.contains(preferredOrder[n]))
-					headline += preferredOrder[n]+ "\t";
+			for (String aPreferredOrder : preferredOrder) {
+				if (headset.contains(aPreferredOrder))
+					headline += aPreferredOrder + "\t";
 			}
 			headline = headline.substring(0, headline.length()-1);
 			w.write(headline+"\n");

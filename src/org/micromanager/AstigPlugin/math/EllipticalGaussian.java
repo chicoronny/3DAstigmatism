@@ -6,29 +6,30 @@ import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.util.FastMath;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
-public class EllipticalGaussian implements OptimizationData {
-	private int[] xgrid, ygrid;
+class EllipticalGaussian implements OptimizationData {
+	private final int[] xgrid;
+	private final int[] ygrid;
 	double[] params;
 	double[] initialGuess;
 	
 	boolean calibration = false;
 
-	private static int INDEX_X0 = 0;
-	private static int INDEX_Y0 = 1;
-	private static int INDEX_SX = 2;
-	private static int INDEX_SY = 3;
-	private static int INDEX_I0 = 4;
-	private static int INDEX_Bg = 5;
-	private static int PARAM_LENGTH = 6;
-	private static double sqrt2 = FastMath.sqrt(2);
-	private static double sqrtPI = FastMath.sqrt(FastMath.PI);
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_SX = 2;
+	private static final int INDEX_SY = 3;
+	private static final int INDEX_I0 = 4;
+	private static final int INDEX_Bg = 5;
+	private static final int PARAM_LENGTH = 6;
+	private static final double sqrt2 = FastMath.sqrt(2);
+	private static final double sqrtPI = FastMath.sqrt(FastMath.PI);
 	
 	public EllipticalGaussian(int[] xgrid, int[] ygrid){
 		this.xgrid = xgrid;
 		this.ygrid = ygrid;
 	}
 	
-    public static double getValue(double[] params, double x, double y) {
+    private static double getValue(double[] params, double x, double y) {
         return params[INDEX_I0]*Ex(x,params)*Ey(y,params)+params[INDEX_Bg];
     }
 

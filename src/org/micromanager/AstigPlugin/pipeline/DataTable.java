@@ -15,8 +15,8 @@ import org.micromanager.AstigPlugin.interfaces.Element;
 
 public class DataTable extends SingleRunModule {
 
-	private ExtendableTable table;
-	private List<PropertyDescriptor> descriptors;
+	private final ExtendableTable table;
+	private final List<PropertyDescriptor> descriptors;
 	private long start;
 
 	public DataTable() {

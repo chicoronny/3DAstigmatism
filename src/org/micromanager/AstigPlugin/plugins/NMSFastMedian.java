@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import ij.process.ImageProcessor;
 import org.micromanager.AstigPlugin.interfaces.Element;
 import org.micromanager.AstigPlugin.interfaces.Frame;
 import org.micromanager.AstigPlugin.math.QuickSelect;
@@ -35,16 +36,16 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 	public static final String NAME = "NMS Fast Median Filter";
 	public static final String KEY = "NMSFASTMEDIAN";
 	public static final String INFO_TEXT = "<html>" + "NMS detector with Fast Median Filter with the option to interpolate between blocks" + "</html>";
-	private int nFrames;
-	private boolean interpolating;
-	private Queue<Frame<T>> frameList = new ArrayDeque<Frame<T>>();
+	private final int nFrames;
+	private final boolean interpolating;
+	private final Queue<Frame<T>> frameList = new ArrayDeque<Frame<T>>();
 	private int counter = 0;
 	private int peaksFound = 0;
 	private int lastListSize = 0;
 	private Frame<T> frameA = null;
 	private Frame<T> frameB = null;
-	private double threshold;
-	private int n_;
+	private final double threshold;
+	private final int n_;
 
 	public NMSFastMedian(final int numFrames, final boolean interpolating, final double threshold, final int size) {
 		this.nFrames = numFrames;
@@ -116,7 +117,7 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 	}
 
 	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
-		Frame<T> newFrame = null;
+		Frame<T> newFrame;
 		if (!list.isEmpty()) {
 			final Frame<T> firstFrame= list.peek();
 			final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
@@ -247,7 +248,7 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 		newOutput(detect(lastFrame));
 	}
 
-	public FrameElements<T> detect(Frame<T> frame) {
+	private FrameElements<T> detect(Frame<T> frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		final RandomAccess<T> ra = interval.randomAccess();
 
@@ -257,7 +258,7 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 
 		int i, j, ii, jj, ll, kk;
 		int mi, mj;
-		boolean failed = false;
+		boolean failed;
 		long width_ = interval.dimension(0);
 		long height_ = interval.dimension(1);
 		List<Element> found = new ArrayList<Element>();
@@ -328,7 +329,7 @@ public class NMSFastMedian<T extends RealType<T> & NativeType<T>> extends Single
 		
 		for (int i = start; i < start + numberOfFrames; i++) {
 			if (i < stackSize) {
-				Object ip = stack.getPixels(i);
+				ImageProcessor ip = stack.getProcessor(i);
 				Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
 				final Cursor<T> it = curImage.cursor();
 				while(it.hasNext()){

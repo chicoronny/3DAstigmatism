@@ -13,16 +13,16 @@ import org.micromanager.AstigPlugin.plugins.NMSFastMedian;
 
 public class NMSFastMedianFactory<T extends RealType<T> & NativeType<T>> {
 	
-	public static final String NAME = "NMS with Fast Median Filter";
+	private static final String NAME = "NMS with Fast Median Filter";
 
-	public static final String KEY = "FASTMEDIAN";
+	private static final String KEY = "FASTMEDIAN";
 
-	public static final String INFO_TEXT = "<html>"
+	private static final String INFO_TEXT = "<html>"
 			+ "NMS Detector with fast median filter with interpolation between blocks"
 			+ "</html>";
 	
-	private Map<String, Object> settings = new HashMap<String, Object>();
-	private ConfigurationPanel configPanel = new FastMedianPanel();
+	private final Map<String, Object> settings = new HashMap<String, Object>();
+	private final ConfigurationPanel configPanel = new FastMedianPanel();
 
 	public String getInfoText() {
 		return INFO_TEXT;
@@ -54,8 +54,7 @@ public class NMSFastMedianFactory<T extends RealType<T> & NativeType<T>> {
 	}
 
 	public int processingFrames() {
-		int procFrames = ((Integer) settings.get(PanelKeys.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(PanelKeys.KEY_FRAMES)); 
-		return procFrames;
+		return ((Integer) settings.get(PanelKeys.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(PanelKeys.KEY_FRAMES));
 	}
 
 }

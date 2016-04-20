@@ -18,7 +18,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-public class RangeSlider extends JSlider {
+class RangeSlider extends JSlider {
 
 	/**
 	 * 
@@ -123,7 +123,7 @@ public class RangeSlider extends JSlider {
 	class RangeSliderUI extends BasicSliderUI {
 
 		/** Color of selected range. */
-		private Color rangeColor = Color.GREEN;
+		private final Color rangeColor = Color.GREEN;
 
 		/** Location and size of thumb for upper value. */
 		private Rectangle upperThumbRect;
@@ -403,8 +403,7 @@ public class RangeSlider extends JSlider {
 		 */
 		private Shape createThumbShape(int width, int height) {
 			// Use circular shape.
-			Ellipse2D shape = new Ellipse2D.Double(0, 0, width, height);
-			return shape;
+			return new Ellipse2D.Double(0, 0, width, height);
 		}
 
 		/**
@@ -586,7 +585,7 @@ public class RangeSlider extends JSlider {
 			 * value in the slider.
 			 */
 			private void moveLowerThumb() {
-				int thumbMiddle = 0;
+				int thumbMiddle;
 
 				switch (slider.getOrientation()) {
 				case JSlider.VERTICAL:
@@ -636,7 +635,6 @@ public class RangeSlider extends JSlider {
 					break;
 
 				default:
-					return;
 				}
 			}
 
@@ -645,7 +643,7 @@ public class RangeSlider extends JSlider {
 			 * value in the slider.
 			 */
 			private void moveUpperThumb() {
-				int thumbMiddle = 0;
+				int thumbMiddle;
 
 				switch (slider.getOrientation()) {
 				case JSlider.VERTICAL:
@@ -695,7 +693,6 @@ public class RangeSlider extends JSlider {
 					break;
 
 				default:
-					return;
 				}
 			}
 		}

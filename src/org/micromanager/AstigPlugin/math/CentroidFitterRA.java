@@ -9,9 +9,9 @@ import net.imglib2.view.IntervalView;
 
 public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface  {
 	
-	private IntervalView<T> op;
-	private double thresh;
-	double[] center;
+	private final IntervalView<T> op;
+	private final double thresh;
+	private final double[] center;
 
 	public CentroidFitterRA(IntervalView<T> op_, double threshold_){
 		op = op_;

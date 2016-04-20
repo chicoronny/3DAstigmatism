@@ -44,12 +44,12 @@ import java.awt.event.FocusListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
-public class HistogramPanel extends JPanel
+class HistogramPanel extends JPanel
 {
 
-	static final Font FONT = new Font( "Arial", Font.PLAIN, 11 );
+	private static final Font FONT = new Font( "Arial", Font.PLAIN, 11 );
 
-	static final Font SMALL_FONT = FONT.deriveFont( 10f );
+	private static final Font SMALL_FONT = FONT.deriveFont( 10f );
 
 	private static final Color annotationColor = new java.awt.Color( 252, 117, 0 );
 
@@ -63,13 +63,11 @@ public class HistogramPanel extends JPanel
 
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 
-	JComboBox jComboBoxFeature;
+	private JComboBox jComboBoxFeature;
 
 	private ChartPanel chartPanel;
 
 	private LogHistogramDataset dataset;
-
-	private JFreeChart chart;
 
 	private XYPlot plot;
 
@@ -91,15 +89,15 @@ public class HistogramPanel extends JPanel
 	
 	private boolean upperSelected;
 
-	protected double offset;
+	private double offset;
 
-	protected boolean lowerDragging;
+	private boolean lowerDragging;
 
-	protected boolean upperDragging;
+	private boolean upperDragging;
 
-	private ExtendableTable table;
+	private final ExtendableTable table;
 
-	private Random rnd;
+	private final Random rnd;
 	
 
 	/**
@@ -122,14 +120,14 @@ public class HistogramPanel extends JPanel
 	 *
 	 * @see #isAboveThreshold()
 	 */
-	public void setThreshold( final double value )
+	private void setThreshold(final double value)
 	{
 		// Compute new value 
 		double minimum = plot.getDomainAxis().getLowerBound();
 		threshold = Math.max(minimum, value);
 	}
 	
-	public void setUpperThreshold(final double value) {
+	private void setUpperThreshold(final double value) {
 		// Compute new value
 		double maximum = plot.getDomainAxis().getUpperBound();
 		upperThreshold = Math.min(maximum, value);
@@ -322,7 +320,7 @@ public class HistogramPanel extends JPanel
 	private void createHistogramPlot()
 	{
 		dataset = new LogHistogramDataset();
-		chart = ChartFactory.createHistogram( null, null, null, dataset, PlotOrientation.VERTICAL, false, false, false );
+		JFreeChart chart = ChartFactory.createHistogram(null, null, null, dataset, PlotOrientation.VERTICAL, false, false, false);
 
 		plot = chart.getXYPlot();
 		final XYBarRenderer renderer = ( XYBarRenderer ) plot.getRenderer();
@@ -348,7 +346,7 @@ public class HistogramPanel extends JPanel
 		intervalMarker = new IntervalMarker( 0, 0, new Color( 0.3f, 0.5f, 0.8f ), new BasicStroke(), new Color( 0, 0, 0.5f ), new BasicStroke( 1.5f ), 0.5f );
 		plot.addDomainMarker( intervalMarker );
 
-		chartPanel = new ChartPanel( chart );
+		chartPanel = new ChartPanel(chart);
 		final MouseListener[] mls = chartPanel.getMouseListeners();
 		for ( final MouseListener ml : mls )
 			chartPanel.removeMouseListener( ml );
@@ -502,7 +500,7 @@ public class HistogramPanel extends JPanel
 		annotationLower.setLocation( x, y );
 	}
 
-	public void resetAxes()
+	private void resetAxes()
 	{
 		plot.getRangeAxis().setLowerMargin( 0 );
 		plot.getRangeAxis().setUpperMargin( 0 );

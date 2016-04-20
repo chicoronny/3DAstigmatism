@@ -23,8 +23,8 @@ import com.google.common.base.Predicates;
 public class ExtendableTable {
 	
 	private Map<String, List<Number>> table = new LinkedHashMap<String, List<Number>>();
-	public Map<String, Predicate<Number>> filtersCollection = new HashMap<String, Predicate<Number>>();
-	private Map<String, String> names = new LinkedHashMap<String, String>();
+	public final Map<String, Predicate<Number>> filtersCollection = new HashMap<String, Predicate<Number>>();
+	private final Map<String, String> names = new LinkedHashMap<String, String>();
 	
 	/**
 	 * 
@@ -115,7 +115,7 @@ public class ExtendableTable {
 	 * @param row - row
 	 * @return data
 	 */
-	public Map<String, Number> getRow(int row){
+	private Map<String, Number> getRow(int row){
 		Map<String,Number> map = new HashMap<String, Number>(); // row map
 		for (String key : table.keySet())
 			map.put(key, table.get(key).get(row));
@@ -147,7 +147,7 @@ public class ExtendableTable {
 	 * @param member - member 
 	 * @param o - object
 	 */
-	public void add(String member, Number o){
+	private void add(String member, Number o){
 		List<Number> t = table.get(member);
 		if (t!=null){
 			t.add(o);
@@ -203,7 +203,7 @@ public class ExtendableTable {
 
 			@Override
 			public synchronized Element get() {
-				ElementMap em = null;
+				ElementMap em;
 				if (!isEmpty())	
 					em = new ElementMap(getRow(lastRow++).entrySet());
 				else{
@@ -225,7 +225,7 @@ public class ExtendableTable {
 
 			@Override
 			public Collection<Element> view() {
-				return this.view();
+				return view();
 			}			
 
 		};

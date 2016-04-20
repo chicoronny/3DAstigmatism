@@ -51,13 +51,12 @@ public abstract class SingleRunModule extends AbstractModule {
 			return;
 		}
 		IJ.error("No inputs or outputs!");
-		return;
 	}
 
 	protected void afterRun() {
 	}
 
-	protected void beforeRun() {
+	void beforeRun() {
 		start = System.currentTimeMillis();
 		running = true;
 	}

@@ -10,7 +10,7 @@ import org.micromanager.AstigPlugin.interfaces.Store;
 
 public class ArrayListStore implements Store {
 	
-	private Queue<Element> q;  
+	private final Queue<Element> q;
 	
 	public ArrayListStore(){
 		q = new LinkedBlockingQueue<Element>();

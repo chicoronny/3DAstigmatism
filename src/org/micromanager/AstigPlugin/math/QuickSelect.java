@@ -217,7 +217,7 @@ public class QuickSelect {
 		
 		// Definitions
 		int left = 0;
-		int rem = 0;            
+		int rem;
 		int step = 1;
 		int i,j;
 		T median;

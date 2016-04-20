@@ -17,7 +17,7 @@ import ij.plugin.FolderOpener;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-public class ManagerTest<T extends NativeType<T> & RealType<T>> {
+class ManagerTest<T extends NativeType<T> & RealType<T>> {
 	
 	private Manager pipe;
 	private ImagePlus loc_im;

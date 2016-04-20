@@ -20,31 +20,31 @@ import net.imglib2.view.IntervalView;
 
 public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface {
 	
-	public static final int INDEX_X0 = 0;
-	public static final int INDEX_Y0 = 1;
-	public static final int INDEX_Z0 = 2;
-	public static final int INDEX_I0 = 3;
-	public static final int INDEX_Bg = 4;
-	public static final int INDEX_Sx = 5;
-	public static final int INDEX_Sy = 6;
-	public static final int INDEX_Sz = 7;
-	public static final int INDEX_RMS = 8;
-	public static final int INDEX_Iter = 9;
-	public static final int INDEX_Eval = 10;
-	public static int PARAM_LENGTH = 5;
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_Z0 = 2;
+	private static final int INDEX_I0 = 3;
+	private static final int INDEX_Bg = 4;
+	private static final int INDEX_Sx = 5;
+	private static final int INDEX_Sy = 6;
+	private static final int INDEX_Sz = 7;
+	private static final int INDEX_RMS = 8;
+	private static final int INDEX_Iter = 9;
+	private static final int INDEX_Eval = 10;
+	private static final int PARAM_LENGTH = 5;
 	
-	private int maxIter;
-	private int maxEval;
-	private double xdetect;
-	private double ydetect;
+	private final int maxIter;
+	private final int maxEval;
+	private final double xdetect;
+	private final double ydetect;
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
-	private Map<String, Object> params;
-	private double pixelSize;
-	private IntervalView<T> interval;
-	private T bg;
-	private T max;
+	private final Map<String, Object> params;
+	private final double pixelSize;
+	private final IntervalView<T> interval;
+	private final T bg;
+	private final T max;
 
 	public GaussianFitterZ(final IntervalView<T> interval_, double x, double y, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
 		interval = interval_;
@@ -73,7 +73,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		}
 	}
 	
-	 public double[] getInitialGuess(IntervalView<T> interval, double x, double y) {
+	 private double[] getInitialGuess(IntervalView<T> interval, double x, double y) {
 			double[] initialGuess = new double[PARAM_LENGTH];
 	  
 		    initialGuess[INDEX_X0] = x;

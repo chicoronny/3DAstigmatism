@@ -1,5 +1,6 @@
 package org.micromanager.AstigPlugin.tools;
 
+import ij.process.ImageProcessor;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.histogram.Histogram1d;
@@ -42,7 +43,8 @@ public class LemmingUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static  <T extends NativeType<T>> Img<T> wrap(Object ip, long[] dims){
+	public static  <T extends NativeType<T>> Img<T> wrap(final ImageProcessor imp, final long[] dims){
+		final Object ip = imp.getPixels();
 		String className = ip.getClass().getName();
 
 		Img<T> theImage = null;
@@ -102,7 +104,7 @@ public class LemmingUtils {
 		return new IndexColorModel(8, 256, r, g, b);
 	}
 	
-	/**
+	/*
      * Compute the min and max for any {@link Iterable}, like an {@link Img}.
      *
      * The only functionality we need for that is to iterate. Therefore we need no {@link Cursor}
@@ -179,7 +181,7 @@ public class LemmingUtils {
 
 		Sk = 0;
 		N1 = histogram[0]; // The entry for zero intensity
-		BCV = 0;
+		//BCV = 0;
 		BCVmax = 0;
 		kStar = 0;
 
@@ -219,13 +221,12 @@ public class LemmingUtils {
     
     public static String doubleArrayToString(double[] array){
 		String result ="";
-		for (int num=0; num<array.length;num++)
-			result += array[num] + ",";
+		for (double anArray : array) result += anArray + ",";
 		result = result.substring(0, result.length()-1);
 		return result;
 	}
 	
-    public static double[] stringToDoubleArray(String line){
+    private static double[] stringToDoubleArray(String line){
 		String[] s = line.split(",");
 		double[] result = new double[s.length];
 		for (int n=0;n<s.length;n++)
@@ -284,8 +285,7 @@ public class LemmingUtils {
 			final Properties props = new Properties();
 			props.load( reader );
 			String[] paramParser = props.getProperty( "FitParameter", "" ).split( "[,\n]" );
-			for (int i=0; i<paramParser.length; i++)
-				params.add(Double.parseDouble(paramParser[i].trim()));
+			for (String aParamParser : paramParser) params.add(Double.parseDouble(aParamParser.trim()));
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

@@ -2,7 +2,7 @@ package org.micromanager.AstigPlugin.tools;
 
 import java.io.Serializable;
 
-public class LogHistogramBin implements Cloneable, Serializable {
+class LogHistogramBin implements Cloneable, Serializable {
 
 	/** For serialization. */
     private static final long serialVersionUID = 7614685080015589931L;

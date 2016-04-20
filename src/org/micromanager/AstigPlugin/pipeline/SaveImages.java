@@ -20,7 +20,7 @@ import net.imglib2.type.numeric.NumericType;
  */
 public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
-	private String filename;
+	private final String filename;
 	private ImageStack stack;
 
 	public SaveImages(String filename){

@@ -25,7 +25,7 @@ public class FileInfoVirtualStack extends VirtualStack implements Runnable{
 	private int nImages;
 
 	/* Default constructor. */
-	public FileInfoVirtualStack() {}
+	private FileInfoVirtualStack() {}
 
 	/* Constructs a FileInfoVirtualStack from a FileInfo object. */
 	public FileInfoVirtualStack(FileInfo fi) {
@@ -134,9 +134,9 @@ public class FileInfoVirtualStack extends VirtualStack implements Runnable{
 			}
 			if (channels>1 && fi.description!=null) {
 				int mode = IJ.COMPOSITE;
-				if (fi.description.indexOf("mode=color")!=-1)
+				if (fi.description.contains("mode=color"))
 					mode = IJ.COLOR;
-				else if (fi.description.indexOf("mode=gray")!=-1)
+				else if (fi.description.contains("mode=gray"))
 					mode = IJ.GRAYSCALE;
 				imp2 = new CompositeImage(imp2, mode);
 			}
@@ -144,24 +144,24 @@ public class FileInfoVirtualStack extends VirtualStack implements Runnable{
 		return imp2;
 	}
 
-	static int getInt(Properties props, String key) {
+	private static int getInt(Properties props, String key) {
 		Double n = getNumber(props, key);
 		return n!=null?(int)n.doubleValue():1;
 	}
 
-	static Double getNumber(Properties props, String key) {
+	private static Double getNumber(Properties props, String key) {
 		String s = props.getProperty(key);
 		if (s!=null) {
 			try {
 				return Double.valueOf(s);
-			} catch (NumberFormatException e) {}
+			} catch (NumberFormatException e) {e.printStackTrace();}
 		}	
 		return null;
 	}
 
-	static boolean getBoolean(Properties props, String key) {
+	private static boolean getBoolean(Properties props, String key) {
 		String s = props.getProperty(key);
-		return s!=null&&s.equals("true")?true:false;
+		return s != null && s.equals("true");
 	}
 
 	/** Deletes the specified image, were 1<=n<=nImages. */
@@ -169,8 +169,7 @@ public class FileInfoVirtualStack extends VirtualStack implements Runnable{
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		if (nImages<1) return;
-		for (int i=n; i<nImages; i++)
-			info[i-1] = info[i];
+		System.arraycopy(info, n, info, n - 1, nImages - n);
 		info[nImages-1] = null;
 		nImages--;
 	}
@@ -183,7 +182,7 @@ public class FileInfoVirtualStack extends VirtualStack implements Runnable{
 			throw new IllegalArgumentException("Argument out of range: "+n);
 		//if (n>1) IJ.log("  "+(info[n-1].getOffset()-info[n-2].getOffset()));
 		info[n-1].nImages = 1; // why is this needed?
-		ImagePlus imp = null;
+		ImagePlus imp;
 		if (IJ.debugMode) {
 			long t0 = System.currentTimeMillis();
 			FileOpener fo = new FileOpener(info[n-1]);

@@ -1,7 +1,6 @@
 package org.micromanager.AstigPlugin.pipeline;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -13,16 +12,16 @@ import org.micromanager.AstigPlugin.interfaces.Store;
 public abstract class AbstractModule implements Runnable {
 	
 	protected int numTasks;
-	protected int numThreads = Runtime.getRuntime().availableProcessors()-1;
-	protected ExecutorService service;
-	protected Map<Integer, Store> inputs = new LinkedHashMap<Integer, Store>();
-	protected Map<Integer, Store> outputs = new LinkedHashMap<Integer, Store>();
+	final int numThreads = Runtime.getRuntime().availableProcessors()-1;
+	ExecutorService service;
+	protected final Map<Integer, Store> inputs = new LinkedHashMap<Integer, Store>();
+	protected final Map<Integer, Store> outputs = new LinkedHashMap<Integer, Store>();
 	protected long start;
 	protected volatile boolean running = true;
-	protected Integer iterator;
+	Integer iterator;
 	
 	
-	public AbstractModule(){
+	AbstractModule(){
 	}
 	
 	public void reset(){
@@ -32,21 +31,19 @@ public abstract class AbstractModule implements Runnable {
 		iterator = null;
 	}
 	
-	protected void setService(ExecutorService service){
+	void setService(ExecutorService service){
 		this.service = service;
 	}
 	
 	protected void newOutput(final Element data) {
 		if (outputs.isEmpty()) throw new NullPointerException("No Output Mappings!");
 		if (data == null) return;
-		Iterator<Integer> it = outputs.keySet().iterator();
-		while(it.hasNext()){
-			Integer key = it.next();
+		for (Integer key : outputs.keySet()) {
 			outputs.get(key).put(data);
 		}
 	}
 	
-	protected Element nextInput() {
+	Element nextInput() {
 		return getInput(iterator);
 	}
 
@@ -55,16 +52,13 @@ public abstract class AbstractModule implements Runnable {
 		running = false;
 	}
 
-	protected Element getInput(Integer key) {
-		Element el = inputs.get(key).get();
-		return el;
+	private Element getInput(Integer key) {
+		return inputs.get(key).get();
 	}
 
 	protected Map<Integer, Element> getInputs() {
 		Map<Integer, Element> outMap = new HashMap<Integer, Element>();
-		Iterator<Integer> it = inputs.keySet().iterator();
-		while(it.hasNext()){
-			Integer key = it.next();
+		for (Integer key : inputs.keySet()) {
 			outMap.put(key, inputs.get(key).get());
 		}
 		return outMap;
@@ -76,9 +70,7 @@ public abstract class AbstractModule implements Runnable {
 
 	protected Map<Integer, Element> getOutputs() {
 		Map<Integer, Element> outMap = new HashMap<Integer, Element>();
-		Iterator<Integer> it = outputs.keySet().iterator();
-		while(it.hasNext()){
-			Integer key = it.next();
+		for (Integer key : outputs.keySet()) {
 			outMap.put(key, outputs.get(key).get());
 		}
 		return outMap;
@@ -105,7 +97,7 @@ public abstract class AbstractModule implements Runnable {
 	}
 	
 	@SuppressWarnings("static-method")
-	protected void pause(long ms){
+	void pause(long ms){
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {

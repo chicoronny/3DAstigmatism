@@ -1,10 +1,5 @@
 package org.micromanager.AstigPlugin.math;
 
-import java.util.Arrays;
-
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.IntervalView;
-
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.OptimizationData;
@@ -28,15 +23,12 @@ public class EllipticalGaussian implements OptimizationData {
 	private static double sqrt2 = FastMath.sqrt(2);
 	private static double sqrtPI = FastMath.sqrt(FastMath.PI);
 	
-	//private static double defaultSigma = 1.5;
-	
 	public EllipticalGaussian(int[] xgrid, int[] ygrid){
 		this.xgrid = xgrid;
 		this.ygrid = ygrid;
 	}
 	
     public static double getValue(double[] params, double x, double y) {
-
         return params[INDEX_I0]*Ex(x,params)*Ey(y,params)+params[INDEX_Bg];
     }
 
@@ -77,26 +69,7 @@ public class EllipticalGaussian implements OptimizationData {
         };
     }
  
-    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
-		initialGuess = new double[PARAM_LENGTH];
-	    Arrays.fill(initialGuess, 0);
-   
-	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
-	    double[] centroid = cf.fit();
-
-		initialGuess[INDEX_X0] = centroid[INDEX_X0];
-		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];    
-	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
-	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
-	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
-	    initialGuess[INDEX_Bg] = 0;
-		
-	    //System.out.println("Initial guess: "+initialGuess[0]+","+initialGuess[1]+","+initialGuess[2]+","+initialGuess[3]+","+initialGuess[4]+","+initialGuess[5]);
-	    
-		return initialGuess;
-	}
-
-	///////////////////////////////////////////////////////////////
+ 	///////////////////////////////////////////////////////////////
 	// Math functions
 	private static double erf(double x) {
 		return LemmingUtils.erf(x);

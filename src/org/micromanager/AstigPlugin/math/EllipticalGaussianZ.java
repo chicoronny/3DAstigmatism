@@ -1,9 +1,5 @@
 package org.micromanager.AstigPlugin.math;
 
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.IntervalView;
-
-import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
@@ -18,9 +14,6 @@ public class EllipticalGaussianZ implements OptimizationData {
 	private int[] xgrid, ygrid;
 	private PolynomialSplineFunction psx;
 	private PolynomialSplineFunction psy;
-	private double z0;
-	private double[] initialGuess;
-	
 
 	public static int INDEX_X0 = 0;
 	public static int INDEX_Y0 = 1;
@@ -37,7 +30,6 @@ public class EllipticalGaussianZ implements OptimizationData {
 		this.ygrid = ygrid;
 		psx = (PolynomialSplineFunction) params.get("psx");
 		psy = (PolynomialSplineFunction) params.get("psy");
-		z0 = (Double) params.get("z0");
 	}
 	
     public double getValue(double[] parameter, double x, double y) {
@@ -79,23 +71,7 @@ public class EllipticalGaussianZ implements OptimizationData {
             }
         };
     }
- 
-    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval, double x, double y) {
-		initialGuess = new double[PARAM_LENGTH];
-	    Arrays.fill(initialGuess, 0);
-  
-	    /*final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
-	    double[] centroid = cf.fit();*/
-	    
-	    initialGuess[INDEX_X0] = x;
-	    initialGuess[INDEX_Y0] = y;
-	    initialGuess[INDEX_Z0] = z0;
-	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
-	    initialGuess[INDEX_Bg] = 0;
-	    	    
-		return initialGuess;
-	}
-
+    
 	// /////////////////////////////////////////////////////////////
 	// Math functions
 	private static double erf(double x) {

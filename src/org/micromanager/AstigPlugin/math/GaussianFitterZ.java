@@ -11,8 +11,8 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optim
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
-import org.apache.commons.math3.util.Precision;
 import org.micromanager.AstigPlugin.interfaces.FitterInterface;
+import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
@@ -31,6 +31,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 	public static final int INDEX_RMS = 8;
 	public static final int INDEX_Iter = 9;
 	public static final int INDEX_Eval = 10;
+	public static int PARAM_LENGTH = 5;
 	
 	private int maxIter;
 	private int maxEval;
@@ -42,6 +43,8 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 	private Map<String, Object> params;
 	private double pixelSize;
 	private IntervalView<T> interval;
+	private T bg;
+	private T max;
 
 	public GaussianFitterZ(final IntervalView<T> interval_, double x, double y, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
 		interval = interval_;
@@ -51,24 +54,8 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		pixelSize = pixelSize_;
 		xdetect = x;
 		ydetect = y;
-	}
-	
-	private static LeastSquaresBuilder builder(EllipticalGaussianZ eg){
-    	LeastSquaresBuilder builder = new LeastSquaresBuilder();
-    	 builder.model(eg.getModelFunction(), eg.getModelFunctionJacobian());
-		return builder;
-    }
-	
-	private static LevenbergMarquardtOptimizer getOptimizer() {
-		// Different convergence thresholds seem to have no effect on the resulting fit, only the number of
-		// iterations for convergence
-		final double initialStepBoundFactor = 100;
-		final double costRelativeTolerance = 1e-9;
-		final double parRelativeTolerance = 1e-9;
-		final double orthoTolerance = 1e-9;
-		final double threshold = Precision.SAFE_MIN;
-        return new LevenbergMarquardtOptimizer(initialStepBoundFactor,
-				costRelativeTolerance, parRelativeTolerance, orthoTolerance, threshold);
+		bg = LemmingUtils.computeMin(interval);
+		max = LemmingUtils.computeMax(interval);
 	}
 	
 	private void createGrids(){
@@ -85,19 +72,33 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			Ival[index++]=cursor.get().getRealDouble();
 		}
 	}
+	
+	 public double[] getInitialGuess(IntervalView<T> interval, double x, double y) {
+			double[] initialGuess = new double[PARAM_LENGTH];
+	  
+		    initialGuess[INDEX_X0] = x;
+		    initialGuess[INDEX_Y0] = y;
+		    initialGuess[INDEX_Z0] = (Double) params.get("z0");
+		    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
+		    initialGuess[INDEX_Bg] = 0;
+		    	    
+			return initialGuess;
+		}
 
 	@Override
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);
-		double[] initialGuess = eg.getInitialGuess(interval, xdetect, ydetect);
-		LevenbergMarquardtOptimizer optimizer = getOptimizer();
+		final double[] initialGuess = getInitialGuess(interval, xdetect, ydetect);
+		final LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer();
+		final LeastSquaresBuilder builder = new LeastSquaresBuilder();
+   	 	builder.model(eg.getModelFunction(), eg.getModelFunctionJacobian());
 		double[] fittedEG;
 		double RMS;
 		int iter, eval;
 		try {
 			final Optimum optimum = optimizer.optimize(
-	                builder(eg)
+	                builder
 	                .target(Ival)
 	                .checkerPair(new ConvChecker3DGauss())
 	                .parameterValidator(new ParamValidator3DGauss())
@@ -130,8 +131,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		result[INDEX_RMS] = RMS;
 		result[INDEX_Iter] = iter;
 		result[INDEX_Eval] = eval;
-	
-		
+			
 		return result;
 	}
 	
@@ -183,8 +183,8 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 
 			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.1
 					&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
-					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002
-					&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
+					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.001
+					&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.001
 					&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
 				lastResult_ = true;
 				return true;
@@ -199,15 +199,12 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 
 		@Override
 		public RealVector validate(RealVector arg) {
-			if (arg.getEntry(INDEX_I0) < 0) {
-				arg.setEntry(INDEX_I0, 0);
-			}
-			if (arg.getEntry(INDEX_Bg) < 0) {
-				arg.setEntry(INDEX_Bg, 0);
-			}
-			if (arg.getEntry(INDEX_Z0) < 0) {
-				arg.setEntry(INDEX_Z0, 0);
-			}
+			arg.setEntry(INDEX_I0, Math.max(1,Math.min(arg.getEntry(INDEX_I0), max.getRealDouble()*4)));
+			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/2));
+			arg.setEntry(INDEX_X0, Math.abs(arg.getEntry(INDEX_X0)));
+			arg.setEntry(INDEX_Y0, Math.abs(arg.getEntry(INDEX_Y0)));
+			if (arg.getEntry(INDEX_Z0) < 0) arg.setEntry(INDEX_Z0, 0);
+			
 			return arg;
 		}
 	}

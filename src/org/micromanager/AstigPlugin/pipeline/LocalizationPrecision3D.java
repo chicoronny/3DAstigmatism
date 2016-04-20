@@ -2,37 +2,37 @@ package org.micromanager.AstigPlugin.pipeline;
 
 public class LocalizationPrecision3D extends Localization{
 
-	final private double Z;
-	final private double sX;
-	final private double sY;
-	final private double sZ;
+	final private double z;
+	final private double sx;
+	final private double sy;
+	final private double sz;
 
 	public LocalizationPrecision3D(double x, double y, double z, double sx, double sy, double sz, double intensity, long frame) {
 		super(x, y, intensity, frame);
-		this.Z = z;
-		this.sX = sx;
-		this.sY = sy;
-		this.sZ = sz;
+		this.z = z;
+		this.sx = sx;
+		this.sy = sy;
+		this.sz = sz;
 	}
 
 	public double getZ(){
-		return Z;
+		return z;
 	}
 	
-	private double getsX(){
-		return sX;
+	public double getSx(){
+		return sx;
 	}
 	
-	private double getsY(){
-		return sY;
+	public double getSy(){
+		return sy;
 	}
 	
-	private double getsZ(){
-		return sZ;
+	public double getSz(){
+		return sz;
 	}
 	
 	@Override
 	public String toString(){
-		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getsX() + "\t" + getsY() + "\t" + getsZ() + "\t" + getIntensity() +"\t" + getFrame();
+		return "" + getX() + "\t" + getY() + "\t" + getZ() + "\t" + getSx() + "\t" + getSy() + "\t" + getSz() + "\t" + getPhotons() +"\t" + getFrame();
 	}
 }

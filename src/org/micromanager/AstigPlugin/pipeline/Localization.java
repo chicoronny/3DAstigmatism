@@ -4,7 +4,7 @@ import org.micromanager.AstigPlugin.interfaces.LocalizationInterface;
 
 public class Localization implements LocalizationInterface {
 
-	final private double X,Y;
+	final private double x,y;
 	private final long ID;
 	static private long curID = 0;
 	private boolean isLast;
@@ -13,7 +13,7 @@ public class Localization implements LocalizationInterface {
 	
 	
 	public Localization(double x, double y, double intensity, long frame) {
-		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false; this.photons = intensity;
+		this.x=x; this.y=y; ID=curID++; this.frame=frame; isLast=false; this.photons = intensity;
 	}
 	
 	@Override
@@ -31,12 +31,12 @@ public class Localization implements LocalizationInterface {
 
 	@Override
 	public double getX() {
-		return X;
+		return x;
 	}
 
 	@Override
 	public double getY() {
-		return Y;
+		return y;
 	}
 
 	@Override
@@ -45,13 +45,13 @@ public class Localization implements LocalizationInterface {
 	}
 	
 	@Override
-	public double getIntensity() {
+	public double getPhotons() {
 		return photons;
 	}
 
 	@Override
 	public String toString(){
-		return "" + getX() + "\t" + getY() + "\t" + getIntensity() + "\t" + getFrame();
+		return "" + getX() + "\t" + getY() + "\t" + getPhotons() + "\t" + getFrame();
 	}
 
 	public long getID() {

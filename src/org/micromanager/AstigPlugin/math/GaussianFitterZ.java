@@ -12,7 +12,6 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.micromanager.AstigPlugin.interfaces.FitterInterface;
-import org.micromanager.AstigPlugin.tools.LemmingUtils;
 
 import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
@@ -43,8 +42,6 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 	private final Map<String, Object> params;
 	private final double pixelSize;
 	private final IntervalView<T> interval;
-	private final T bg;
-	private final T max;
 
 	public GaussianFitterZ(final IntervalView<T> interval_, double x, double y, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
 		interval = interval_;
@@ -54,8 +51,6 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 		pixelSize = pixelSize_;
 		xdetect = x;
 		ydetect = y;
-		bg = LemmingUtils.computeMin(interval);
-		max = LemmingUtils.computeMax(interval);
 	}
 	
 	private void createGrids(){
@@ -112,7 +107,7 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 			iter = optimum.getIterations();
 			eval = optimum.getEvaluations();
 		} catch(TooManyEvaluationsException e){
-			System.err.println("max evaluations: "+e.getMax());
+			//System.err.println("max evaluations: "+e.getMax());
         	return null;
 		} catch(DimensionMismatchException e1){
 			return null;
@@ -199,11 +194,9 @@ public class GaussianFitterZ<T extends RealType<T>>  implements FitterInterface 
 
 		@Override
 		public RealVector validate(RealVector arg) {
-			arg.setEntry(INDEX_I0, Math.max(1,Math.min(arg.getEntry(INDEX_I0), max.getRealDouble()*4)));
-			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/2));
-			arg.setEntry(INDEX_X0, Math.abs(arg.getEntry(INDEX_X0)));
-			arg.setEntry(INDEX_Y0, Math.abs(arg.getEntry(INDEX_Y0)));
-			if (arg.getEntry(INDEX_Z0) < 0) arg.setEntry(INDEX_Z0, 0);
+			arg.setEntry(INDEX_I0, Math.max(arg.getEntry(INDEX_I0), 1));
+			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), 0));
+			arg.setEntry(INDEX_Z0, Math.max(arg.getEntry(INDEX_Z0), 0));
 			
 			return arg;
 		}

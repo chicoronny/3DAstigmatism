@@ -1,6 +1,7 @@
 package org.micromanager.AstigPlugin.plugins;
 
 import ij.IJ;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,9 +16,9 @@ import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.gui.ConfigurationPanel;
 import org.micromanager.AstigPlugin.gui.PanelKeys;
 import org.micromanager.AstigPlugin.interfaces.Element;
+import org.micromanager.AstigPlugin.interfaces.LocalizationInterface;
 import org.micromanager.AstigPlugin.math.GaussianFitterZ;
 import org.micromanager.AstigPlugin.pipeline.Fitter;
-import org.micromanager.AstigPlugin.pipeline.Localization;
 //import org.micromanager.AstigPlugin.pipeline.LocalizationAllParameters;
 import org.micromanager.AstigPlugin.pipeline.LocalizationPrecision3D;
 import org.micromanager.AstigPlugin.tools.LemmingUtils;
@@ -49,7 +50,7 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		long[] imageMin = new long[2];
 		double[] result;
 		for (Element el : sliceLocs) {
-			final Localization loc = (Localization) el;
+			final LocalizationInterface loc = (LocalizationInterface) el;
 			pixels.min(imageMin);
 			pixels.max(imageMax);
 			long xdetect = (long) (loc.getX()/pixelsize);

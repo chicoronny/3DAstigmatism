@@ -13,12 +13,13 @@ public interface LocalizationInterface extends Element {
 	double getY();
 	
 	/**
-	 * @return intensity
+	 * @return photons
 	 */
-	double getIntensity();
+	double getPhotons();
 	
 	/**
 	 * @return frame
 	 */
 	long getFrame();
+	
 }

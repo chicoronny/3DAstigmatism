@@ -11,8 +11,6 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optim
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
-import org.micromanager.AstigPlugin.tools.LemmingUtils;
-
 import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
@@ -32,15 +30,11 @@ class Gaussian2DFitter<T extends RealType<T>> {
 	private int[] ygrid;
 	private double[] Ival;
 	private final IntervalView<T> interval;
-	private final T bg;
-	private final T max;
 	
 	public Gaussian2DFitter(final IntervalView<T> interval_, int maxIter_, int maxEval_) {
 		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
-		bg = LemmingUtils.computeMin(interval);
-		max = LemmingUtils.computeMax(interval);
 	}
 	
 	private void createGrids(){
@@ -70,8 +64,8 @@ class Gaussian2DFitter<T extends RealType<T>> {
 		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];    
 	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
 	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
-	    initialGuess[INDEX_I0] = max.getRealDouble();
-	    initialGuess[INDEX_Bg] = bg.getRealDouble();
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
+	    initialGuess[INDEX_Bg] = 0;
 	    
 		return initialGuess;
 	}
@@ -120,29 +114,26 @@ class Gaussian2DFitter<T extends RealType<T>> {
 		public static final int INDEX_Bg = 5;
 		
 		@Override
-		public boolean converged(int i, PointVectorValuePair previous, PointVectorValuePair current) {
+		public boolean converged(int i, PointVectorValuePair previous,
+				PointVectorValuePair current) {
 			if (i == iteration_)
-	           return lastResult_;
+				return lastResult_;
 
-			if (i >100){
-				 return true;
-			}
-			
 			iteration_ = i;
-	          double[] p = previous.getPoint();
-	          double[] c = current.getPoint();
-	          
-	          if ( Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.01  &&
-	                  Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01 &&
-	                  Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.001 &&
-	                  Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.001 &&
-	                  Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 0.002 &&
-	                  Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 0.002 ) {
-	             lastResult_ = true;
-	             return true;
-	          }
-	        lastResult_ = false;
-	        return false;
+			double[] p = previous.getPoint();
+			double[] c = current.getPoint();
+
+			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.01
+					&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
+					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.001
+					&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.001
+					&& Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 0.002
+					&& Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 0.002) {
+				lastResult_ = true;
+				return true;
+			}
+			lastResult_ = false;
+			return false;
 		}
 	}
 
@@ -152,10 +143,8 @@ class Gaussian2DFitter<T extends RealType<T>> {
 		public RealVector validate(RealVector arg) {
 			arg.setEntry(INDEX_SX, Math.abs(arg.getEntry(INDEX_SX)));
 			arg.setEntry(INDEX_SY, Math.abs(arg.getEntry(INDEX_SY)));
-			arg.setEntry(INDEX_I0, Math.max(1,Math.min(arg.getEntry(INDEX_I0), max.getRealDouble()*4)));
-			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/2));
-			arg.setEntry(INDEX_X0, Math.abs(arg.getEntry(INDEX_X0)));
-			arg.setEntry(INDEX_Y0, Math.abs(arg.getEntry(INDEX_Y0)));
+			arg.setEntry(INDEX_I0, Math.max(arg.getEntry(INDEX_I0), 1));
+			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), 0));
 			return arg;
 		}
 	}

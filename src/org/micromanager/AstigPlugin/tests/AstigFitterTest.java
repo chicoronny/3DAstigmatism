@@ -1,6 +1,7 @@
 package org.micromanager.AstigPlugin.tests;
 
 import java.io.File;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.micromanager.AstigPlugin.pipeline.Fitter;
@@ -21,9 +22,11 @@ class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 	
 	private Manager pipe;
 	private ImagePlus loc_im;
+	private ExecutorService service;
 	
 	private void setUp() {
-		final File file = new File("/media/backup/ownCloud/set1.tif");
+		service=Executors.newCachedThreadPool();
+		final File file = new File(System.getProperty("user.home")+"/ownCloud/exp-images.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -38,12 +41,12 @@ class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 	    if (loc_im==null)
 		    return;
 		
-		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings(System.getProperty("user.home")+"camera.props"));
-		final NMSDetector<T> peak = new NMSDetector<T>(50,10);
-		final Fitter<T> fitter = new AstigFitter<T>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calb.csv"));
-		final SaveLocalizations saver = new SaveLocalizations(new File("/media/backup/ownCloud/set1-b.csv"));
+		final ImageLoader<T> tif = new ImageLoader<T>(loc_im, LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"));
+		final NMSDetector<T> peak = new NMSDetector<T>(10,6);
+		final Fitter<T> fitter = new AstigFitter<T>(6, LemmingUtils.readCSV(System.getProperty("user.home")+"/ownCloud/exp-calb.csv"));
+		final SaveLocalizations saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/exp-images.csv"));
 		
-		pipe = new Manager(Executors.newCachedThreadPool());
+		pipe = new Manager(service);
 		pipe.add(tif);
 		pipe.add(peak);
 		pipe.add(fitter);
@@ -59,6 +62,7 @@ class AstigFitterTest<T extends NativeType<T> & RealType<T>> {
 		AstigFitterTest mt = new AstigFitterTest();
 		mt.setUp();
 		mt.pipe.startAndJoin();
+		mt.service.shutdown();
 	}
 
 }

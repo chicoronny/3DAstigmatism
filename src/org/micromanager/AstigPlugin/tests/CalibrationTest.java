@@ -15,9 +15,10 @@ class CalibrationTest {
 	private Calibrator calibrator;
 	
 	private CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/z-stack_1.tif");
+		ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/exp-beads.tif");
 		calibWindow = new StackWindow(calibImage);
-		calibImage.setRoi(45, 95, 21, 21);
+		//calibImage.setRoi(22, 19, 19, 19);
+		calibImage.setRoi(240, 162, 20, 20);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -45,14 +46,14 @@ class CalibrationTest {
 	}
 
 	private boolean fitCurve() {
-		final int rangeMin = 0; //set
-		final int rangeMax = 2000; //set
+		final int rangeMin = 110; //set
+		final int rangeMax = 520; //set
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib(System.getProperty("user.home")+"/ownCloud/set1-calb.csv");
+		calibrator.saveCalib(System.getProperty("user.home")+"/ownCloud/exp-calb.csv");
 		//calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}

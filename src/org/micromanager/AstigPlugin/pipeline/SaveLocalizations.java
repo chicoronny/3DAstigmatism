@@ -22,7 +22,7 @@ public class SaveLocalizations extends SingleRunModule {
 	private final File file;
 	private FileWriter w;
 	private int counter = 0;
-	private static final String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","photons","frame"};
+	private static final String[] preferredOrder= new String[]{"ID","x","y","z","sx","sy","sz","photons","frame"};
 	//private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","N", "Bg", "xdetect", "ydetect", "RMS", "Iter", "Eval", "frame"}; 
 
 	public SaveLocalizations(File file) {
@@ -42,7 +42,7 @@ public class SaveLocalizations extends SingleRunModule {
 			BeanInfo b = Introspector.getBeanInfo(el.getClass());
 			for (PropertyDescriptor p : b.getPropertyDescriptors()) {
 				String prop = p.getName();
-				boolean test = prop.contains("class") | prop.contains("last");
+				boolean test = prop.contains("class") | prop.contains("last") |prop.contains("ID");
 				if (!test){
 					headset.add(prop);
 				}
@@ -66,8 +66,6 @@ public class SaveLocalizations extends SingleRunModule {
 	@Override
 	public Element processData(Element data) {
 		if (data.isLast()) {
-			System.out.println("------- Saveloc is last");
-
 			if (inputs.get(iterator).isEmpty()) {
 				cancel();
 				return null;

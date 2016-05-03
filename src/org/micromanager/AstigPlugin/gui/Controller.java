@@ -37,6 +37,7 @@ import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
+import org.micromanager.AstigPlugin.AstigPlugin;
 import org.micromanager.AstigPlugin.factories.FitterFactory;
 import org.micromanager.AstigPlugin.factories.HistogramRendererFactory;
 import org.micromanager.AstigPlugin.factories.NMSDetectorFactory;
@@ -114,6 +115,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 	 * Create the frame.
 	 */
 	public Controller() {
+		
 		this.curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
@@ -703,6 +705,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		}
 
 		if (s == this.comboBoxFitter) {
+			System.out.println("Change filter?");
 			chooseFitter();
 		}
 
@@ -950,6 +953,8 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), new Rectangle(0,0,img.getWidth(),img.getHeight()), 1);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
+		
+		detector = preProcessor;
 	}
 	
 	private void saveSettings(JPanel cardPanel) {
@@ -1015,6 +1020,7 @@ public class Controller<T extends NativeType<T> & RealType<T>> extends JFrame im
 		final int index = comboBoxFitter.getSelectedIndex();
 		if (index < 0 || tif == null || detector == null) {
 			fitter = null;
+			System.out.println("Failure to set the fitter "+index);
 			return;
 		}
 

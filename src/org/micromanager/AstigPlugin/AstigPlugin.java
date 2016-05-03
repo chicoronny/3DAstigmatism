@@ -1,5 +1,6 @@
 package org.micromanager.AstigPlugin;
 
+
 import java.util.Locale;
 
 import javax.swing.SwingUtilities;
@@ -56,6 +57,7 @@ public class AstigPlugin <T extends NativeType<T> & RealType<T>> implements MMPl
 
 	@Override
 	public void setApp(ScriptInterface app) {
+		
 		ScriptInterface app_ = app;
 		CMMCore core_ = app.getMMCore();
 	     this.curLocale = Locale.getDefault();

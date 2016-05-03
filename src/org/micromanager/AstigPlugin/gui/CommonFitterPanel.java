@@ -65,7 +65,7 @@ public class CommonFitterPanel extends ConfigurationPanel {
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		try{
-			calibFile = (File) settings.get(PanelKeys.KEY_CALIBRATION_FILENAME);
+			calibFile = new File((String) settings.get(PanelKeys.KEY_CALIBRATION_FILENAME));
 			lblCalibration.setText(calibFile.getName());
 		} catch (Exception e){e.printStackTrace();}
 	}
